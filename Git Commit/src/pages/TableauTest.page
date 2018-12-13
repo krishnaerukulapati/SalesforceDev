@@ -1,0 +1,3 @@
+<apex:page standardController="ALSACEvent__c">
+    <apex:iframe src="https://tableaud2s1.alsac.local/t/FieldOperations/views/CGIandDGGEvents/Home?:isGuestRedirectFromVizportal=y&:embed=y&:usingOldHashUrl=true:embed=y&:display_count=yes&:showVizHome=no" height="2560" width="1200"/>
+</apex:page>

@@ -1,0 +1,102 @@
+<apex:page docType="html-5.0" showHeader="false" sidebar="false" standardStylesheets="false" applyHtmlTag="false" applyBodyTag="false"  controller="EdgeForceIntranetHomeController" id="EF_Template">
+
+<!--[if IEMobile 7 ]> <html dir="ltr" lang="en-US"class="no-js iem7"> <![endif]-->
+<!--[if lt IE 7 ]> <html dir="ltr" lang="en-US" class="no-js ie6 oldie"> <![endif]-->
+<!--[if IE 7 ]>    <html dir="ltr" lang="en-US" class="no-js ie7 oldie"> <![endif]-->
+<!--[if IE 8 ]>    <html dir="ltr" lang="en-US" class="no-js ie8 oldie"> <![endif]-->
+<!--[if (gte IE 9)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html dir="ltr" lang="en-US" class="no-js"><!--<![endif]-->
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"></meta>
+    
+    <link rel="shortcut icon" href="{!$Resource.Intranetfavicon}" type="shortcut/ico" />
+
+    <!-- CSS For testing / dev ONLY 
+    <link rel="stylesheet" type="text/css" href="https://dl.dropboxusercontent.com/u/1621719/Appirio/Edgeforce/ALSAC/dist/css/main.css"></link> 
+    -->
+    
+    <!-- CSS For Production  -->
+    <apex:stylesheet value="{!URLFOR($Resource.EF_Boilerplate, 'dist/css/main.css')}"/>
+   
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <apex:includeScript value="{!URLFOR($Resource.EF_Boilerplate, 'dist/js/html5shiv-3.7.0.js')}"/>
+        <apex:includeScript value="{!URLFOR($Resource.EF_Boilerplate, 'dist/js/respond-1.3.0.min.js')}"/>
+    <![endif]-->
+    
+  
+
+</head>
+
+<body id="home">
+
+    <!-- Warn deprecated browsers -->
+    <!--[if lt IE 7]>
+        <p class="chromeframe">You are using an outdated browser. <a href="http://browsehappy.com/">Upgrade your browser today</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.</p>
+    <![endif]-->
+
+    <div id="wrap">
+        <div class="container-fluid ef_boilerplate">
+            <div class="container-bs">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <c:EF_Header />
+                        <c:EF_TopNav />
+                    </div><!--/.col-sm-12 -->
+                </div><!--/.row -->
+
+                <!-- Page content area -->
+                <apex:insert name="body"/>
+
+            </div><!--/.container-bs -->
+        </div><!--/.container-fluid  -->
+    </div><!--/#wrap -->
+
+    <div id="footer">
+        <div class="container-bs">
+            <div class="row">
+                <div class="col-sm-12">
+                    <c:EF_Footer />
+                </div><!--/.col-sm-12 -->
+            </div><!--/.row -->
+        </div><!--/.container -->
+    </div><!--/#footer -->
+
+    <!-- Javascript Resources -->
+    <apex:includeScript value="{!URLFOR($Resource.EF_Boilerplate, 'dist/js/jquery-1.8.2.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.EF_Boilerplate, 'dist/js/bootstrap-3.0.3.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.EF_Boilerplate, 'dist/js/script.js')}"/>
+
+    <script>
+        $("#help").click(function() {
+           $('.help').popover('toggle')
+        });
+               
+        // hide #back-top first
+        $("#back-top").hide();
+        
+        // fade in #back-top
+        $(function () {
+            $(window).scroll(function () {
+                if ($(this).scrollTop() > 100) {
+                    $('#back-top').fadeIn();
+                } else {
+                    $('#back-top').fadeOut();
+                }
+            });
+            // scroll body to 0px on click
+            $('#back-top a').click(function () {
+                $('body,html').animate({
+                    scrollTop: 0
+                }, 800);
+                return false;
+            });
+        });
+        
+        
+    </script>
+</body>
+</html>
+</apex:page>

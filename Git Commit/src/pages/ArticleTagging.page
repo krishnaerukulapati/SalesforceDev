@@ -1,0 +1,88 @@
+<apex:page standardController="Intranet_Content__c" extensions="ArticleTaggingController" showHeader="false" sidebar="false">
+    
+    
+    <script type="text/javascript" src="{!$Resource.IntranetDesign}/js/jquery-1.8.2.min.js"></script>
+    <script type="text/javascript" src="{!$Resource.IntranetDesign}/js/jquery-ui.min.js"></script>
+    <script src="{!URLFOR($Resource.tagIt, 'js/tag-it.js')}" type="text/javascript" charset="utf-8"></script>
+    
+    <apex:stylesheet value="{!URLFOR($Resource.tagIt, 'css/jquery.tagit.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui_EF, 'css/jquery-ui.css')}"/>
+    
+    
+    <style>
+        body{
+            padding: 5px 5px;
+        }
+    </style>
+    
+    <apex:form >
+        <apex:actionFunction name="refresh" reRender="tagPanel" oncomplete="getListOfTags();"/>
+    
+    
+        <apex:outputPanel id="tagPanel">
+            <ul id="myTags">
+                <!-- Existing list items will be pre-added to the tags -->
+                <apex:repeat value="{!ListOfArticleTags}" var="tag">
+                    <li><apex:outputText value="{!tag.Tags__r.Tag__c}"/></li>
+                </apex:repeat>
+                
+            </ul>
+            <apex:commandButton value="Save Tags" style="float:left" onclick="addArticleTags()" reRender="xxx"/>
+            <!-- <a id="tagButton" class="btn" style="float:right" href="javascript: addArticleTags()">Add</a> -->
+        </apex:outputPanel>
+        
+    </apex:form>    
+        <script type="text/javascript">
+            
+            var listOfTags;
+            
+            $(document).ready(function() {
+                getListOfTags();
+            });
+            
+            
+            function getListOfTags(){
+                //$('#tagButton').button();
+                Visualforce.remoting.Manager.invokeAction(
+                    '{!$RemoteAction.ArticleTaggingController.fetchListOfTags}',
+                    function(result, event){
+                        if(event.status){
+                            listOfTags = new Array();
+                            
+                            for(var i=0; i<result.length; i++){
+                                listOfTags.push(result[i].Tag__c.replace(/{!HTMLENCODE('&')}/g, '&')); 
+                            }
+                            $("#myTags").tagit({
+                                autocomplete: {
+                                    source : listOfTags
+                                }
+                            });
+                        }
+                    }
+                );
+            }
+            
+            
+            function addArticleTags(){
+                var tagString = $('#myTags li').map(function(i,n) {
+                    return $(n).find('.tagit-label').text();
+                }).get().join(',');
+                
+                var tagArray = tagString.split(',');
+                
+                Visualforce.remoting.Manager.invokeAction(
+                    '{!$RemoteAction.ArticleTaggingController.addTags}',
+                    tagString, '{!articleID}',
+                    function(result, event){
+                        if(event.status){
+                            refresh();
+                        }
+                    }
+                );
+            }
+        </script>
+    
+    
+     
+        
+</apex:page>

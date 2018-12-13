@@ -1,0 +1,104 @@
+<apex:page controller="C360DetailPropController" showheader="false" sidebar="false" standardStylesheets="false">
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <script> 
+        var $j = $.noConflict();
+
+        function applyUI() {
+            $j( ".accordionDis" ).accordion({ disabled: true, icons: {activeHeader: "ui-icon-home"}, heightStyle: "content"});
+            $j("button").button();
+            $j("button").css("float", "right");
+            $j("button").css("clear", "both");
+            $j("tr").hover(function() {
+                    $j(this).addClass("ui-state-hover");
+                },function() {
+                    $j(this).removeClass("ui-state-hover");
+                }
+            );
+        }
+
+        $j(function() {
+            applyUI();
+        });
+    </script>
+    <apex:outputPanel rendered="{!!isUUIDSet}">
+        No constituent selected.    
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!isUUIDSet}">
+        <apex:form >
+            <div class="form-element">
+                <label>Duplicates: </label>
+                <apex:selectList value="{!consId}" size="1">
+                    <apex:selectOptions value="{!items}"/>
+                    <apex:actionSupport event="onchange" action="{!changeCons}"/>
+                </apex:selectList>
+                <button type="button" onclick="newPropFunc();">New Property</button>
+
+                <apex:inputCheckbox style="float: right" value="{!bShowInactive}" id="showInactive" onclick="changeConsFunc();"/> <!-- -->
+                <apex:outputLabel style="float: right" value="Show Inactive" for="showInactive"/> <!-- -->
+                <apex:actionFunction action="{!NewProperty}" name="newPropFunc"/>
+
+                <apex:actionFunction action="{!changeCons}" name="changeConsFunc"/> <!-- -->
+
+            </div>
+
+            <table width="100%">
+                <tr class="ui-widget-header">
+                    <th></th>
+                    <th>Property</th>
+                    <th>Status</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                </tr>
+                <apex:repeat value="{!props}" var="prop" id="email">
+                    <apex:outputPanel layout="none" rendered="{!bShowInactive || (prop.Status == 'Active'&& NOW() >= NULLVALUE(prop.StartDate, NOW()) && NOW() <= NULLVALUE(prop.EndDate, NOW()))}"> <!-- -->
+                    <tr>
+                        <td>
+                            <a href="javascript:if(confirm('Are you sure?')) setContId('{!prop.Property}');">Remove</a>
+                            <!--<apex:commandLink action="{!RemoveProperty}" value="Remove">
+                                <apex:param assignTo="{!contId}" value="{!prop.Property}" name="DetailContId"/>
+                                <apex:param assignTo="{!consId}" value="{!consId}" name="ConsId"/>
+                            </apex:commandLink>-->
+                        </td>
+                        <td>{!prop.Property}</td>
+                        <td>{!prop.Status}</td>
+                        <td><apex:outputText value="{0,date,MM'/'dd'/'yyyy}">
+                            <apex:param value="{!prop.StartDate}" /> 
+                        </apex:outputText></td>
+                                                <td><apex:outputText value="{0,date,MM'/'dd'/'yyyy}">
+                            <apex:param value="{!prop.EndDate}" /> 
+                        </apex:outputText></td>
+                    </tr>
+                    </apex:outputPanel> <!-- -->
+                </apex:repeat>
+                <apex:actionFunction action="{!RemoveProperty}" name="remPropFunc">
+                    <apex:param assignTo="{!contId}" value="" name="DetailContId"/>
+                    <apex:param assignTo="{!consId}" value="" name="ConsId"/>
+                </apex:actionFunction>
+            </table>
+            <apex:inputHidden value="{!contId}" id="contIdParm"></apex:inputHidden>  
+            <script type="text/javascript">
+                var hdnId = '{!$Component.contIdParm}';
+            </script>
+        </apex:form>
+    </apex:outputPanel>
+    
+    <script type="text/javascript">
+        var prevOnLoad = window.onload;
+        window.onload = function() {
+            if (prevOnLoad) {
+                prevOnLoad();
+            }
+            sforce.console.fireEvent("ProfileEdited");
+        }
+
+        function setContId(contId) {
+            document.getElementById(hdnId).value = contId;
+            remPropFunc();
+        }
+    </script>
+</apex:page>

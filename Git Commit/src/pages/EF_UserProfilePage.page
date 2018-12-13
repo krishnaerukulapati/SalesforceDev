@@ -1,0 +1,16 @@
+<apex:page standardController="User" sidebar="false" showheader="false">
+	<apex:composition template="EF_Template">
+        <apex:define name="body">
+
+            <div class="row ef-content">
+                <div class="col-sm-12">
+
+                </div><!--/.col-sm-12 -->
+
+            </div><!--/.row -->
+
+
+            </apex:define>
+    </apex:composition>
+
+</apex:page>

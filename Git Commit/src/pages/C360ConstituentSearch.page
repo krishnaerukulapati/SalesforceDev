@@ -1,0 +1,221 @@
+<apex:page standardController="case" extensions="C360ConstituentSearchController" showHeader="false" sidebar="false" standardStylesheets="false">
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:stylesheet value="{!URLFOR($Resource.SupportJs, 'jqueryMobile/jquery.mobile.icons-1.4.5.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.SupportJs, 'jqueryMobile/stjude.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.SupportJs, 'jqueryMobile/jquery.mobile.structure-1.4.5.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.SupportJs, 'jqueryMobile/themes/alsac.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'jqueryMobile/jquery.mobile-1.4.5.min.js')}"/>
+    <script>
+        $j = jQuery.noConflict();
+    </script>
+    <style>
+    .controlgroup-textinput{
+        padding-top: .22em;
+        padding-bottom: .22em;
+        background-color: white !important;
+        width: 88%;
+    }
+
+    .ui-controlgroup-controls{
+        width: 100%;
+    }
+    </style>
+    <a name="ui-page-top" id="ui-page-top"/>
+    <div data-role="header">
+        <h1>Constituent Search</h1>
+    </div>
+    <div data-role="page" data-theme="a">
+        <form id="searchForm" data-ajax="false">
+            <div data-role='collapsible' data-collapsed="false" id="searchCriteria">
+                <h3>Search</h3>
+                <label for="lastName">Name</label>
+                <input type="text" id="name"/>
+                <label for="lastName">Last Name</label>
+                <input type="text" id="lastName"/>
+                <label for="firstName">First Name</label>
+                <input type="text" id="firstName"/>
+                <label for="zip">Zip</label>
+                <input type="text" id="zip"/>
+                <label for="phone">Phone</label>
+                <input type="text" id="phone"/>
+                <label for="email">Email</label>
+                <input type="text" id="email"/>
+                <label for="address">Address</label>
+                <input type="text" id="address"/>
+                <label for="city">City</label>
+                <input type="text" id="city"/>
+                <label for="state">State</label>
+                <input type="text" id="state"/>
+                <label for="state">Donor Id</label>
+                <input type="text" id="donorId"/>
+				<label for="state">P2P Id</label>
+				<input type="text" id="p2pId"/>
+                <button type="submit">Search</button>
+            </div>
+        </form>
+        <div id="results"/>
+    </div>
+    <script>
+        var phone = "", address1 = "", name = "", zip = "", city = "", state = "", 
+        donorId = "", pledgeId = "", altId = "", email = "", firstName = "",
+        lastName = "";
+        var startRow = 1, endRow = 100, totRes = 0;
+        //var regexNameZip = /(.+) (.+) ([0-9]*)|(.+) ([0-9]*)/;
+
+        var itemHTML = "<div class='applyToolbar' data-role='collapsible'>" +
+            "<h3>##NAME##</h3>" +
+            "<p>##DONORID##</p>" +
+            "<p>##P2PID##</p>" +
+            "<p>##ADDRESS##</p>" +
+            "<p>##EMAIL##</p>" +
+            "<p>##PHONE##</p>" +
+            "<p>##RELCON##</p>" + 
+            "<p><a data-transition='pop' href=\"javascript:navigate(\'{!$Page.C360ConstituentView}?isFromEventDetail={!$CurrentPage.parameters.isFromEventDetail}&consId=##CONSID##&search=##SEARCH##&searchType=##SEARCHTYPE##\')\">View Detail</a></p>" +
+            "</div>";
+
+        $j(document).ready(function() {         
+            $j(document).delegate('a.scrollTop', 'click', function () {
+                $j('html, body').stop().animate({ scrollTop : 0 }, 500);
+                return false;
+            });
+
+            $j("#searchForm").bind("submit", function(event) {
+                event.preventDefault();
+                searchCons();
+            });
+
+            var searchVal = getParameterByName("search");
+            var searchTypeVal = getParameterByName("searchType");
+            if (searchVal !== undefined && searchVal != "") $j("#search").val(searchVal);
+            if (searchTypeVal !== undefined && searchTypeVal != "") {
+                //$j("#searchType").val(searchTypeVal);
+                $j("#searchType option").prop('selected',false).filter(function() {
+                    return $j(this).val() == searchTypeVal;  
+                }).prop('selected', true);
+            }
+
+            searchCons = function () {
+                var search = $j("#search").val();
+                var searchType = $j("#searchType").val();
+                var validationError = "";
+
+                resetVars();
+				phone = $j("#phone").val();
+				address1 = $j("#address").val();
+				name = $j("#name").val();
+				zip = $j("#zip").val();
+				city = $j("#city").val();
+				state = $j("#state").val();
+                donorId = $j("#donorId").val();
+				email = $j("#email").val();
+				firstName = $j("#firstName").val();
+				lastName = $j("#lastName").val();
+				p2pId = $j("#p2pId").val();
+
+				if (phone == "" && name == "" && lastName == "" && email == "" && donorId == "" && p2pId == "") {
+					validationError = "You must enter at least one of Name, Last Name, Phone, Email, P2P Id or Donor Id";
+				}
+
+				if (validationError != "") {
+					alert(validationError);
+				}
+				else {
+					$j("#results").html("loading");
+            		$j("#searchCriteria").collapsible("collapse");
+					Visualforce.remoting.Manager.invokeAction(
+		                "{!$RemoteAction.C360ConstituentSearchController.searchConstituents}", //method
+		                phone, address1, name, zip, city, state, donorId, "",
+		                "", email, startRow, endRow, lastName, firstName, p2pId, //parms
+		                loadSearchResults);
+				}
+				return false;
+            };
+        });
+
+        function resetVars() {
+            phone = "";
+            address1 = "";
+            name = "";
+            zip = "";
+            city = "";
+            state = "";
+            donorId = "";
+            pledgeId = "";
+            altId = "";
+            email = "";
+            firstName = "";
+            lastName = "";
+            totRes = 0;
+        }
+
+        function getParameterByName(name) {
+            name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+            var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+                results = regex.exec(location.search);
+            return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+        }
+
+        function loadSearchResults(results, event) {
+            if (totRes == 0) totRes = results.TotalResults;
+            var newItems = "";
+            var search = $j("#search").val();
+            var searchType = $j("#searchType").val();
+            if (totRes > 0) {
+                for(var i = 0; i < results.Constituents.length; i++) {
+                    var con = results.Constituents[i];
+                    var relCon = "";
+                    var donorId = "";
+                    var p2pId = "";
+                    for (var j = 0; j < con.SystemXRefs.SystemXRef.length; j++) {
+                        var xr = con.SystemXRefs.SystemXRef[j];
+                        if (xr.Sys.Name == "TA") {
+                            donorId = "Donor Id: " + xr.XRefKey;
+                        }
+                        if (xr.Sys.Name == "Luminate") {
+                            p2pId = "P2P Id: " + xr.XRefKey;
+                        }
+                    }
+                    if (con.RelatedHousehold !== undefined && con.RelatedHousehold !== null && con.RelatedHousehold.Name !== undefined && con.RelatedHousehold.Name !== null) {
+                        relCon = "Household: " + con.RelatedHousehold.Name;
+                    }
+                    newItems += itemHTML.replace("##NAME##", con.Name + " - " + con.ConstituentType)
+                        .replace("##DONORID##", donorId)
+                        .replace("##P2PID##", p2pId)
+                        .replace("##ADDRESS##", buildAddress(con))
+                        .replace("##EMAIL##", con.EmailAddress === undefined ? "" : con.EmailAddress)
+                        .replace("##PHONE##", con.Phone === undefined ? "" : con.Phone)
+                        .replace("##CONSID##", con.ConstituentID === undefined ? "" : con.ConstituentID)
+                        //.replace("##SEARCH##", search)
+                        //.replace("##SEARCHTYPE##", searchType)
+                        .replace("##RELCON##", relCon);
+                }
+
+                $j("#results").html(newItems);
+                $j(".applyToolbar").collapsible({collapsed: false});
+            }
+            else {
+                $j("#results").html("no results");
+            } 
+        }
+
+        function buildAddress(con) {
+            var addr = "";
+
+            addr = con.Street1 + "<br/>" +
+                (con.Street2   !== undefined && con.Street2.trim()   != "" ? ( con.Street2   + "<br/>") : "") +
+                (con.Street3   !== undefined && con.Street3.trim()   != "" ? ( con.Street3   + "<br/>") : "") +
+                (con.City      !== undefined && con.City.trim()      != "" ? ( con.City      + ", ")    : "") +
+                (con.StateCode !== undefined && con.StateCode.trim() != "" ? ( con.StateCode + ", ")    : "") +
+                (con.ZipCode   !== undefined && con.ZipCode.trim()   != "" ?   con.ZipCode              : "");
+
+
+            return addr;
+        }
+
+        function navigate(url) {
+            if (typeof sforce.one == 'undefined') window.open(url, "_self");
+            else sforce.one.navigateToURL(url);
+        }
+    </script>
+</apex:page>

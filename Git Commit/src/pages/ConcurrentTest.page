@@ -1,0 +1,28 @@
+<apex:page showHeader="true" sidebar="true" standardController="lead" extensions="ConcurrentTestController" >
+	
+	<apex:outputPanel >
+		<apex:form >
+			<table>
+				<tbody>
+					<tr>
+						<th>
+							This page is for testing.
+						</th>
+						<td>
+							
+						</td>						
+					</tr>
+					<tr>
+						<th>
+							Servertime:
+						</th>
+						<td>
+							<apex:outputText value="{!sTime}" />
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</apex:form>
+	</apex:outputPanel>
+
+</apex:page>

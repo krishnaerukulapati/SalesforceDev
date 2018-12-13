@@ -1,0 +1,15 @@
+<apex:page standardController="Case" extensions="EmailMessageonCaseLayout" action="{!met}" rendered="{!show}">
+ <apex:form >
+   <apex:pageBlock >
+      <apex:pageMessages />
+      <apex:pageBlockSection title="Email Message Details" collapsible="false">
+          <apex:pageBlockTable value="{!emailmsgs}" var="em"> 
+             <apex:column value="{!em.Subject__c}"/>
+             <apex:column value="{!em.TextBody__c}"/>
+             <apex:column value="{!em.ToAddress__c}"/>              
+             <apex:column value="{!em.FromAddress__c}"/> 
+          </apex:pageBlockTable>         
+      </apex:pageBlockSection>
+   </apex:pageBlock>
+ </apex:form>
+</apex:page>

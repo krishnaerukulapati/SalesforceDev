@@ -1,0 +1,121 @@
+<apex:page controller="C360ConstituentPropertyEditController" showheader="false" sidebar="false" standardStylesheets="false">
+    <apex:stylesheet value="{!URLFOR($Resource.SupportJs, 'chosen.css')}" />
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'jquery.mask.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'chosen.jquery.min.js')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <script>
+        $j = jQuery.noConflict();
+        $j(document).ready(function() {
+            $j(".datepicker").datepicker();
+            $j(".chosen-select").chosen();
+        });
+
+        $j(function() {
+            $j(":text").addClass("ui-corner-all");
+            $j("button").button();
+            $j("button").css("float", "right");
+            $j("td").addClass("alsac-widget");
+        });
+
+    </script>
+    
+    <apex:pageMessages ></apex:pageMessages>
+    <apex:form >
+        <table id="edit-info">
+            <tr>
+                <td><label>Property: </label></td>
+                <td>
+                    <apex:selectList styleClass="chosen-select" value="{!property}" multiselect="false" size="1">
+                        <apex:selectOption itemLabel="" itemValue=""/>
+                        <!-- <apex:selectOption itemLabel="St. Jude Parent - unknown child status" itemValue="St Jude Parent YES"/>
+                        <apex:selectOption itemLabel="St. Jude Parent with living patient" itemValue="St. Jude Parent - Live"/>
+                        <apex:selectOption itemLabel="St. Jude Parent with deceased patient" itemValue="St. Jude Parent - Deceased"/>
+                        <apex:selectOption itemLabel="St. Jude Patient - Active" itemValue="STJPATIENT_ACTIVE"/>
+                        <apex:selectOption itemLabel="St. Jude Patient - Remission" itemValue="STJPATIENT_REMISSION"/>
+                        <apex:selectOption itemLabel="St. Jude Patient Family with deceased patient" itemValue="STJFAMILY_DECEASED"/>
+                        <apex:selectOption itemLabel="St. Jude Patient Family with living patient" itemValue="STJFAMILY_LIVING"/>
+                        <apex:selectOption itemLabel="St. Jude Patient family with patient status unknown" itemValue="STJFAMILY_YES"/> -->
+
+                        <apex:selectOption itemLabel="FFSJ1 - Unknown" itemValue="FFSJ1 - Unknown"/>
+                        <apex:selectOption itemLabel="FFSJ1 - Active" itemValue="FFSJ1 - Active"/>
+                        <apex:selectOption itemLabel="FFSJ1 - Remission" itemValue="FFSJ1 - Remission"/>
+                        <apex:selectOption itemLabel="FFSJ2 - Unknown" itemValue="FFSJ2 - Unknown"/>
+                        <apex:selectOption itemLabel="FFSJ2 - Living" itemValue="FFSJ2 - Living"/>
+                        <apex:selectOption itemLabel="FFSJ2 - Deceased" itemValue="FFSJ2 - Deceased"/>
+                        <apex:selectOption itemLabel="FFSJ3 - Unknown" itemValue="FFSJ3 - Unknown"/>
+                        <apex:selectOption itemLabel="FFSJ3 - Living" itemValue="FFSJ3 - Living"/>
+                        <apex:selectOption itemLabel="FFSJ3 - Deceased" itemValue="FFSJ3 - Deceased"/>
+                        <apex:selectOption itemLabel="FFSJ4 - Unknown" itemValue="FFSJ4 - Unknown"/>
+                        <apex:selectOption itemLabel="FFSJ4 - Active" itemValue="FFSJ4 - Active"/>
+                        <apex:selectOption itemLabel="FFSJ4 - Remission" itemValue="FFSJ4 - Remission"/>
+                        <apex:selectOption itemLabel="FFSJ5 - Unknown" itemValue="FFSJ5 - Unknown"/>
+                        <apex:selectOption itemLabel="FFSJ5 - Living" itemValue="FFSJ5 - Living"/>
+                        <apex:selectOption itemLabel="FFSJ5 - Deceased" itemValue="FFSJ5 - Deceased"/>
+                        <apex:selectOption itemLabel="FFSJ6 - Unknown" itemValue="FFSJ6 - Unknown"/>
+                        <apex:selectOption itemLabel="FFSJ6 - Living" itemValue="FFSJ6 - Living"/>
+                        <apex:selectOption itemLabel="FFSJ6 - Deceased" itemValue="FFSJ6 - Deceased"/>
+
+                        <apex:selectOption itemLabel="Unknown" itemValue="ETHNICITY_UNK"/>
+                        <apex:selectOption itemLabel="Mexican" itemValue="ETHNICITY_MEXICAN"/>
+                        <apex:selectOption itemLabel="Portuguese" itemValue="ETHNICITY_PORTUGUESE"/>
+                        <apex:selectOption itemLabel="African American" itemValue="ETHNICITY_AFRICAN AMER"/>
+                        <apex:selectOption itemLabel="Italian" itemValue="ETHNICITY_ITALIAN"/>
+                        <apex:selectOption itemLabel="Chinese" itemValue="ETHNICITY_CHINESE"/>
+                        <apex:selectOption itemLabel="Haitain" itemValue="ETHNICITY_HAITIAN"/>
+                        <apex:selectOption itemLabel="Caribbean Islander" itemValue="ETHNICITY_CARIBBEAN"/>
+                        <apex:selectOption itemLabel="Mixed Heritage" itemValue="ETHNICITY_MIXED"/>
+                        <apex:selectOption itemLabel="Puerto Rican" itemValue="ETHNICITY_PUERTO RICAN"/>
+                        <apex:selectOption itemLabel="Australian" itemValue="ETHNICITY_AUSTRALIAN"/>
+                        <apex:selectOption itemLabel="Asian" itemValue="ETHNICITY_ASIAN"/>
+                        <apex:selectOption itemLabel="Native American" itemValue="ETHNICITY_NATIVE AMER"/>
+                        <apex:selectOption itemLabel="Cambodian" itemValue="ETHNICITY_CAMBODIAN"/>
+                        <apex:selectOption itemLabel="Irish" itemValue="ETHNICITY_IRISH"/>
+                        <apex:selectOption itemLabel="African" itemValue="ETHNICITY_AFRICAN"/>
+                        <apex:selectOption itemLabel="Arab American" itemValue="ETHNICITY_ARABAM"/>
+                        <apex:selectOption itemLabel="Arabic" itemValue="ETHNICITY_ARABIC"/>
+                        <apex:selectOption itemLabel="Caucasian" itemValue="ETHNICITY_CAUCASIAN"/>
+                        <apex:selectOption itemLabel="Hispanic Language" itemValue="ETHNICITY_HISPANIC"/>
+                        <apex:selectOption itemLabel="Latin American" itemValue="ETHNICITY_LATIN AMER"/>
+                        <apex:selectOption itemLabel="Vietnamese" itemValue="ETHNICITY_VIETNAMESE"/>
+                        <apex:selectOption itemLabel="Jewish" itemValue="ETHNICITY_JEWISH"/>
+                        <apex:selectOption itemLabel="Egyptian" itemValue="ETHNICITY_EGYPTIAN"/>
+                        <apex:selectOption itemLabel="Korean" itemValue="ETHNICITY_KOREAN"/>
+                        <apex:selectOption itemLabel="Indian" itemValue="ETHNICITY_INDIAN"/>
+                        <apex:selectOption itemLabel="Japanese" itemValue="ETHNICITY_JAPANESE"/>
+                        <apex:selectOption itemLabel="Cuban" itemValue="ETHNICITY_CUBAN"/>
+                        <apex:selectOption itemLabel="Donor is Lebanese" itemValue="ETHNICITY_LEBANESE"/>
+                        <apex:selectOption itemLabel="French Canadian" itemValue="ETHNICITY_FR CANADIAN"/>
+                        <apex:selectOption itemLabel="American" itemValue="ETHNICITY_AMERICAN"/>
+                        <apex:selectOption itemLabel="Donor is considered a VIP" itemValue="VIP_YES"/>
+                        <apex:selectOption itemLabel="Past Board member" itemValue="BOARD_PAST"/>
+                        <apex:selectOption itemLabel="Current Board Member" itemValue="BOARD_CURRENT"/>
+                    </apex:selectList></td>
+            </tr>
+            <tr>
+                <td><label>Status: </label></td>
+                <td>
+                    <apex:selectList styleClass="chosen-select" value="{!Status}" multiselect="false" size="1">
+                        <apex:selectOption itemLabel="" itemValue=""/>
+                        <apex:selectOptions value="{!statusTypes}"/>
+                    </apex:selectList></td>
+            </tr>
+            <tr>
+                <td><label>Start Date: </label></td>
+                <td><apex:inputText styleClass="datepicker" value="{!startDate}" /></td>
+            </tr>
+            <tr>
+                <td><label>End Date: </label></td>
+                <td><apex:inputText styleClass="datepicker" value="{!endDate}" /></td>
+            </tr>
+        </table>
+        <button type="button" onclick="cancelFunc();">Cancel</button>
+        <button type="button" onclick="saveFunc();">Save</button>
+        <apex:actionFunction action="{!cancel}" name="cancelFunc"/>
+        <apex:actionFunction action="{!save}" name="saveFunc" />
+    </apex:form>
+</apex:page>

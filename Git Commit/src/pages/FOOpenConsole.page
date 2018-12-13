@@ -1,0 +1,82 @@
+<apex:page showHeader="false" sidebar="false" standardStylesheets="false" cache="false">
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <style>
+        body {
+            background: #efefef;
+            font-size: 14px;
+            font-family: 'Lucida Grande','Segoe UI',Helvetica,Arial,sans-serif;
+        }     
+    </style>
+
+    <apex:includeScript value="/support/console/28.0/integration.js"/>
+    <A HREF="#" onClick="generateConsoleUrl();return false">
+        Opening Constituent Search. If it does not open, please click here.</A> 
+
+    <script type="text/javascript">
+        var url;
+        var urlHighlights;
+        var title;
+        var label;
+
+        var generateConsoleUrl = function testGenerateConsoleURL() {
+            url = '/{!$CurrentPage.Parameters.cid}';
+            urlHighlights = "{!URLFOR($Page.FOHighlights)}&id={!$CurrentPage.Parameters.cid}"
+            sforce.console.generateConsoleUrl([url], openConsoleUrl);
+         }
+
+        function openSubtabC360(pTitle, pLabel) {
+            //url = pUrl;
+            title = pTitle;
+            label = pLabel;
+            
+            //First find the ID of the primary tab to put the new subtab in
+            sforce.console.getEnclosingPrimaryTabId(openSubtab);
+        }
+        
+        var openSubtab = function openSubtab(result) {
+            //Now that we have the primary tab ID, we can open a new subtab in it
+            var primaryTabId = result.id;
+            sforce.console.openSubtab(primaryTabId , url, true,
+                title, null, null, label);
+            
+            sforce.console.openSubtab(primaryTabId , urlHighlights, true,
+                "Highlights", null, null, "Highlights");
+
+            sforce.console.getEnclosingTabId(closetab);
+        };
+
+        var openConsoleUrl = function showConsoleUrl(result) {
+            var isChat = "{!$CurrentPage.Parameters.isChat}";
+            var bIsChat = (isChat == "true" ? true : false);
+            
+            if(!bIsChat) {
+                sforce.console.openConsoleUrl(null, result.consoleUrl, true, null, null, closeThisTab);
+            }
+            else {
+                openSubtabC360("Case Detail", "Case Detail")
+            }
+         }
+        
+        function closeThisTab(result) {
+            //First find the ID of the current tab to close it
+            sforce.console.getEnclosingPrimaryTabId(closetab);
+        }
+        
+        var closetab = function closetab(result) {
+            //Now that we have the tab ID, we can close it
+            var tabId = result.id;
+            sforce.console.closeTab(tabId);
+        };
+        
+        var prevOnLoad = window.onload;
+        window.onload = function() {
+            if (prevOnLoad) {
+                prevOnLoad();
+            }
+            generateConsoleUrl();
+            //closeThisTab();
+        }
+  </script>
+</apex:page>

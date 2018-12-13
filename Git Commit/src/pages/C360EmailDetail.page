@@ -1,0 +1,78 @@
+<apex:page controller="C360DetailController" showheader="false" sidebar="false" standardStylesheets="false">
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <script>
+        var $j = $.noConflict();
+
+        function applyUI() {
+            $j( ".accordionDis" ).accordion({ disabled: true, icons: {activeHeader: "ui-icon-home"}, heightStyle: "content"});
+            $j("button").button();
+            $j("button").css("float", "right");
+            $j("button").css("clear", "both");
+            $j("tr").hover(function() {
+                $j(this).addClass("ui-state-hover");
+            },function() {
+                $j(this).removeClass("ui-state-hover");
+            }
+            );
+        }
+
+        $j(function() {
+            applyUI();
+        });
+    </script>
+    <apex:outputPanel rendered="{!!isUUIDSet}">
+        No constituent selected.    
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!isUUIDSet}">
+        <apex:form >
+            <div class="editHeader">
+                <label>Duplicates: </label>
+                <apex:selectList value="{!consId}" size="1">
+                    <apex:selectOptions value="{!items}"/>
+                    <apex:actionSupport event="onchange" action="{!changeCons}"/>
+                </apex:selectList>
+                <button type="button" onclick="newEmailFunc();">New Email</button>
+                <apex:actionFunction action="{!NewEmail}" name="newEmailFunc"/>
+            </div>
+
+            <table width="100%">
+                <tr class="ui-widget-header">
+                    <th></th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Preferred</th>
+                    <th>Email</th>
+                </tr>
+                <apex:repeat value="{!con.Profile.Emails}" var="eml" id="email">
+                    <tr>
+                        <td>
+                            <apex:commandLink action="{!EditEmail}" value="Edit">
+                                <apex:param assignTo="{!contId}" value="{!eml.ContactId}" name="DetailContId"/>
+                                <apex:param assignTo="{!consId}" value="{!consId}" name="ConsId"/>
+                            </apex:commandLink>
+                        </td>
+                        <td>{!eml.EmailType.Code}</td>
+                        <td>{!eml.Status}</td>
+                        <td>{!IF(eml.Preferred, 'YES', 'NO')}</td>
+                        <td>{!eml.EmailAddress}</td>
+                    </tr>
+                </apex:repeat>
+            </table>
+        </apex:form>
+    </apex:outputPanel>
+    
+    <script type="text/javascript">
+        var prevOnLoad = window.onload;
+        window.onload = function() {
+            if (prevOnLoad) {
+                prevOnLoad();
+            }
+            sforce.console.fireEvent("ProfileEdited");
+        }
+    </script>
+</apex:page>

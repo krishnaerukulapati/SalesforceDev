@@ -1,0 +1,15 @@
+<apex:page controller="SearchAgainController" >
+  <!-- based on C360CloseRefresh page -->
+
+  <apex:includeScript value="/support/console/28.0/integration.js"/>
+    <A HREF="#" onClick="fireConstituentApplied();return false">Complete.  Click here to refresh case.</A><br />
+    <A HREF="#" onClick="testParam();return false">check param.</A> 
+
+    <script type="text/javascript">
+        var tabId;
+        var cid = {!caseId};
+
+        window.location = "/apex/C360Hightlights?id="+cid;
+        }
+  </script>
+</apex:page>

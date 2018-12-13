@@ -1,0 +1,3 @@
+<apex:page standardController="Lead" tabStyle="Lead">
+<flow:interview name="Love_Call_Script"/>
+</apex:page>

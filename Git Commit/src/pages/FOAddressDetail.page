@@ -1,0 +1,96 @@
+<apex:page controller="FODetailController" showheader="false" sidebar="false" standardStylesheets="false">
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.alsacFO, 'alsacFO.css')}" />
+    <apex:includeScript value="{!URLFOR($Resource.Bootstrap, '/bootstrap-3.0.0/dist/js/bootstrap.min.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.Bootstrap, '/bootstrap-3.0.0/dist/css/bootstrap.min.css')}" />
+
+
+    <script>
+        var $j = $.noConflict();
+
+        function applyUI() {
+            $j( ".accordionDis" ).accordion({ disabled: true, icons: {activeHeader: "ui-icon-home"}, heightStyle: "content"});
+            $j("button").button();
+            $j("button").css("float", "right");
+            $j("button").css("clear", "both");
+            $j("tr").hover(function() {
+                $j(this).addClass("ui-state-hover");
+                
+            },function() {
+                $j(this).removeClass("ui-state-hover");
+            }
+            );
+        }
+
+        $j(function() {
+            applyUI();
+        });
+    </script>
+    <apex:outputPanel rendered="{!!isUUIDSet}">
+        No constituent selected.    
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!isUUIDSet}">
+        <apex:form >
+            <div class="editHeader">
+                <label>Duplicates: </label>
+                <apex:selectList value="{!consId}" size="1">
+                    <apex:selectOptions value="{!items}"/>
+                    <apex:actionSupport event="onchange" action="{!changeCons}"/>
+                </apex:selectList>                
+                <button type="button" onclick="newAddressFunc();">New Address</button>
+                <apex:actionFunction action="{!NewAddress}" name="newAddressFunc"/>
+            </div>
+            <table class="results-table" width="100%">
+                <tr class="ui-widget-header">
+                    <th></th>
+                    <th>Type</th>
+                    <th class="hidden-xs">Status</th>
+                    <th class="hidden-xs">Preferred</th>
+                    <th>Address</th>
+                </tr>
+                <apex:repeat value="{!con.Profile.Addresses}" var="addr" id="address">
+                    <tr>
+                        <td>
+                            <apex:commandLink action="{!EditAddress}" value="Edit">
+                                <apex:param assignTo="{!contId}" value="{!addr.ContactId}" name="DetailContId"/>
+                                <apex:param assignTo="{!consId}" value="{!consId}" name="ConsId"/>
+                            </apex:commandLink>
+                        </td>
+                        <td>{!addr.AddressType.Code}</td>
+                        <td class="hidden-xs">{!addr.Status}</td>
+                        <td class="hidden-xs">{!IF(addr.Preferred, 'YES', 'NO')}</td>
+                        <td><apex:outputPanel rendered="{!NOT(OR(ISNULL(addr.Street1), ISBLANK(addr.Street1)))}">
+                                <apex:outputText value="{!addr.Street1}" /><br/>
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!LEN(addr.Street2) > 0}">
+                                <apex:outputText value="{!addr.Street2}" /><br/>
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!LEN(addr.Street3) > 0}">
+                                <apex:outputText value="{!addr.Street3}" /><br/>
+                            </apex:outputPanel>
+                            <apex:outputText value="{!addr.City}" />,
+                            <apex:outputText value="{!addr.State}" />,
+                            <apex:outputText value="{!addr.ZipCode}" />
+                        </td>
+                    </tr>
+                </apex:repeat>
+            </table>
+            <apex:commandButton rendered="{!isSF1 = 'true'}" action="{!back}" value="Back" styleClass="btn btn-default btn-sm btn-block"/>
+        </apex:form>
+    </apex:outputPanel>
+    
+    <script type="text/javascript">
+        var prevOnLoad = window.onload;
+        window.onload = function() {
+            if (prevOnLoad) {
+                prevOnLoad();
+            }
+            sforce.console.fireEvent("ProfileEdited");
+        }
+  </script>
+</apex:page>

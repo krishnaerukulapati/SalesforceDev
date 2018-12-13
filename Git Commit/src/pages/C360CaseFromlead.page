@@ -1,0 +1,5 @@
+<apex:page Controller="C360CaseFromLeadController" showheader="false" sidebar="false" standardStylesheets="false" action="{!OpenConsole}">
+	Loading Case Console
+	
+    <apex:pageMessages id="messages"></apex:pageMessages>
+</apex:page>

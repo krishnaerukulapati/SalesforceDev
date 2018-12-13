@@ -1,0 +1,11 @@
+<apex:page standardController="Case">
+    <apex:form >
+       	<apex:pageBlock title="Case Escalation" > 
+        	<apex:pageBlockSection title="Why do you want to escalate {case.CaseNumber}?" >
+        Enter escalation reason:<p/>
+        	<apex:inputField value="{!case.Escalation_Reason__c}"/><p/>
+        	<apex:commandButton action="{!save}" value="Save"/>
+        	</apex:pageBlocksection>
+        </apex:pageBlock>
+	</apex:form>
+</apex:page>

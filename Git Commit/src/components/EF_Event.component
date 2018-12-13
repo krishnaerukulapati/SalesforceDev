@@ -1,0 +1,108 @@
+<!-- 
+// (c) 2014 Appirio, Inc.
+//
+// 10th Sept, 2014  Sumit Tanwar  Changed Days order and added Day name header in the
+// Calendar. T-318411.
+-->
+
+<apex:component controller="EdgeForceEventControllerNew"> 
+
+    <!-- Styles --> 
+    <apex:stylesheet value="{!URLFOR($Resource.dp_calendar, '/themes/base/jquery.ui.all.css')}"/>
+    <!-- Changes by Sumit Tanwar Starts Here T-318411-->
+    <style>
+       .dp_calendar .div_dayHead {
+          padding:10px 20px 10px 10px !important;
+          font-size:14px !important;
+       }
+       .dp_calendar #days_headers{
+          float:left !important;
+          width:100% !important;
+        }
+        .dp_calendar .div_dayLi {
+            padding-top:10px !important;
+            padding-bottom:10px !important;
+         }
+        .dp_calendar .div_dates li.has_events {
+            padding-top:10px !important;
+            padding-bottom:10px !important;
+        }
+    </style>
+     <!-- Changes by Sumit Tanwar Ends Here T-318411-->
+    <!-- required plugins --> 
+    <script src="{!URLFOR($Resource.dp_calendar, '/ui/jquery.ui.core.js')}"></script> 
+    <script src="{!URLFOR($Resource.dp_calendar, '/ui/jquery.ui.position.js')}"></script> 
+    <script src="{!URLFOR($Resource.dp_calendar, '/ui/jquery.ui.datepicker.js')}"></script> 
+    <script src="{!URLFOR($Resource.dp_calendar, '/js/date.js')}"></script> 
+    <script src="{!URLFOR($Resource.dp_calendar, '/js/jquery.dp_calendar.js')}"></script>
+
+    <script>
+    
+    var mapOfTitleAndUrl = new Object();
+    
+    if (!Object.keys) {
+        Object.keys = function(obj) {
+        var keys = [];
+        
+        for (var i in obj) {
+          if (obj.hasOwnProperty(i)) {
+            keys.push(i);
+          }
+        }
+        
+        return keys;
+        };
+    }
+    
+    function json2array(json){
+        
+        var result = [];
+        var keys = Object.keys(json);
+        for (key = 0; key < keys.length; key++) {
+            if(json[key].allDay){
+                json[key].startDate = new Date(json[key].allDayStartDate);
+                json[key].endDate = new Date(json[key].allDayEndDate);
+            }else{
+                json[key].startDate = new Date(json[key].startDate);
+                json[key].endDate = new Date(json[key].endDate);
+            }
+            
+            mapOfTitleAndUrl[json[key].title] = json[key].url;
+            result.push(json[key]);
+        }
+        return result;
+    }
+    
+    var evJSON = json2array({!jsonOutput});
+    
+        
+     $(document).ready(function(){
+           $("#calendar_Div").dp_calendar({
+                events_array: evJSON,
+                onClickEvents: function(data){
+                    try{                       
+                       window.open(mapOfTitleAndUrl[decodeEntities(data.title)],'_blank');
+                    }catch(e){}
+                },
+                onChangeDay : function(){
+                    $('.span_day').parent().find('br').remove();
+                }
+            });
+           $('.span_day').parent().find('br').remove();
+           
+        });
+        
+        $(document).on("click",".main_date, .dp_calendar li, li[id^=dpEventsCalendar_li]",function(){
+            $('.span_day').parent().find('br').remove();
+        });
+        
+      
+       function decodeEntities(s){
+        return $("<div/>").html(s).text();
+       }
+        
+    </script>
+    
+    <div id="calendar_Div"/>
+
+</apex:component>

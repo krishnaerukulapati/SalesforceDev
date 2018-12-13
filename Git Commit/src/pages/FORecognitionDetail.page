@@ -1,0 +1,680 @@
+<apex:page controller="FORecognitionDetailController" showheader="false" sidebar="false" standardStylesheets="false">
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <apex:stylesheet value="{!URLFOR($Resource.SupportJs, 'grid/css/ui.jqgrid.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'grid/js/i18n/grid.locale-en.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'grid/js/jquery.jqGrid.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'jquery.blockUI.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.MomentJS)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.alsacFO, 'alsacFO.css')}" />
+
+    <script>
+        $j = jQuery.noConflict();
+        $j(function() {
+            $j("button").button();
+            $j("button").css("float", "right");
+        });
+
+        $j.support.cors = true;
+    </script>
+    <apex:outputPanel rendered="{!!isUUIDSet}">
+        No constituent selected.    
+    </apex:outputPanel>
+       <apex:outputPanel rendered="{!isUUIDSet}" layout="close">
+        <apex:form > 
+            <div class="form-element" style="padding-bottom: 20px;">
+                <button style="display:none;" type="button" id="btnNewSource" onclick="newSourceCode();">Change Source Code</button> 
+                <button style="display:none;" type="button" id="btnNewSoftCredit" onclick="newSoftCredit();">Soft Credit Request</button> 
+                <button style="display:none;" type="button" id="btnNewRefund" onclick="newRefund();">New Refund</button>
+                <label style="display:none;">Duplicates: </label><apex:selectList value="{!consId}" size="1" style="display:none;">
+                    <apex:selectOptions value="{!items}"/>
+                    <apex:actionSupport event="onchange" action="{!changeCons}"/>
+                </apex:selectList>
+                <label>
+                    Recognitions&nbsp;Total:&nbsp;
+                    <apex:outputText value="{0, Number, Currency}">
+                        <apex:param value="{!recognitionTotal}"/>
+                    </apex:outputText>
+                </label>
+            </div>
+            <apex:outputPanel layout="none">
+                <table id="tranGrid" class="intGrid"></table>
+                <div id="pgrps"></div>
+                <div id="noTrans" style="display: none;">No Transactions</div>
+            </apex:outputPanel>
+        </apex:form>
+        <div id="sourceCodeModal" title="Source - #SOURCECODE#" style="font-size: 11px;">
+            <span id="srcLoading">Loading...</span>
+            <table id="srcData" class="results-table" style="width: 100%;">
+                <tr><td>Source Code</td><td><span id="srcCode"/></td></tr>
+                <tr><td>Description</td><td><span id="srcDescr"/></td></tr>
+                <tr><td>Event Code</td><td><span id="srcEvent"/></td></tr>
+                <tr><td>Event Name</td><td><span id="srcEventName"/></td></tr>
+                <tr><td>Activity</td><td><span id="srcActivity"/></td></tr>
+                <tr><td>Activity Description</td><td><span id="srcActivityDescr"/></td></tr>
+                <tr><td>Campaign</td><td><span id="srcCampaign"/></td></tr>
+                <tr><td>Campaign Description</td><td><span id="srcCampaignDescr"/></td></tr>
+                <tr><td>G/L Credit</td><td><span id="srcCredit"/></td></tr>
+                <tr><td>G/L Credit Description</td><td><span id="srcCreditDescr"/></td></tr>
+                <tr><td>Affiliation</td><td><span id="srcAffiliation"/></td></tr>
+                <tr><td>Affiliation Description</td><td><span id="srcAffiliationDescr"/></td></tr>
+            </table>
+        </div>
+        <div id="softCreditModal" title="Soft Credit - #NAME#" style="font-size: 11px;">
+            <table class="results-table" id="srcData">
+                <tr><td>Donor Id</td><td><span id="donId"/></td></tr>
+                <tr><td>Name</td><td><span id="donName"/></td></tr>
+                <tr><td>Gift Date</td><td><span id="giftDate"/></td></tr>
+                <tr><td>Gift Seq</td><td><span id="giftSeq"/></td></tr>
+            </table>
+        </div>
+    </apex:outputPanel>
+    <script type="text/javascript">
+        $j = jQuery.noConflict();
+        var totRes = 0;
+        var retrieved = 0;
+        var bufferSize = 100;
+        var transRefund = new Array();
+        var url;
+        var title;
+        var label;
+        var reason = $j( "#reason" );
+        var allFields = $j( [] ).add( reason );
+        var tips = $j( ".validateTips" );
+        var refunds = null;
+
+        var grid = $j("#tranGrid").jqGrid({
+            autowidth: true,
+            datatype: "local",
+            height: 250,
+            rowNum: 10,
+            rowList:[10,20,30],
+            colNames:["Trans No", "Gift Type", "Gift Date", "SourceCode", "Event", "Frequency", "Payment",
+                "Method", "Total Pledge Amount", "CC Last 4", "Refund Status","Transaction Type",
+                "Soft Credit Type", "Name"],
+            colModel:[
+                {name:"id",index:"id", width:60, sorttype:"int"},
+                {name:"GiftType",index:"GiftType", width:100},
+                //{name:"GiftDate",index:"GiftDate", width:100, sorttype:"date",
+                //    formatter: "date", formatoptions: { newformat: "Y-m-d" }},
+                {name:"GiftDate",index:"GiftDate", width:100, sorttype:"date",
+                    formatter: utcDateFormatter},
+                {name:"SourceCode",index:"SourceCode", width:80},
+                {name:"Event",index:"Event", width:50},
+                {name:"Frequency",index:"Frequency", width:80},
+                {name:"PaymentAmount",index:"PaymentAmount", width:80, sorttype:"number", formatter:"currency"},
+                {name:"PaymentMethod",index:"PaymentMethod", width:80 },
+                {name:"TotalPledgeAmount",index:"TotalPledgeAmount", width:120, sorttype:"number", formatter:"currency"},
+                {name:"CCLast4",index:"CCLast4", width:120, sorttype:"number"},
+                {name:"Refund",index:"Refund", width:100, editable:false},
+                {name:"TransactionType",index:"TransactionType", width:100},
+                {name:"SoftCreditType",index:"SoftCreditType", width:100},
+                {name:"Name",index:"Name", width:100, sorttype:"number"}
+            ],
+            pager: "#pgrps",
+            caption: "Transactions",
+            multiselect: true,
+            viewrecords: true,
+            onSelectRow: rowSelected,
+            loadComplete: disableTrans,
+            beforeSelectRow: disallowSelect,
+            onSelectAll: unselectOnSelectAll,
+            onCellSelect: function(rowid, index, contents, event)
+            {
+               //var cm = $("#list1").jqGrid('getGridParam','colModel');
+               //if(cm[index].name == "ColumnName")
+               //{
+                 //  alert('aaa');
+               //}
+            },
+        });
+        grid.jqGrid("navGrid","#pgrps",
+            {edit:false,add:false,del:false},
+            {},
+            {},
+            {},
+            {multipleSearch:true, multipleGroup:true}
+        );
+
+
+        $j(document).ready(function() {
+            //$j("#btnNewRefund").toggleClass('btnDisabled', true).attr('disabled', 'disabled');
+            $j.blockUI({
+                message: "<h1>Loading...</h1>",
+                theme:     true,
+                title:    'Transactions'
+            });
+            getRefunds();
+        });
+
+        function utcDateFormatter(cellvalue, options, rowObject) {
+            if (cellvalue) {
+                return moment(cellvalue).utc().format("YYYY-MM-DD");
+            } else {
+                return '';
+            }
+        }
+
+        function getRefunds() {
+            Visualforce.remoting.Manager.invokeAction(
+                "{!$RemoteAction.FORecognitionDetailController.getRefunds}", //method
+                "{!relId}", //parms
+                getTransactions);
+        }
+
+
+      /*  $j(document).ready(function() {
+            //$j("#btnNewSource").toggleClass('btnDisabled', true).attr('disabled', 'disabled');
+            $j.blockUI({
+                message: "<h1>Loading...</h1>",
+                theme:     true,
+                title:    'Transactions'
+            });
+            getSource();
+        });
+
+
+        function getSource() {
+            Visualforce.remoting.Manager.invokeAction(
+                "{!$RemoteAction.FORecognitionDetailController.getSource}", //method
+                "{!relId}", //parms
+                getTransactions);
+        }
+        */
+
+        function getTransactions(result, event) {
+            refunds = result;
+            Visualforce.remoting.Manager.invokeAction(
+                "{!$RemoteAction.FORecognitionDetailController.getTransactionPage}", //method
+                "{!consId}", retrieved + 1, retrieved + bufferSize, //parms
+                loadGrid);
+        }
+
+
+
+        function loadGrid(result, event) {
+            //call back
+            if (result != null && result.Transactions != null) {
+                if (totRes == 0) totRes = result.TotalResults;
+                for(var i = 0; i < result.Transactions.length; i++) {
+                    var t = result.Transactions[i];
+                    var name_id = "";
+                    //name_id = t.ConstituentName;
+
+                    if(t.PaymentDetail.PaymentFName)
+                        name_id = t.PaymentDetail.PaymentFName + ' ' + t.PaymentDetail.PaymentLName;
+                    else if (t.ConstituentName)
+                        name_id = t.ConstituentName;
+                    else
+                        name_id = "N/A";
+
+                    if (t.ConstituentXRef !== undefined && t.ConstituentXRef !== null) {
+                        var cxr = t.ConstituentXRef;
+                        if (cxr.Sys !== undefined && cxr.Sys !== null) {
+                            var sys = cxr.Sys;
+                            /*if (sys.Name !== undefined && sys.Name !== null && sys.Name == "TA") {
+                                if(cxr.XRefKey !== undefined && cxr.XRefKey !== null) {
+                                    var xrefParts = cxr.XRefKey.split("|");
+                                    if (xrefParts.length == 2) {
+                                        name_id = xrefParts[1];
+                                    }
+                                }
+                            }*/
+                        }
+                    }
+
+                    t.GiftDate = new Date(t.GiftDate);
+                    t.HoldFromDate = new Date(t.HoldFromDate);
+                    t.HoldEndDate = new Date(t.HoldEndDate);
+                    t.DateInserted = new Date(t.DateInserted);
+
+                    var row = {
+                        id:i + retrieved + 1,
+                        TransactionType:t.TransactionType,
+                        GiftType:t.GiftType,
+                        GiftDate:t.GiftDate,
+                        Frequency:t.Frequency,
+                        PaymentAmount:t.PaymentAmount,
+                        TotalPledgeAmount:t.TotalPledgeAmount,
+                        SourceCode:(t.TransactionSource != null ? t.TransactionSource.Code : null),
+                        Event:(t.TransactionSource != null ? t.TransactionSource.Event : null),
+                        PaymentMethod:getMavroLink(t.SpecialActionComments, (t.PaymentDetail != null ? t.PaymentDetail.PaymentMethod : null)),
+                        CCLast4:(t.PaymentDetail != null ? t.PaymentDetail.CCLast4 : null),
+                        TransactionID:t.TransactionXRef.TxnXRefKey,
+                        Refund:"",
+                        TransactionType:t.TransactionType,
+                        SoftCreditType:t.SoftCreditType,
+                        Name: name_id,
+                        SoftCreditXref: '',
+                        SoftCreditCon: '',
+                        SoftCreditName: ''
+                    }
+                    if (t.CreditDetail !== undefined && t.CreditDetail !== null) {
+                        var cd = t.CreditDetail;
+                        if (cd.TransactionXRef !== undefined && cd.TransactionXRef !== null) {
+                            var txr = cd.TransactionXRef;
+                            if (txr.TxnXRefKey !== undefined && txr.TxnXRefKey !== null) {
+                                row.SoftCreditXref = txr.TxnXRefKey;
+                            }
+                        }
+                        if (cd.ConstituentXRef !== undefined && cd.ConstituentXRef !== null) {
+                            var cxr = cd.ConstituentXRef;
+                            if (cxr.XRefKey !== undefined && cxr.XRefKey !== null) {
+                                row.SoftCreditCon = cxr.XRefKey;
+                            }
+                        }
+                        if (cd.Name !== undefined && cd.Name !== null) {
+                            row.SoftCreditName = cd.Name;
+                        }
+                        row.SoftCreditType = "<a href='javascript:getSoftCredDetail(\"" + row.SoftCreditXref + "\", \"" + row.SoftCreditCon + "\", \"" + row.SoftCreditName + "\")'>" + row.SoftCreditName + "</a>"
+                    }
+                    if (row.SourceCode !== null) {
+                        row.SourceCode = "<a href='javascript:getSourceDetail(\"" + row.SourceCode + "\")'>" + row.SourceCode + "</a>";
+                    }
+                    if (refunds !== undefined) {
+                        for(var j = 0; j < refunds.length; j++) {
+                            if (row.TransactionID == refunds[j].Unique_Transaction_Identifier__c) {
+
+                                var urls = '/'+refunds[j].Refund_Request_ID__c;
+
+                                var ref = '<a href="javascript:openSubtabC360(\'' + urls + '\', \'Refund\', \'viewRefund\')">'+refunds[j].Refund_Request_ID__r.RefundStatus__c+'</a>';
+
+                                if (ref == undefined || ref == "") {
+                                    ref = "Created";
+                                }
+                                row.Refund += ref + ', ';
+                            }
+                        }
+                        if (row.Refund != "")
+                        {
+                            row.Refund = row.Refund.substring(0, row.Refund.length - 2);
+                        }
+                        else {
+                            row.Refund = "None";
+                        }
+                    }
+                    else {
+                        row.Refund = "None";
+                    }
+
+                    grid.jqGrid("addRowData",i + retrieved + 1,row);
+                    transRefund[i+retrieved] = t;
+                }
+                retrieved += bufferSize;
+                if (totRes > retrieved) {
+                    getTransactions();
+                }
+                else {
+                    grid.trigger("reloadGrid");
+                    $j.unblockUI();
+                }
+            }
+            else {
+                $j.unblockUI();
+                $j("#gbox_tranGrid").hide();
+                $j("#noTrans").show();
+            }
+        }
+
+        function newSourceCode() {
+            //if ("".trim().length > 0) {
+            var s1 = grid.jqGrid("getGridParam","selarrrow");
+
+            if(s1.length==0 || s1.length >1)
+            {
+              confirm('Please Select One Transaction');
+            }
+            else {
+                var s;
+                s = grid.jqGrid("getGridParam","selarrrow");
+                var sourceDetails = new Array();
+                for(var i = 0; i < s.length; i++) {
+                    sourceDetails[i] = transRefund[s[i] - 1]; //grid.jqGrid("getLocalRow", s[i]).original;
+
+                }
+                var jsonRefDeets = JSON.stringify(sourceDetails);
+
+                Visualforce.remoting.Manager.invokeAction(
+                    "{!$RemoteAction.FORecognitionDetailController.addSourceCodeChangeItems}", //method
+                    jsonRefDeets, "", "", "{!relId}", "{!consId}", "{!ci.objectType}", //parms
+                    createdSource);
+            }
+        }
+        function newSoftCredit() {
+            //if ("".trim().length > 0) {
+            var s1 = grid.jqGrid("getGridParam","selarrrow");
+
+            if(s1.length==0 || s1.length >1)
+            {
+                alert('Please Select One Transaction');
+            }
+
+            else{
+                var s;
+                s = grid.jqGrid("getGridParam","selarrrow");
+                var softCreditDetails = new Array();
+                for(var i = 0; i < s.length; i++) {
+                    //var row = grid.jqGrid("getLocalRow", s[i]).original;
+                    softCreditDetails[i] = transRefund[s[i] - 1]; //grid.jqGrid("getLocalRow", s[i]).original;
+
+                }
+                var jsonRefDeets = JSON.stringify(softCreditDetails);
+
+                //alert(jsonRefDeets);
+
+                Visualforce.remoting.Manager.invokeAction(
+                    "{!$RemoteAction.FORecognitionDetailController.addSoftCreditItems}", //method
+                    jsonRefDeets, "", "", "{!relId}", "{!consId}", "{!ci.objectType}", //parms
+                    createdSoftCredit);
+            }
+        }
+
+
+        function newRefund() {
+
+             // Get table object
+            var myTable = document.getElementById('tranGrid').tBodies[0];
+            //alert('table');
+             // first loop for each row
+            for (var r=0, n = myTable.rows.length; r < n; r++) {
+                       // this loop is getting each colomn/cells
+                       //alert('rows');
+                       //alert(myTable.rows.length);
+                       //alert(r+'***'+c);
+                for (var c = 0, m = myTable.rows[r].cells.length; c < m; c++) {
+                    if(r>0 && c==0)
+                    {
+                      //alert('r>0c==0');
+                      var chkboxval = document.getElementById(myTable.rows[r].cells[c].childNodes[0].id).checked;
+                      //alert(chkboxval);
+                     if(chkboxval == true)
+                     {
+                       // alert(myTable.rows[r].cells[12].innerHTML.length);
+
+                        if(myTable.rows[r].cells[12].innerHTML.length == 2)
+                        {
+                          alert('Soft credit can not be refunded');
+                          return false;
+                        }
+
+                     }
+                    }
+
+                }
+            }
+
+            var s;
+            s = grid.jqGrid("getGridParam","selarrrow");
+
+            var refundDetails = new Array();
+            for(var i = 0; i < s.length; i++) {
+                refundDetails[i] = transRefund[s[i] - 1]; //grid.jqGrid("getLocalRow", s[i]).original;
+
+            }
+            var jsonRefDeets = JSON.stringify(refundDetails);
+
+            Visualforce.remoting.Manager.invokeAction(
+                "{!$RemoteAction.FORecognitionDetailController.addRefundRequestItems}", //method
+                jsonRefDeets, "", "", "{!relId}", "{!consId}", "{!ci.objectType}", //parms
+                createdRefund);
+        }
+
+        function rowSelected(id) {
+            var s = grid.jqGrid("getGridParam","selarrrow");
+            enableNewRefund(s.length > 0);
+        }
+
+        function enableNewRefund(enable) {
+            enable = true;
+            if (enable) {
+                $j("#btnNewRefund").toggleClass('btnDisabled', false).attr('disabled', null);
+            }
+            else
+               $j("#btnNewRefund").toggleClass('btnDisabled', true).attr('disabled', 'disabled');
+        }
+
+        function disableTrans() {
+            if(typeof grid != 'undefined') {
+                var ids = grid.jqGrid("getDataIDs");
+                for(var i = 0; i < ids.length; i++) {
+                    if (grid.jqGrid("getRowData", ids[i]).PaymentAmount <= 0) {
+                        //disable if the payment amount is invalid
+                        $j("tr#" + ids[i] + ".jqgrow > td > input.cbox", grid[0]).attr("disabled", "disabled");
+                    }
+                }
+            }
+        }
+
+        function disallowSelect(rowid, e) {
+            //do not select disabled rows-disabled from first step
+            var cbsdis = $j("tr#"+rowid+".jqgrow > td > input.cbox:disabled", grid[0]);
+            if (cbsdis.length === 0) {
+                return true;    // allow select the row
+            } else {
+                return false;   // not allow select the row
+            }
+        }
+
+        function unselectOnSelectAll(aRowids,status) {
+            if (status) {
+                // uncheck "protected" rows
+                var cbs = $j("tr.jqgrow > td > input.cbox:disabled", grid[0]);
+                cbs.removeAttr("checked");
+                cbs.parent().parent().toggleClass("ui-state-highlight", false);
+
+                //modify the selarrrow parameter
+                grid[0].p.selarrrow = grid.find("tr.jqgrow:has(td > input.cbox:checked)")
+                    .map(function() { return this.id; }) // convert to set of ids
+                    .get(); // convert to instance of Array
+                enableNewRefund(grid[0].p.selarrrow.length);
+            }
+            else enableNewRefund(false);
+        }
+
+        function createdRefund(result, event) {
+            if (result && result.length > 0) {
+                openSubtabC360("/" + result + "/e", result, "Refund Request");
+            }
+        }
+
+        function createdSource(result, event) {
+            if (result && result.length > 0) {
+                openSubtabC360("/" + result + "/e", result, "Source Request");
+            }
+        }
+
+        function createdSoftCredit(result, event) {
+            if (result && result.length > 0) {
+                openSubtabC360("/" + result + "/e", result, "Soft Credit Request");
+            }
+        }
+
+        function openSubtabC360(pUrl, pTitle, pLabel) {
+            url = pUrl;
+            title = pTitle;
+            label = pLabel;
+            //First find the ID of the primary tab to put the new subtab in
+            sforce.console.getEnclosingPrimaryTabId(openSubtab);
+        }
+
+        var openSubtab = function openSubtab(result) {
+            //Now that we have the primary tab ID, we can open a new subtab in it
+            var primaryTabId = result.id;
+            sforce.console.openSubtab(primaryTabId , url, true,
+                title, null, null, label);
+        };
+        /*
+        function enableRefReq() {
+            var chk = $(".selectedCheck");
+            var btn = $("[id$=createRefReq]");
+            btn.attr("disabled", "disabled");
+            for(var i = 0; i < chk.length; i++) {
+                if (chk[i].checked) {
+                    btn.removeAttr("disabled");
+                    break;
+                }
+            }
+        }*/
+
+        sourceDialog = $j("#sourceCodeModal").dialog({
+            autoOpen: false,
+            height: 300,
+            width: 500,
+            modal: true
+        })
+
+        softCreditModal = $j("#softCreditModal").dialog({
+            autoOpen: false,
+            height: 300,
+            modal: true
+        })
+
+        getSoftCredDetail = function(transXref, consXref, name) {
+            softCreditModal.dialog( "option", "title", "Soft Credit Detail" );
+            softCreditModal.dialog( "open" );
+
+            var tranXrefSplit = transXref.split("|");
+            $j("#donId").html(consXref);
+            $j("#donName").html(name);
+
+            if (tranXrefSplit.length == 4) {
+                $j("#giftDate").html(tranXrefSplit[1]);
+                $j("#giftSeq").html(tranXrefSplit[2]);
+            }
+            else {
+                $j("#giftDate").html("");
+                $j("#giftSeq").html("");
+            }
+        }
+
+        getSourceDetail = function(source) {
+            sourceDialog.dialog( "option", "title", "Source - " + source);
+            sourceDialog.dialog( "open" );
+            $j("#srcLoading").show();
+            $j("#srcData").hide();
+            $j.ajax({
+                url: "{!SourceURL}/Sources('" + source + "')" +
+                "?$select=SourceId,DESCRIPTION,EventId,EVENT/DESCRIPTION,PROGRAM,CreditAccountId,CREDIT_ACCOUNT/DESCRIPTION,CAMPAIGN,ActivityId,ACTIVITY/DESCRIPTION,StationSupportId,STATION_SUPPORT/DESCRIPTION" +
+                "&$expand=EVENT,CREDIT_ACCOUNT,ACTIVITY,STATION_SUPPORT",
+                dataType: 'JSON',
+                success: function (result) {
+                    var data;
+                    if ((typeof result === 'object') && (('d' in result) && ('results' in result.d))) {
+                        data = result.d.results;
+                    } else {
+                        data = result.d || result;
+                    }
+                    var options = {};
+                    options.source = source;
+                    options.data = data;
+                    sourceGotten(options);
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(xhr.status + " - " + xhr.responseText + thrownError);
+                    var options = {};
+                    if (options.errorCallBack !== undefined && options.errorCallBack != null) {
+                        options.error = xhr;
+                        options.error.thrownError = thrownError;
+                        options.errorCallBack(options);
+                    }
+                }
+            });
+        }
+
+        sourceGotten = function(options) {
+            $j("#srcCode").html(options.data.SourceId);
+            $j("#srcDescr").html(options.data.DESCRIPTION);
+            $j("#srcEvent").html(options.data.EventId);
+            if (options.data.EVENT !== undefined && options.data.EVENT !== null) {
+                $j("#srcEventName").html(options.data.EVENT.DESCRIPTION);
+            }
+            else {
+                $j("#srcEventName").html("");
+            }
+            $j("#srcProgram").html(options.data.PROGRAM);
+            $j("#srcActivity").html(options.data.ActivityId);
+            if (options.data.ACTIVITY !== undefined && options.data.ACTIVITY !== null) {
+                $j("#srcActivityDescr").html(options.data.ACTIVITY.DESCRIPTION);
+            }
+            else {
+                $j("#srcActivityDescr").html("");
+            }
+            $j("#srcCampaign").html(options.data.CAMPAIGN);
+            $j("#srcCredit").html(options.data.CreditAccountId);
+
+            if (options.data.CREDIT_ACCOUNT !== undefined && options.data.CREDIT_ACCOUNT !== null) {
+                $j("#srcCreditDescr").html(options.data.CREDIT_ACCOUNT.DESCRIPTION);
+            }
+            else {
+                $j("#srcCreditDescr").html("");
+            }
+            $j("#srcAffiliation").html(options.data.StationSupportId);
+            if (options.data.STATION_SUPPORT !== undefined && options.data.STATION_SUPPORT !== null) {
+                $j("#srcAffiliationDescr").html(options.data.STATION_SUPPORT.DESCRIPTION);
+            }
+            else {
+                $j("#srcAffiliationDescr").html("");
+            }
+
+            // cant get campaign description from the source query so we'll go get it separately
+            if (options.data.CAMPAIGN !== undefined && options.data.CAMPAIGN !== null &&
+                options.data.ActivityId  !== undefined && options.data.ActivityId !== null) {
+                $j.ajax({
+                    url: "{!SourceURL}/Campaigns" +
+                    "?$filter=CampaignId eq '" + options.data.CAMPAIGN + "' and ActivityId eq '" + options.data.ActivityId + "'" +
+                    "&$select=CampaignId,DESCRIPTION",
+                    dataType: 'JSON',
+                    success: function (result) {
+                        var data;
+                        if ((typeof result === 'object') && (('d' in result) && ('results' in result.d))) {
+                            data = result.d.results;
+                        } else {
+                            data = result.d || result;
+                        }
+                        var options = {};
+                        //having to get the first value since this isn't a single get
+                        if(data.value !== undefined && data.value !== null && data.value.length > 0) {
+                            options.data = data.value[0];
+                        }
+                        campaignGotten(options);
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        campaignGotten();
+                        console.log(xhr.status + " - " + xhr.responseText + thrownError);
+                        var options = {};
+                        if (options.errorCallBack !== undefined && options.errorCallBack != null) {
+                            options.error = xhr;
+                            options.error.thrownError = thrownError;
+                            options.errorCallBack(options);
+                        }
+                    }
+                });
+            }
+            else {
+                campaignGotten();
+            }
+        }
+
+        campaignGotten = function(options) {
+            if (options !== undefined && options !== null) {
+                $j("#srcCampaignDescr").html(options.data.DESCRIPTION);
+            }
+            $j("#srcData").show();
+            $j("#srcLoading").hide();
+        }
+
+        function getMavroLink(sac, payMeth) {
+            var re = /[0-9]{8}\.(M|F|N)/;
+            if (re.test(sac)) {
+                var mavro = "{!mavro}";
+                return "<a target='_blank' href='" + mavro.replace("##WEBKEY##", sac) +
+                "'>[" + payMeth + "]</a>";
+            }
+            else return payMeth;
+        }
+    </script>
+</apex:page>

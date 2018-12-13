@@ -1,0 +1,117 @@
+<apex:page controller="C360ConstituentBasicEditController" showheader="false" sidebar="false" standardStylesheets="false">
+    <apex:stylesheet value="{!URLFOR($Resource.SupportJs, 'chosen.css')}" />
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'chosen.jquery.min.js')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <script>
+        $j = jQuery.noConflict();
+        $j(document).ready(function() {
+            $j(".chosen-select").chosen();
+        });
+
+        $j(function() {
+            $j(":text").addClass("ui-corner-all");
+            $j("button").button();
+            $j("button").css("float", "right");
+            $j("td").addClass("alsac-widget");
+            $j(".datepicker").datepicker();
+            <apex:outputPanel layout="none" rendered="{!NOT(Deceased)}">
+                $j(".deceased").click(function() {
+                    if ($j(this).is(":checked")) {
+                        $j("#deceasedNoMail").show();
+                    }
+                    else {
+                        $j("#deceasedNoMail").hide();
+                    }
+                });
+            </apex:outputPanel>
+        });
+    </script>
+    
+    <apex:pageMessages ></apex:pageMessages>
+    <apex:form >
+        <table id="edit-info">
+            <tr>
+                <td><label>Duplicates: </label></td>
+                <td>
+                    <apex:selectList value="{!consId}" size="1">
+                        <apex:selectOptions value="{!items}"/>
+                        <apex:actionSupport event="onchange" reRender="basicInfoI,basicInfoH" action="{!changeCons}"/>
+                    </apex:selectList></td>
+            </tr>
+            <apex:outputPanel layout="none" id="basicInfoI" rendered="{!isIndiv}">
+                <tr>
+                    <td><label>Title: </label></td>
+                    <td>
+                        <apex:selectList styleClass="chosen-select" value="{!titleCode}" multiselect="false" size="1">
+                            <apex:selectOption itemLabel="(none)" itemValue=""/>
+                            <apex:selectOption itemLabel="No Title" itemValue="NT"/>
+                            <apex:selectOptions value="{!titles}"/>
+                        </apex:selectList></td>
+                </tr>
+                <tr>
+                    <td><label>First Name: </label></td>
+                    <td><apex:inputText value="{!firstName}" /></td>
+                </tr>
+                <tr>
+                    <td><label>Middle Name: </label></td>
+                    <td><apex:inputText value="{!middleName}" /></td>
+                </tr>
+                <tr>
+                    <td><label>Last Name: </label></td>
+                    <td><apex:inputText value="{!lastName}" /></td>
+                </tr>
+                <tr>
+                    <td><label>Suffix: </label></td>
+                    <td>
+                        <apex:selectList styleClass="chosen-select" value="{!suffixCode}" style="width: 100px;" multiselect="false" size="1">
+                            <apex:selectOption itemLabel="(none)" itemValue=""/>
+                            <apex:selectOptions value="{!suffixes}"/>
+                        </apex:selectList></td>
+                </tr>
+                <tr>
+                    <td><label>Preferred: </label></td>
+                    <td><apex:inputCheckbox value="{!preferred}"/></td>
+                </tr>
+                <tr>
+                    <td><label>Birth Date: </label></td>
+                    <td><apex:inputText value="{!BirthDate}" /></td>
+                </tr>
+                <tr>
+                    <td><label>Deceased: </label></td>
+                    <td><apex:inputCheckbox value="{!Deceased}" styleClass="deceased"/></td>
+                </tr>
+                <tr id="deceasedNoMail" style="display: none;">
+                    <td><label>Deceased No Mail: </label></td>
+                    <td><apex:inputCheckbox value="{!NoMail}"/></td>
+                </tr>
+                <tr>
+                    <td><label>Deceased Date: </label></td>
+                    <td><apex:inputText styleClass="datepicker" value="{!DeceasedDate}" /></td>
+                </tr>
+            </apex:outputPanel>
+            <apex:outputPanel layout="none" id="basicInfoH" rendered="{!!isIndiv}">
+                <tr>
+                    <td><label>Name: </label></td>
+                    <td><apex:inputText value="{!name}" /></td>
+                </tr>
+            </apex:outputPanel>
+            <tr>
+                <td><label>Status: </label></td>
+                <td>
+                    <apex:selectList styleClass="chosen-select" value="{!ConStatus}" multiselect="false" size="1">
+                        <apex:selectOption itemLabel="" itemValue=""/>
+                        <apex:selectOptions value="{!statusTypes}"/>
+                    </apex:selectList></td>
+            </tr>
+        </table>
+        <button type="button" onclick="cancelFunc();">Cancel</button>
+        <button type="button" onclick="saveFunc();">Save</button>
+        <apex:actionFunction action="{!cancel}" name="cancelFunc"/>
+        <apex:actionFunction action="{!save}" name="saveFunc" />
+    </apex:form>
+</apex:page>

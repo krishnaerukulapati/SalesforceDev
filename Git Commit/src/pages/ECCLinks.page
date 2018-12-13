@@ -1,0 +1,133 @@
+<apex:page standardController="case">
+    <apex:includeScript value="/support/console/31.0/integration.js" />
+    <apex:includeScript value="{!URLFOR($Resource.ECCConsole)}" />
+    <style>
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+            overflow-y: auto;
+            font-size: .9em;
+        }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+            background-color: transparent;
+            -webkit-text-decoration-skip: objects;
+        }
+
+
+
+        ul {
+            padding-left: 0;
+        }
+
+        li{
+            padding: 2px;
+        }
+
+        hr{
+            width:90%; 
+            float:left;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+            border: 0;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+    </style>
+    <div class='group-header' style="margin-top: 10px;"><h5>External Links</h5><hr/></div>
+
+    <ul>
+        <li>
+            <a href="https://intranet-q1.alsac.stjude.org/InferendaLookup/#loaded" target="_blank">ALSAC People Finder</a>
+        </li>
+        <li>
+            <a href="https://services.qa.stjude.org/accredit/ccDonate" target="_blank">CCDonate</a>
+        </li>
+        <li>
+            <a href="https://ebctest.cybersource.com/ebctest/login/Login.do" target="_blank">Cybersource</a>
+        </li>
+        <li>
+            <a href="https://edcq1s1.alsac.stjude.org/cgi-bin/sj/login.pl" target="_blank">EDC</a>
+        </li>
+         <li>
+            <a href="https://shop.qa.stjude.org/GiftCatalog/manager/login.jsp" target="_blank">ElasticPath</a>
+        </li>
+          <li>
+            <a href="https://www.qa.stjude.org/get-involved.html" target="_blank">Fundraising Idea submissions</a>
+        </li> 
+        <li>
+            <a href="http://stj2dev.convio.net/site/PageServer?pagename=events_eventsearch" target="_blank">Fundraising Site - Special Events</a>
+        </li>
+
+        <li>
+            <a href="https://staging-na01-alsac.demandware.net/on/demandware.store/Sites-Site/default/ViewApplication-Logout?csrf_token=WfYL8Gj0072JTZOkpFLCzve2QPh4SqhHZ35qqArUH1T8gQF00DKTC87ffnAZ6zyfxfRLY1mY_ZYbfSzaUeMarM1pgQJN5pBJfr4fyXsYKhvf_ar3Ydm37_C7RnQ2-C5V3RxG4pUnarc3F8SXQ7inkPqLwu3XLeKYT5s-LYe1ESKPX_niCWs" target="_blank">St. Jude Gift Shop</a>
+        </li>
+        <li>
+            <a href="https://eventapps.qa.stjude.org/ora/" target="_blank">ORA - Online Registration</a>
+        </li>
+  
+        <li>
+            <a href="https://waystohelp.qa.stjude.org/sjPIHPledgePay/admin/signin" target="_blank">PIH Pledge Site Admin</a>
+        </li>
+      
+        <li>
+            <a href="https://evtappq1s1/staffreg/login" target="_blank">Staff Registration</a>
+        </li>
+        <li>
+            <a href="https://accq1s1.alsac.local/accredit/PledgeMaintenance/Tributes/OrderIDSearch" target="_blank">VIP Fulfillment Order Search</a>
+        </li>
+    </ul>
+    <div class='group-header'><h5>Reports</h5><hr /></div>
+    <ul>
+        <li>
+            <a href="javascript:openPrimaryTab('{!URLFOR($Page.DialerStatusReport)}}')">Dialer Status</a>
+        </li>
+        <li>
+            <a href="http://odsqa/Reports/Pages/Report.aspx?ItemPath=%2fReports%2fODS%2fECC+Reports%2fGift+History" target="_blank">Gift History</a>
+        </li>
+    </ul>
+    <div class='group-header'><h5>Resources</h5><hr /></div>
+    <ul>
+        <li>
+            <a href="http://www.fedex.com/us/" target="_blank">FedEx</a>
+        </li>
+        <li>
+            <a href="https://www.qa.stjude.org/get-involved.html" target="_blank">Math-A-Thon Program Site</a>
+        </li>
+        <li>
+            <a href="https://www.qa.stjude.org/get-involved.html" target="_blank">Trike-A-Thon Program Site</a>
+        </li>
+        <li>
+            <a href="https://tools.usps.com/go/ZipLookupAction!input.action" target="_blank">USPS Lookup</a>
+        </li>
+    </ul>
+    <div class='group-header'><h5>SharePoint</h5><hr /></div>
+    <ul>
+
+        <li>
+            <a href="https://amostest.stjude.org/sites/donorcare/DonorServices/default.aspx" target="_blank">Donor Services</a>
+        </li>
+
+    </ul>
+    <div class='group-header'><h5>Tax Receipts</h5><hr /></div>
+    <ul>
+        <li>
+            <a href="http://odsqa/Reports/Pages/Report.aspx?ItemPath=%2fReports%2fODS%2fECC+Reports%2f2015+Tax+Receipt" target="_blank">2015 Tax Receipts</a>
+        </li>
+        <li>
+            <a href="http://odsqa/Reports/Pages/Report.aspx?ItemPath=%2fReports%2fODS%2fECC+Reports%2f2016+Tax+Receipt+BI" target="_blank">2016 Tax Receipts</a>
+        </li>
+        <li>
+            <a href="https://viz.qa.stjude.org/#/signin?redirect=%2Fviews%2FTaxDetailReview%2FTaxReviewDashboard&error=42&disableAutoSignin=true" target="_blank">Tax Receipt Tableau</a>
+        </li>
+    </ul>
+    <div class='group-header'><h5>Tributes</h5><hr /></div>
+    <ul style="margin-bottom: 40px;">
+        <li>
+            <a href="https://accq1s1.alsac.local/TributeManagement/TributeeMgt/TributeSearch" target="_blank">Memorial ID Management</a>
+        </li>
+
+
+    </ul>
+</apex:page>

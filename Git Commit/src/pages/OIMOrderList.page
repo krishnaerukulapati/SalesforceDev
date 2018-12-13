@@ -1,0 +1,94 @@
+<apex:page controller="OIMOrderListController" showheader="false" sidebar="false" standardStylesheets="false">
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <script>
+        var $j = $.noConflict();
+
+        function applyUI() {
+            $j(".button").button();
+            $j(".button").css("float", "right");
+            $j(".button").css("clear", "both");
+            $j(".details tr:not(:first)").hover(function() {
+                $j(this).addClass("ui-state-hover");
+            },function() {
+                $j(this).removeClass("ui-state-hover");
+            }
+            );
+        }
+
+        $j(function() {
+            applyUI();
+        });
+    </script>
+    <apex:form >
+        <div class="form-element">
+            <a href="{!URLFOR($Page.OIMOrderDetail)}?parm=val&eventId={!eventId}&id={!leadId}" class="button">Add Order</a>
+        </div>
+        <table width="100%" class="details">
+            <tr class="ui-widget-header">
+                <th>Details</th>
+                <th>Order Id</th>
+                <th>External Order Key</th>
+                <!-- <th>Tracking Number</th> -->
+                <th>Shipment Method</th>
+                <th>Date Ordered</th>
+                <th>Date To Ship</th>
+                <th>Date Submitted</th>
+                <th>Date Shipped</th>
+                <th>Ordered By</th>
+                <th>Status</th>
+                <th>Line Items</th>
+            </tr>
+            
+            <apex:outputPanel layout="none" rendered="{!NOT(orders.size > 0)}">
+                <tr><td colspan="11">No Results</td></tr>
+            </apex:outputPanel>
+            
+            <apex:outputPanel layout="none" rendered="{!orders.size > 0}">
+                <apex:repeat value="{!orders}" var="ord">
+                    <tr>
+                        <td>
+                            <apex:outputPanel layout="none" rendered="{!ord.StatusDisplay__c == 'Open'}">
+                                <a href="{!URLFOR($Page.OIMOrderDetail)}?parm=val&eventId={!eventId}&orderId={!ord.OrderId__c}&orderStatus={!ord.StatusDisplay__c}&id={!leadId}&editOrder=true">View/Edit</a>
+                            </apex:outputPanel>
+                            <apex:outputPanel layout="none" rendered="{!ord.StatusDisplay__c != 'Open'}">
+                                <a href="{!URLFOR($Page.OIMOrderDetail)}?parm=val&eventId={!eventId}&orderId={!ord.OrderId__c}&orderStatus={!ord.StatusDisplay__c}&id={!leadId}">View</a>
+                            </apex:outputPanel>
+                        </td>
+                        <td>{!ord.OrderId__c}</td>
+                        <td>{!ord.ExternalOrderKey__c}</td>
+                        <!-- <td>
+                        <apex:outputPanel rendered="{!CONTAINS(ord.TrackingNumber__c, '1Z')}" >
+                        <a href="https://wwwapps.ups.com/WebTracking/track?trackNums={!ord.TrackingNumber__c}&track.x=Track" target="_blank">{!ord.TrackingNumber__c}</a>
+                        </apex:outputPanel>
+                        <apex:outputPanel rendered="{!NOT(CONTAINS(ord.TrackingNumber__c, '1Z'))}" >
+                        <a href="https://www.fedex.com/apps/fedextrack/?tracknumbers={!ord.TrackingNumber__c}" target="_blank">{!ord.TrackingNumber__c}</a>
+                        </apex:outputPanel>
+                        </td> -->
+                        
+                        <td>{!ord.ShipmentMethodDisplay__c}</td>
+                        <td><apex:outputText value="{0, date, MM/dd/yyyy}">
+                            <apex:param value="{!ord.DateOrdered__c}"/>
+                        </apex:outputText></td>
+                        <td><apex:outputText value="{0, date, MM/dd/yyyy}">
+                            <apex:param value="{!ord.DateToShip__c}"/>
+                        </apex:outputText></td>
+                        <td><apex:outputText value="{0, date, MM/dd/yyyy}">
+                            <apex:param value="{!ord.DateSubmitted__c}"/>
+                        </apex:outputText></td>
+                        <td><apex:outputText value="{0, date, MM/dd/yyyy}">
+                            <apex:param value="{!ord.DateShipped__c}"/>
+                        </apex:outputText></td>
+                        <td>{!ord.createdBy__c}</td>
+                        <td>{!ord.StatusDisplay__c}</td>
+                        <td>{!ord.LineItemCount__c}</td>
+                    </tr>
+                </apex:repeat>
+            </apex:outputPanel>
+        </table>
+    </apex:form>
+</apex:page>

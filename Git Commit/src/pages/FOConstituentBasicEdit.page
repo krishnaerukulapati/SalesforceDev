@@ -1,0 +1,164 @@
+<apex:page controller="FOConstituentBasicEditController" showheader="false" sidebar="false" standardStylesheets="false">
+    <apex:stylesheet value="{!URLFOR($Resource.SupportJs, 'chosen.css')}" />
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'chosen.jquery.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.Bootstrap, '/bootstrap-3.0.0/dist/js/bootstrap.min.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.Bootstrap, '/bootstrap-3.0.0/dist/css/bootstrap.min.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.alsacFO, 'alsacFO.css')}" />
+
+
+    <script>
+        $j = jQuery.noConflict();
+        $j(document).ready(function() {
+            $j(".chosen-select").chosen();
+        });
+
+        $j(function() {
+            $j(":text").addClass("ui-corner-all");
+            $j("button").button();
+            $j("button").css("float", "right");
+            $j("td").addClass("alsac-widget");
+            $j(".datepicker").datepicker();
+            <apex:outputPanel layout="none" rendered="{!NOT(Deceased)}">
+                $j(".deceased").click(function() {
+                    if ($j(this).is(":checked")) {
+                        $j("#deceasedNoMail").show();
+                    }
+                    else {
+                        $j("#deceasedNoMail").hide();
+                    }
+                });
+            </apex:outputPanel>
+        });
+    </script>
+    
+    <apex:pageMessages ></apex:pageMessages>
+    <apex:form >
+        <div id="edit-info" class="container-fluid container-indent">
+            <div class="row">
+                <div class="col-md-5 col-sm-10 col-xs-12 ">
+                    <h4>Basic Info Edit</h4>
+                    <hr />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-5 col-sm-10 col-xs-12 form-padding">
+                    <div class="col-xs-12 col-sm-6">
+                        <label>Status: </label>
+                        <apex:selectList styleClass="chosen-select form-control" value="{!ConStatus}" multiselect="false" size="1">
+                            <apex:selectOption itemLabel="" itemValue=""/>
+                            <apex:selectOptions value="{!statusTypes}"/>
+                        </apex:selectList>
+                    </div>
+                    <div class="col-xs-12 col-sm-6">
+                        <label>Duplicates: </label>
+                        <apex:selectList styleClass="form-control" value="{!consId}" size="1">
+                            <apex:selectOptions value="{!items}"/>
+                            <apex:actionSupport event="onchange" reRender="basicInfoI,basicInfoH" action="{!changeCons}"/>
+                        </apex:selectList>
+                    </div>
+                </div>
+            </div>
+            <apex:outputPanel layout="none" id="basicInfoI" rendered="{!isIndiv}">
+                <div class="row">
+                    <div class="col-md-5 col-sm-10 col-xs-12 form-padding">
+                        <div class="col-xs-12 col-sm-6">
+                            <label>Title: </label>
+                            <apex:selectList styleClass="chosen-select form-control" value="{!titleCode}" multiselect="false" size="1">
+                                <apex:selectOption itemLabel="(none)" itemValue=""/>
+                                <apex:selectOption itemLabel="No Title" itemValue="NT"/>
+                                <apex:selectOptions value="{!titles}"/>
+                            </apex:selectList>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-5 col-sm-10 col-xs-12 form-padding">
+                        <div class="col-xs-12 col-sm-6">
+                            <label>First Name: </label>
+                            <apex:inputText value="{!firstName}" styleClass="form-control" />
+                        </div>
+                        <div class="col-xs-12 col-sm-6">
+                            <label>Middle Name: </label>
+                            <apex:inputText value="{!middleName}" styleClass="form-control" />
+                        </div>                        
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-5 col-sm-10 col-xs-12 form-padding">
+                        <div class="col-xs-12 col-sm-6">
+                            <label>Last Name: </label>
+                            <apex:inputText value="{!lastName}" styleClass="form-control" />
+                        </div>
+                        <div class="col-xs-12 col-sm-6">
+                            <label>Suffix: </label>
+                            <apex:selectList styleClass="chosen-select form-control" value="{!suffixCode}" style="width: 100px;" multiselect="false" size="1">
+                                <apex:selectOption itemLabel="(none)" itemValue=""/>
+                                <apex:selectOptions value="{!suffixes}"/>
+                            </apex:selectList>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-5 col-sm-10 col-xs-12 form-padding">
+                        <div class="col-xs-12 col-sm-6 checkbox">
+                            <label>Preferred<apex:inputCheckbox value="{!preferred}" /></label>
+                        </div>
+                        <div class="col-xs-12 col-sm-3 checkbox">
+                            <label>Deceased<apex:inputCheckbox value="{!Deceased}" styleClass="deceased"/></label>
+                        </div>
+                        <div class="col-xs-12 col-sm-3 checkbox">
+                            <label>Deceased No Mail<apex:inputCheckbox value="{!NoMail}" /></label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-5 col-sm-10 col-xs-12 form-padding">
+                        <div class="col-xs-12 col-sm-6">
+                            <label>Birth Date: </label>
+                            <apex:inputText styleClass="datepicker form-control" value="{!BirthDate}" />
+                        </div>
+                        <div class="col-xs-12 col-sm-6">
+                            <label>Deceased Date: </label>
+                            <apex:inputText styleClass="datepicker form-control" value="{!DeceasedDate}" />
+                        </div>
+                    </div>
+                </div>
+
+                
+            </apex:outputPanel>
+
+            <apex:outputPanel layout="none" id="basicInfoH" rendered="{!!isIndiv}">
+                <div class="row">
+                    <div class="col-md-5 col-sm-10 col-xs-12 form-padding">
+                        <div class="col-xs-12 col-sm-6">
+                            <label>Name: </label>
+                            <apex:inputText value="{!name}" styleClass="form-control"/>
+                        </div>
+                    </div>
+                </div>
+            </apex:outputPanel>
+
+            <div class="row">
+                <div class="col-md-5 col-sm-10 col-xs-12 form-padding form-submit-padding">
+                    <div class="col-sm-3 col-sm-offset-6">
+                        <button type="button" onclick="cancelFunc();" class="btn btn-default btn-sm btn-block">Cancel</button>
+                    </div>
+                    <div class="col-sm-3">
+                        <button type="button" onclick="saveFunc();" class="btn btn-primary btn-sm btn-block">Save</button>
+                    </div>
+                    <apex:actionFunction action="{!cancel}" name="cancelFunc"/>
+                    <apex:actionFunction action="{!save}" name="saveFunc" />
+                </div>
+            </div>
+        </div>
+
+
+    </apex:form>
+</apex:page>

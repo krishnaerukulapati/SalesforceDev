@@ -1,0 +1,185 @@
+<apex:page controller="FOEventInfoController" standardStylesheets="false" action="{!init}">
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.alsacFO, 'alsacFO.css')}" />
+     <style>
+        input, textarea{
+            font-weight:normal;
+        }
+    </style>
+    <script>
+        var $j = $.noConflict();
+        
+        $j(function() {
+            $j( ".accordion" ).accordion({
+                collapsible: false,
+                heightStyle: "content"
+            });
+           
+        });
+
+    </script>
+
+    <apex:pageMessages id="messages"></apex:pageMessages>
+    <apex:form > 
+        <div>
+            <div class="accordion" id="edit-info">
+                <h3>Event Information</h3>
+                <div>
+                    <table width="100%">
+                       <tr>
+                           <td colspan="2">
+                               <h2 >Event Constituents</h2><br/>
+                               <hr/>
+                           </td>
+                       </tr>
+                        <tr>
+                            <td class="tdName" style="width: 10%"><label>Organizer: </label></td>
+                            <td class="tdName clear" style="width: 20%">
+                             <apex:outputPanel style="color:black;"  rendered="{!organizer.first_name__c!= NULL  || organizer.last_name__c!=NULL}">
+                                 {!organizer.first_name__c} {!organizer.last_name__c}
+                             </apex:outputPanel>
+                             <apex:outputPanel style="color:black;"  rendered="{!organizer.first_name__c== NULL &&  Organizer.last_name__c==NULL}">
+                               {!organizer.name__c}
+                             </apex:outputPanel>
+                               
+                            </td>
+                            
+                        </tr>
+                        
+                        <tr>
+                            <td style="width: 5%"><label>Coordinator: </label></td>
+                            <td class="tdName clear" style="width: 20%">
+                                <apex:outputPanel style="color:black;"  rendered="{!Coordinator.first_name__c!= NULL || Coordinator.last_name__c!=NULL}">{!Coordinator.first_name__c} {!Coordinator.last_name__c}</apex:outputPanel>
+                                 <apex:outputPanel style="color:black;"  rendered="{!Coordinator.First_Name__c== NULL &&  Coordinator.Last_Name__c==NULL }">{!Coordinator.name__c}</apex:outputPanel>
+                            </td>
+                            
+                            
+                        </tr>
+                        <!--<tr>
+                            <td class="tdName" style="width: 10%"><label>Phone: </label></td>
+                            <td class="tdName clear" style="width: 20%">
+                             {!Coordinator.phone_number__c}
+                            </td>
+                           
+                        </tr>
+                        
+                        <tr>
+                            <td style="width: 5%"><label>Email: </label></td>
+                            <td class="tdName clear" >
+                                {! Coordinator.email_address__c}
+                            </td>
+                            
+                        </tr>-->
+                        
+                        <tr>
+                            <td colspan="4"><br/></td>
+                            
+                        </tr>
+                       
+                       <tr>
+                           <td colspan="2">
+                               <h2 >Event Information</h2><br/>
+                               <hr/>
+                           </td>
+                           <td colspan="2">
+                               <br/>
+                               <!--<h2 > Event Dates</h2><br/> -->
+                               <hr/>
+                           </td>
+                       </tr>
+                        <tr>
+                            <td class="tdName" style="width: 10%"><label>Event Name: </label></td>
+                            <td class="tdName clear" style="width: 20%">{!event.EventName__c}</td>
+                            <td style="width: 5%"><label>Event Start Date: </label></td>
+                            <td class="tdName clear" style="width: 20%"><apex:outputfield value="{!event.StartDate__c}"/>
+                            
+                                <apex:outputPanel style="margin-left:5%;">
+                                    <label>Fiscal Year: </label> 
+                                    {!event.FiscalYear__c}
+                                </apex:outputPanel>
+                            </td>
+                            
+                            
+                            
+                        </tr>
+                
+                        <tr><td class="tdName" style="width: 10%"><label>Event Type: </label></td>
+                            <td class="tdName clear" style="width: 20%">{!event.EventTypeID__r.EventTypeName__c}</td>
+                            <td class="tdName" style="width: 10%"><label>Event End Date: </label></td>
+                            <td class="tdName clear" style="width: 20%"><apex:outputfield value="{!event.EndDate__c}"/></td>
+                        </tr>
+                        <tr><td class="tdName" style="width: 10%"><label>Event Description: </label></td>
+                            <td class="tdName clear" style="width: 20%">{!event.EventDescription__c}</td>
+                            <td class="tdName" style="width: 10%"><label>Phone: </label></td>
+                            <td class="tdName clear" style="width: 20%">{!event.ContactPhone__c}</td>
+                        </tr>
+                        
+                        <tr>
+                            <td style="width: 5%"><label>Email: </label></td>
+                            <td class="tdName clear" >
+                                {!event.ContactEmail__c}
+                            </td>
+                            
+                        </tr>
+                        
+                        <tr>
+                            <td colspan="4"><br/></td>
+                            
+                        </tr>
+                        
+                        
+                        <tr>
+                           <td colspan="2">
+                               <h2 >Participants: </h2>
+                               <hr/>
+                           </td>
+                           <td colspan="2">
+                               <h2 >Revenue Information: </h2>
+                               <hr/>
+                           </td>
+                        </tr>
+                        <tr><td class="tdName" style="width: 10%"><label>Expected Participants: </label></td>
+                            <td class="tdName clear" style="width: 20%">{!event.ExpectedParticipants__c}</td>
+                            <td class="tdName" style="width: 10%"><label>Total Revenue: </label></td>
+                            <td class="tdName clear" style="width: 20%"><apex:outputText value="{!TotalRevenue}"/></td>
+                        </tr>
+                        <tr><td class="tdName" style="width: 10%"><label>Actual Participants: </label></td>
+                            <td class="tdName clear" style="width: 20%">{!event.ActualParticipants__c}</td>
+                        </tr>
+                        <tr><td class="tdName" style="width: 10%"><label>Material Language: </label></td>
+                            <td class="tdName clear" style="width: 20%"><apex:outputField value="{!eventAttributeView.EventAttributeValue__c}"/></td>
+
+                        </tr>
+                        <tr>
+                            <td colspan="4"><br/></td>
+                            
+                        </tr>
+                       <tr>
+                           <td colspan="2">
+                              
+                               <hr/>
+                           </td>
+                           <td colspan="2">
+                             
+                               <hr/>
+                           </td>
+                         </tr>
+                       <tr>
+                            <td style="width: 5%"><label>Event Comment: </label></td>
+                            <td class="tdName clear" style="width: 20%">{!EventNotes.Notes__c}</td>
+                            
+                        </tr>
+                  
+                    </table>
+                   
+                </div>
+            </div>
+         </div>
+    </apex:form> 
+   
+</apex:page>

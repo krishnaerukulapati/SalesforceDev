@@ -1,0 +1,52 @@
+<apex:page controller="C360ConstituentInterestEditController" showheader="false" sidebar="false" standardStylesheets="false">
+    <apex:stylesheet value="{!URLFOR($Resource.SupportJs, 'chosen.css')}" />
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'jquery.mask.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'chosen.jquery.min.js')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <script>
+        $j = jQuery.noConflict();
+        $j(document).ready(function() {
+            $j(".datepicker").datepicker();
+            $j(".chosen-select").chosen();
+        });
+
+        $j(function() {
+            $j(":text").addClass("ui-corner-all");
+            $j("button").button();
+            $j("button").css("float", "right");
+            $j("td").addClass("alsac-widget");
+        });
+
+    </script>
+    
+    <apex:pageMessages ></apex:pageMessages>
+    <apex:form >
+        <table id="edit-info">
+            <tr>
+                <td><label>Interest: </label></td>
+                <td>
+                    <apex:selectList styleClass="chosen-select" value="{!interest}" multiselect="false" size="1">
+                        <apex:selectOption itemLabel="" itemValue=""/>
+                        <apex:selectOptions value="{!interestTypes}"/>
+                    </apex:selectList></td>
+            </tr>
+            <tr>
+                <td><label>Status: </label></td>
+                <td>
+                    <apex:selectList styleClass="chosen-select" value="{!Status}" multiselect="false" size="1">
+                        <apex:selectOption itemLabel="" itemValue=""/>
+                        <apex:selectOptions value="{!statusTypes}"/>
+                    </apex:selectList></td>
+            </tr>
+        </table>
+        <button type="button" onclick="cancelFunc();">Cancel</button>
+        <button type="button" onclick="saveFunc();">Save</button>
+        <apex:actionFunction action="{!cancel}" name="cancelFunc"/>
+        <apex:actionFunction action="{!save}" name="saveFunc" />
+    </apex:form>
+</apex:page>

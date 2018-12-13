@@ -1,0 +1,295 @@
+<apex:page standardController="case" extensions="C360HighlightsController" showheader="false" sidebar="false" standardStylesheets="false" action="{!reload}">
+    <apex:includeScript value="/support/console/31.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <link class="user" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <style> body { margin: 0px; }</style>
+    <apex:outputPanel rendered="{!isVIP}">
+        <style> #c360highlight tbody {background: #6699FF;}</style>
+        
+    </apex:outputPanel>
+    <script>
+        $j = jQuery.noConflict();
+        if (!window.console) console = {};
+        var bbecUrl = '{!bbecURL}';
+    </script>
+    <apex:outputPanel rendered="{!!isCaseSet}">
+        <apex:form >
+            <div class="form-message">
+            <h3>Please click save and select a constituent.</h3>
+            </div>
+        </apex:form>
+    </apex:outputPanel>
+
+    <apex:outputPanel rendered="{!AND(isCaseSet, c360Error)}">
+
+        <apex:outputPanel rendered="{!odataLoad}">
+            <apex:form >
+                <input type="hidden" id="hdnBbecId" value="{!currCase.ConstituentID__c}"></input>
+                <table id="c360highlight" width="100%" class="ui-state-default">
+                    <thead>
+                        <tr class="ui-widget-header">
+                            <th>Contact - {!ConsType}</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                     <tbody>
+                        <tr>
+                            <td class="name">
+                                <div class="name">{!LongName}</div>
+                                <div class="address">{!Address}</div>
+                                <div class="phone">{!Phone}</div>
+                                <div class="email">{!Email}</div>                        
+                            </td>
+
+                            <td class="amount">
+                                <table>
+                                    <tr><td>
+                                    <a href="javascript:openSubtabC360('/apex/C360NewDonationStart?id={!caseId}', 'New Donation', 'viewNewDonation')">New Donation</a>
+                                    </td></tr>
+                                    <tr><td>
+                                        <apex:commandLink onclick="return confirm('Are you sure?')" action="{!changeCons}" value="Change Constituent"/>
+                                    </td></tr>
+                                    <tr><td>
+                                    <A HREF="#" onClick="OpenBBEC();return false">View Donor Mgmnt.</A> 
+                                    </td></tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </apex:form>
+        </apex:outputPanel>   
+
+        <apex:outputPanel rendered="{!NOT(odataLoad)}">
+            <apex:form >
+                <div class="form-message">
+                <h3>Error loading constituent.  Please try again later...</h3>
+                </div>
+            </apex:form>
+        </apex:outputPanel>   
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!AND(isCaseSet, !isUUIDSet, !c360Error)}">
+        <apex:form >
+            <div class="form-message">
+            <h3>No constituent selected.</h3><br/>
+            <button onclick="openSubtabC360('{!URLFOR($Page.C360Search)}&cid={!caseId}', 'Select Constituent', 'assignConstituent'); return false;">Select Constituent</button> 
+
+            <script>
+                $j = jQuery.noConflict();
+                $j(document).ready(function() {
+                    sforce.console.getSubtabIds(null, closeSubTabs);
+                });
+
+                function closeSubTabs(result) {
+                    for(var i = 1; i < result.ids.length; i++) {
+                        sforce.console.closeTab(result.ids[i]);
+                    }
+                    var isRCase = {!isResearchCase};
+                    if (isRCase) {
+                        openPrimaryTab('{!URLFOR($Page.C360Search)}&cid={!caseId}', 'Search Again', 'searchAgain');
+                    }
+                    // else {
+                    //     openSubtabC360('{!URLFOR($Page.C360Search)}&cid={!caseId}', 'Select Constituent', 'assignConstituent');
+                    // }
+                }
+            </script>
+            <apex:actionFunction name="reLoadConst" action="{!reLoad}" />
+            </div>
+        </apex:form>
+    </apex:outputPanel>
+    <apex:outputPanel layout="none" rendered="{!AND(isCaseSet, isUUIDSet, !c360Error)}">
+    <apex:form >
+        <apex:outputPanel layout="none" rendered="{!isResearchCase}">
+            <script>
+                $j = jQuery.noConflict();
+                /*var rel = {!reload};
+                $j(document).ready(function() {
+                    if (!rel) {
+                        openSubtabC360('{!URLFOR($Page.EventHistorySummary)}&ID={!caseID}&type=Case_Constituent', 'Event History', 'Event History');
+                    }
+                });*/
+            </script>
+        </apex:outputPanel>
+        <table id="c360highlight" width="100%" class="ui-state-default">
+            <thead>
+                <tr class="ui-widget-header">
+                    <!-- attempting to conditionally display research options -->
+                    <th>Contact: <a href="javascript:openSubtabC360('/apex/C360RelationshipDetail?id={!caseId}', 'Relationships', 'viewRelationships')">{!ConsType}</a></th>
+                    <th>Transactions</th>
+                    <th>Account</th>
+                    <th><a href="javascript:openSubtabC360('/apex/C360PropertyDetail?id={!caseId}', 'Properties', 'viewProperties')">Properties</a></th>
+                    <th><a href="javascript:openSubtabC360('/apex/C360PreferenceDetail?id={!caseId}', 'Preferences', 'viewPreferences')">Preferences</a></th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="name">
+                        <div class="name"><a href="javascript:openSubtabC360('/apex/C360ConstituentBasicEdit?id={!caseId}', 'Basic', 'viewBasic')"><apex:outputText value="{!LongName}"/></a></div>
+                        <div class="address"><a href="javascript:openSubtabC360('/apex/C360AddressDetail?id={!caseId}', 'Address', 'viewAddress')"><apex:outputText value="{!Address}"/></a></div>
+                        <div class="phone"><a href="javascript:openSubtabC360('/apex/C360PhoneDetail?id={!caseId}', 'Phone', 'viewPhone')"><apex:outputText value="{!Phone}"/></a></div>
+                        <div class="email"><a href="javascript:openSubtabC360('/apex/C360EmailDetail?id={!caseId}', 'Email', 'viewEmail')"><apex:outputText value="{!Email}"/></a></div>
+
+                        <!-- attempting to conditionally display research options -->
+                        <apex:outputPanel layout="block" rendered="{!isResearchCase}">
+                        <a href="javascript:openSubtabC360('/apex/EventHistorySummary?ID={!caseID}&type=Case_Constituent', 'Event History', 'Event History')">View Event History</a>
+                        </apex:outputPanel>
+
+                        <a href="javascript:openSubtabC360('/apex/CaseHistory?id={!caseId}', 'Case History', 'caseHistory')">Cases</a> <a href="javascript:openSubtabC360('/apex/LeadHistory?id={!caseId}', 'Lead History', 'leadHistory')">Leads</a> <a href="javascript:openSubtabC360('/apex/OppHistory?id={!caseId}', 'Opportunity History', 'oppHistory')">Opportunities</a>              
+                    </td>
+                    <td class="amount">
+                        <table><tr><td>
+                                <a href="javascript:openSubtabC360('/apex/C360TransactionDetail?id={!caseId}', 'Transactions', 'viewTransactions')"><apex:outputPanel layout="none"  rendered="{!hasRevNotes}"><span class="glyphicon glyphicon-info-sign" style="color: #FFC300"></span></apex:outputPanel>History: $<apex:outputText value="{0, number,#,##0.00}"><apex:param value="{!fp.LifeTimePaidAmount}"/></apex:outputText></a>
+                            </td>
+                            
+                            </tr>
+                        </table>
+                    </td>
+                    <td class="accountid">
+                        <apex:outputPanel layout="none" rendered="{!NOT(ISBLANK(Staff))}">
+                            <span style="font-weight: bold;">Staff</span>: {!Staff}
+                        </apex:outputPanel>
+                        <apex:dataTable value="{!Xrefs}" var="xref">
+                            <apex:column value="{!xref.XRefKey}"/>
+                        </apex:dataTable>
+                        <apex:outputPanel layout="none" rendered="{!AND(Preferred, UPPER(ConsType) = 'INDIVIDUAL')}">
+                            <span>Preferred</span>/
+                        </apex:outputPanel> 
+                        <apex:outputPanel layout="none" rendered="{!AND(NOT(Preferred), UPPER(ConsType) = 'INDIVIDUAL')}">
+                            <span>Not Preferred</span>/
+                        </apex:outputPanel> 
+                        <span>{!ConStatus}</span>
+                    </td>
+                    <td class="constituencies">
+                        <apex:dataTable value="{!Constituencies}" var="cons">
+                            <apex:column >{!cons}</apex:column>
+                        </apex:dataTable>
+                        <apex:outputPanel rendered="{!hasWarnings}">
+                            <span title="{!warnings}">WARNING</span>
+                        </apex:outputPanel>
+                    </td>
+                    <td class="preferences">
+                        <apex:dataTable value="{!prefs}" var="pref">
+                            <apex:column rendered="{!pref.Status="Active" && NOW() >= NULLVALUE(pref.StartDate, NOW()) && NOW() <= NULLVALUE(pref.EndDate, NOW())}"><span>{!pref.Preference}: </span>{!pref.PreferenceValue}</apex:column>
+                        </apex:dataTable>
+                    </td>
+                    <td class="amount">
+                        <table>
+                            <tr><td>
+                            <apex:outputPanel layout="none" rendered="{!NOT(ISBLANK(taAccount))}">
+                            <a href="javascript:openSubtabC360('{!pledgeMaintURL}?consId={!consId}&userid={!$User.Username}&technique={!currCase.Technique_Method__c}&AgentId={!AgentId}&CallerId={!currCase.CallObject__c}&program=ecc&token={!nonce}&returnURL={!returnURL}&showHeader=false&relId={!caseId}&flowReturn={!$Page.ECCCloseSubTab}', 'Pledges', 'viewPledge')">Manage Donations</a></apex:outputPanel><apex:outputPanel layout="none" rendered="{!ISBLANK(taAccount)}">Manage Donations Unavailable</apex:outputPanel>
+                            </td></tr>
+                            <apex:outputPanel layout="none" rendered="{!!isResearchCase}">
+                            <tr><td>
+                            <a href="javascript:openSubtabC360('{!pledgeMaintURL}?userid={!$User.Username}&technique={!currCase.Technique_Method__c}&program=ecc&token={!nonce}&returnURL={!returnURL}&showHeader=false&relId={!caseId}&flowReturn={!$Page.ECCCloseSubTab}&redirect=/PledgeMaintenance/Tributes/OrderSearch/{!consId}', 'Tributes', 'searchTributes')">Search Tribute Orders</a>
+                            </td></tr>
+                            </apex:outputPanel>
+
+                            <tr><td>
+                                <apex:outputPanel layout="none" rendered="{!NOT(ISBLANK(taAccount))}">
+                                <a href="javascript:openSubtabC360('/apex/C360Interactions?id={!caseId}', 'Interactions', 'viewInterests')">Interactions</a></apex:outputPanel>
+                                <apex:outputPanel layout="none" rendered="{!ISBLANK(taAccount)}">Interactions Unavailable</apex:outputPanel>
+                            </td></tr>
+
+                            <apex:outputPanel layout="none" rendered="{!!isResearchCase}">
+                            <tr><td>
+                                <apex:commandLink onclick="return confirm('Are you sure?')" action="{!changeCons}" value="Change Constituent"/>
+                            </td></tr>
+                            </apex:outputPanel>
+
+                             <tr><td>
+                            <A HREF="#" onClick="OpenBBEC();return false">View Donor Mgmnt.</A> 
+                            </td></tr>
+
+                            <apex:outputPanel layout="none" rendered="{!!isResearchCase}">
+                            <tr><td>
+                            <apex:outputPanel layout="none" rendered="{!NOT(ISBLANK(taAccount))}">
+                            <a href="javascript:openSubtabC360('{!FulfillURL}');">Fulfillment</a></apex:outputPanel>
+                            <apex:outputPanel layout="none" rendered="{!ISBLANK(taAccount)}">Fulfillment Unavailable</apex:outputPanel>
+                            </td></tr>
+                            </apex:outputPanel>
+
+                            <tr><td>
+                                <a href="javascript:openSubtabC360('/apex/C360InterestDetail?id={!caseId}', 'Interests', 'viewInterests')">Interests</a>
+                            </td></tr>
+
+                            <apex:outputPanel layout="none" rendered="{!!isResearchCase}">
+                            <tr><td>
+                                <a href="javascript:openSubtabC360('/apex/EventHistorySummary?ID={!caseID}&type=Case_Constituent', 'Event History', 'Event History')">View Event History</a>
+                            </td></tr>
+                            </apex:outputPanel>
+                            
+                            <tr><td>
+                                <a href="javascript:openSubtabC360('{!URLFOR($Page.EventSearch)}', 'Event Search', 'Event Search')">Event Search</a>
+                            </td></tr>
+
+                            <apex:outputPanel layout="none" rendered="{!isResearchCase}">
+                              <tr>
+                                <td>
+                                  <apex:commandLink action="{!changeCons}" value="Search Again"/><br/>
+                                </td>
+                              </tr>
+                            </apex:outputPanel>
+                            <apex:outputPanel layout="none" rendered="{!$Permission.MergeUI}">
+                                <tr>
+                                    <td>
+                                        <a href="#" onclick="openSubtabC360('{!mergeApplicationURL}?consId={!consId}&userid={!$User.Username}&token={!nonce}&returnURL={!returnURL}&showHeader=true&flowReturn={!$Page.ECCCloseSubTab}', 'Merge Constituent', 'mergeApplication')">Merge Constituent</a>
+                                    </td>
+                                </tr> 
+                            </apex:outputPanel>
+                            <tr>
+                                <td>
+                                    <A href="javascript:openSubtabC360('{!URLFOR($Page.C360Search)}&isRecruitmentCampaign=true&campAddReferral=&callid={!currCase.CallObject__c}', 'Add Lead', 'addLead')">Add Lead</A>
+                                </td>
+                            </tr> 
+                        </table>
+                    </td>
+                </tr>
+            </tbody>
+</table>
+        <input type="hidden" id="hdnBbecId" value="{!currCase.ConstituentID__c}"></input>
+        </apex:form>
+    </apex:outputPanel> 
+    <apex:includeScript value="{!URLFOR($Resource.ECCConsole)}"  />
+    <apex:includeScript value="{!URLFOR($Resource.DetailTabAutoRefresh)}"  />
+    <apex:outputText rendered="{!hasWarnings}">
+        <script>
+            $j(document).ready(function () {
+                console.log("document.ready()");
+                sforce.console.getEnclosingPrimaryTabId(writeSubTabCookie);
+            });
+
+            writeSubTabCookie = function(result) {
+                console.log("writeSubTabCookie");
+                var primaryTabId = result.id;
+                
+                if (getCookie(primaryTabId + "warn") == "") {
+                    setCookie(primaryTabId + "warn", "yes");
+                    alert('{!JSENCODE(warnings)}');
+                }
+
+            }
+
+            function setCookie(cname, cvalue) {
+                console.log("setCookie");
+                document.cookie = cname + "=" + cvalue;
+            }
+
+            function getCookie(cname) {
+                console.log("getCookie");
+                var name = cname + "=";
+                var ca = document.cookie.split(';');
+                for(var i=0; i<ca.length; i++) {
+                    var c = ca[i];
+                    while (c.charAt(0)==' ') c = c.substring(1);
+                    if (c.indexOf(name) != -1) return c.substring(name.length, c.length);
+                }
+                return "";
+            }
+        </script>
+    </apex:outputText>
+</apex:page>

@@ -1,0 +1,60 @@
+<apex:page standardController="case" extensions="RefundHistoryController">
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:form > 
+        <apex:pageBlock rendered="{!!hasRefhIstory}">
+            No Refunds
+        </apex:pageBlock>
+        <apex:pageBlock rendered="{!hasRefhIstory}">
+            <apex:pageBlockButtons >
+                <apex:commandButton action="{!prevPage}" value="Previous Page"/>
+                <apex:commandButton action="{!nextPage}" value="Next Page"/>
+            </apex:pageBlockButtons>
+            <apex:pageBlockTable value="{!refhIst}" var="ref"> 
+                <apex:column headerValue="Case Number">
+                    <apex:outputLink value="javascript:openSubtabC360('{!ref.Id}', '{!ref.Name}');">{!ref.Name}</apex:outputLink>
+                </apex:column>
+                <apex:column headerValue="Constituent Name">
+                    <apex:outputText value="{!ref.DonorName__c}"/>
+                </apex:column>
+                <apex:column headerValue="Total Refund Amount">
+                    <apex:outputText value="{!ref.TotalRefundAmount__c}"/>
+                </apex:column>
+                <apex:column headerValue="Status">
+                    <apex:outputText value="{!ref.RefundStatus__c}"/>
+                </apex:column>
+                <apex:column headerValue="Age (Hours)">
+                    <apex:outputText value="{!ref.Request_Age__c}"/>
+                </apex:column>
+            </apex:pageBlockTable>
+        </apex:pageBlock>
+    </apex:form>
+    <script type="text/javascript">
+		var refId;
+        var primaryTabId;
+    	var title;
+
+        function openSubtabC360(pRefId, pRefName) {
+            refId = '/' + pRefId;
+            title = pRefName;
+            //First find the ID of the primary tab to put the new subtab in
+            sforce.console.getEnclosingPrimaryTabId(openPrimTab);
+        }
+        
+        var openSubtab = function openSubtab(result) {
+            //Now that we have the primary tab ID, we can open a new subtab in it
+            alert(result.consoleUrl);
+            sforce.console.openSubtab(primaryTabId , result.consoleUrl, true,
+                title, null, null, title);
+        };
+
+        var openPrimTab = function openPrimTab(result) {
+            primaryTabId = result.id;
+            sforce.console.openSubtab(primaryTabId , refId, true,
+                title, null, null, title);
+            //sforce.console.generateConsoleUrl(['/' + refId], openSubtab);
+         }
+        var openConsoleUrl = function showConsoleUrl(result) {
+            sforce.console.openConsoleUrl(null, result.consoleUrl, true, null, null, null);
+         }
+    </script>
+</apex:page>

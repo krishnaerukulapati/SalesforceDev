@@ -1,0 +1,109 @@
+<apex:page controller="FOOppHistoryController" showheader="false" sidebar="false" standardStylesheets="false">
+    <apex:stylesheet value="{!URLFOR($Resource.SupportJs, 'chosen.css')}" />
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'jquery.mask.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'chosen.jquery.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.Bootstrap, '/bootstrap-3.0.0/dist/js/bootstrap.min.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.Bootstrap, '/bootstrap-3.0.0/dist/css/bootstrap.min.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.alsacFO, 'alsacFO.css')}" />
+
+    <script>
+        var $j = $.noConflict();
+
+        function applyUI() {
+            $j( ".accordionDis" ).accordion({ disabled: true, icons: {activeHeader: "ui-icon-home"}, heightStyle: "content"});
+            $j("button").button();
+            $j("button").css("float", "right");
+            //$j("button").css("clear", "both");
+            $j("tr").hover(function() {
+                $j(this).addClass("ui-state-hover");
+            },function() {
+                $j(this).removeClass("ui-state-hover");
+            }
+            );
+        }
+
+        $j(function() {
+            applyUI();
+        });
+    </script>
+    <apex:outputPanel rendered="{!hasDMSHistory}">
+        <apex:form >
+            <apex:commandButton style="margin:0 auto; display:block;" styleClass="btn btn-primary" action="{!SwitchView}" value="{!switchLabel}"/>
+        </apex:form>
+    </apex:outputPanel>
+    <apex:messages ></apex:messages>
+    <apex:outputPanel rendered="{!!hasOppHistory}">
+        No Opportunity History
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!AND(hasOppHistory, viewOpps == true)}">
+        <apex:form >
+            Page {!currPage} of {!totalPages}
+            <apex:outputPanel rendered="{!currPage > 1}">
+            <button type="button" onclick="prevPage();">Previous Page</button>
+            </apex:outputPanel>
+            <apex:outputPanel rendered="{!currPage < totalPages}">
+            <button type="button" onclick="nextPage();">Next Page</button>
+            </apex:outputPanel>
+            <apex:actionFunction action="{!prevPage}" name="prevPage"/>
+            <apex:actionFunction action="{!nextPage}" name="nextPage"/>
+            <table class="results-table" width="100%">
+                <tr class="ui-widget-header">
+                    <th>Name</th>
+                    <th>Stage</th>
+                    <th>Record Type</th>
+                    <th>Created Date</th>
+                </tr>
+                <apex:repeat value="{!oppHist}" var="opp" id="opps">
+                    <tr><td><a href="javascript:openPrimTab('{!opp.Id}');">{!opp.Name}</a></td>
+                        <td>{!opp.StageName}</td>
+                        <td>{!opp.RecordType.Name}</td>
+                        <td><apex:outputText value="{0, date, MM/dd/yyyy}">
+                            <apex:param value="{!opp.CreatedDate}"></apex:param>
+                            </apex:outputText></td></tr>
+                </apex:repeat>
+            </table>
+        </apex:form>
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!AND(hasDMSHistory, viewOpps == false)}">
+        <apex:form >
+            Page {!currPage} of {!totalPages}
+            <apex:outputPanel rendered="{!currPage > 1}">
+            <button type="button" onclick="prevPage();">Previous Page</button>
+            </apex:outputPanel>
+            <apex:outputPanel rendered="{!currPage < totalPages}">
+            <button type="button" onclick="nextPage();">Next Page</button>
+            </apex:outputPanel>
+            <apex:actionFunction action="{!prevPage}" name="prevPage"/>
+            <apex:actionFunction action="{!nextPage}" name="nextPage"/>
+            <table class="results-table" width="100%">
+                <tr class="ui-widget-header">
+                    <th>Plan Name</th>
+                    <th>Lead Staff</th>
+                    <th>Created Date</th>
+                </tr>
+                <apex:repeat value="{!dmsPlans}" var="plan" id="plans">
+                    <tr><td><a href="{!BbecURL + plan.PlanID__c}" target="_blank">{!plan.PlanName__c}</a></td>
+                        <td>{!plan.StaffLongName__c}</td>
+                        <td><apex:outputText value="{0, date, MM/dd/yyyy}">
+                            <apex:param value="{!plan.PlanStartDate__c}"></apex:param>
+                            </apex:outputText></td></tr>
+                </apex:repeat>
+            </table>
+        </apex:form>
+    </apex:outputPanel>
+    <script type="text/javascript">
+
+        var openPrimTab = function openPrimTab(casId) {
+            sforce.console.generateConsoleUrl(['/' + casId], openConsoleUrl);
+         }
+        var openConsoleUrl = function showConsoleUrl(result) {
+            sforce.console.openConsoleUrl(null, result.consoleUrl, true, null, null, null);
+         }
+    </script>
+</apex:page>

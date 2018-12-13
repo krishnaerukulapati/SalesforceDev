@@ -1,0 +1,136 @@
+<apex:page controller="EdgeforceDocumentDirectoryController"  docType="html-5.0" showHeader="false" sidebar="false" standardStylesheets="true" applyHtmlTag="false" applyBodyTag="false">
+    <title>Document Directory</title>
+    <apex:composition template="EF_Template">
+        <apex:define name="body">
+             
+        <!-- DataTables CSS -->
+          <apex:stylesheet value="{!URLFOR($Resource.dataTable, '/css/jquery.dataTables.css')}"/> 
+         
+        <!-- jQuery -->
+        <apex:includeScript value="{!URLFOR($Resource.JQTree, '/ludo-jquery-treetable-609b82a/vendor/jquery.js')}"/>
+
+
+        <!-- DataTables -->
+        <script type="text/javascript" charset="utf8" src="https://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/jquery.dataTables.min.js"></script>
+
+            <div class="row">
+                <div class="col-sm-12 ef-content team">
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <h4>{!$Label.Library}</h4>
+                            <div class="section-content">
+                                <ul class="side-nav">
+                                    <apex:repeat value="{!librariesMap}" var="library">
+                                        <li>
+                                            <a href="#" onclick="fetchContents('{!library}');">{!library}</a>
+                                        </li>
+                                    </apex:repeat>
+                                </ul><!--/.link-items -->
+                            </div><!--./section-content -->
+                        </div><!--/.col-sm-3 -->
+                        
+                        <div class="col-sm-9">
+                            <apex:outputpanel id="ContentTable">
+                                <h4>{!LibraryName}</h4>
+                                
+                                <table id="ICVTable" class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>{!$Label.Title}</th>
+                                            <th>{!$Label.Size}</th>
+                                            <th>{!$Label.Author}</th>
+                                            <th>{!$Label.File_Type}</th>
+                                            <th>{!$Label.Last_Modified}</th>
+                                            <th>{!$Label.Download}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <apex:repeat value="{!contents}" var="content">
+                                            <tr>
+                                                <td>
+                                                    <a  href="#" onclick="processContent('{!content.Id}')">{!content.Title}</a>
+                                                </td>
+                                                <td>
+                                                    {!IF(content.ContentSize>1024,IF((content.ContentSize/1024)>1024,TEXT(CEILING(content.ContentSize/(1024*1024)))&' MB',TEXT(CEILING(content.ContentSize/1024)))&' KB',TEXT(content.ContentSize) & ' B')}
+                                                </td>
+                                                <td>
+                                                    {!content.Owner.Name}
+                                                </td>
+                                                <td>
+                                                    {!content.FileType}
+                                                </td>
+                                                <td>
+                                                    <apex:outputText value="{0, date, MMMM d','  yyyy}">
+                                                        <apex:param value="{!content.LastModifiedDate}" /> 
+                                                    </apex:outputText>
+                                                </td>
+                                                <td>
+                                                    <a type="button" class="btn btn-primary" href="/sfc/servlet.shepherd/version/download/{!content.Id}">Download</a>
+                                                </td>
+                                            </tr>
+                                        </apex:repeat>    
+            
+                                    </tbody>
+                                </table>
+                            </apex:outputpanel>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <apex:outputPanel id="modalPanel">
+                <div class="modal fade" id="_contentModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="background-color:transparent;">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div id="_modalHeader" class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                <h5 class="modal-title" id="_ModalLabel">{!versionDataforUI.Title}</h5>
+                                <a class="download" href="/sfc/servlet.shepherd/version/download/{!versionDataforUI.Id}" ><span class="glyphicon glyphicon-download"></span></a>
+                                <p class="tags"><span class="badge">Tags</span>&nbsp;{!versionDataforUI.TagCsv}</p>
+                            </div><!--/.modal-content -->
+                            <div id="_modalBody" class="modal-body document">
+                                <apex:outputPanel rendered="{!Contains(allowedPreviewFormats, versionDataforUI.FileType)}">
+                                     <embed style="height:500px;" src="/_swf/188001/sfc/flex/DocViewer.swf" flashvars="shepherd_prefix=/sfc/servlet.shepherd&v={!versionDataforUI.Id}&mode=bubble" width="100%" height="100%" align="middle" id="renditionSmall" quality="high" bgcolor="#ffffff" name="renditionSmall" allowscriptaccess="sameDomain" allowfullscreen="true" pluginspage="http://www.adobe.com/go/getflashplayer" wmode="opaque" type="application/x-shockwave-flash"/>
+                                <!--                              <img src="/sfc/servlet.shepherd/version/renditionDownload?rendition=THUMB720BY480&versionId={!versionDataforUI.Id}&operationContext=CHATTER"/>-->
+                                </apex:outputPanel>
+                                
+                                <apex:outputPanel rendered="{!!Contains(allowedPreviewFormats, versionDataforUI.FileType)}">
+                                    <p>No preview is available for this file type.</p>
+                                </apex:outputPanel>   
+                            </div>
+                            <div class="modal-footer">
+                                <!--<chatter:feed entityId="{!versionDataforUI.Id}"> </chatter:feed>-->
+                                <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                            </div><!--/.modal-footer -->
+                        </div><!-- /.modal-content -->
+                    </div><!-- /.modal-dialog -->
+                </div><!-- /.modal -->
+            </apex:outputPanel>
+            
+            <apex:form >
+                <apex:actionfunction name="processContent" action="{!processContent}" reRender="modalPanel" oncomplete=" $('#_contentModal').modal('show');">
+                    <apex:param value="" name="resourceIdParam" assignTo="{!resourceIdInController}"/>
+                </apex:actionfunction>
+                
+                <apex:actionfunction name="fetchContents" action="{!fetchContents}" reRender="ContentTable" oncomplete="applydataTable();">
+                    <apex:param value="" name="name" />
+                </apex:actionfunction>
+                 
+            </apex:form>
+
+        </apex:define>
+    </apex:composition>
+     <script type="text/javascript">
+                 function applydataTable(){
+                     $('#ICVTable').dataTable({
+                        "aaSorting": [[4,"desc"]]
+                    }); 
+                }; 
+                
+                $(document).ready(function(){
+                   $('#ICVTable').dataTable({
+                        "aaSorting": [[4,"desc"]]
+                    }); 
+                });
+    </script>
+</apex:page>

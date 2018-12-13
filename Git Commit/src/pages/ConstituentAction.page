@@ -1,0 +1,52 @@
+<apex:page controller="ConstituentActionController" showheader="false" sidebar="false" standardStylesheets="false">
+    <apex:includeScript value="/support/console/35.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <apex:pageMessages />
+    <apex:form id="addLead">
+    <table>
+      <tr>
+        <td>Add Lead type: &nbsp;
+            <apex:selectList id="leadRecordType" value="{!leadRecordType}" size="1">
+                <apex:selectOptions value="{!leadRecordTypes}" />
+            </apex:selectList>
+        </td>
+        <td> to Campaign: &nbsp;
+            <apex:selectList id="campaign" value="{!campaign}" size="1">
+                <apex:selectOptions value="{!campaigns}" />
+            </apex:selectList>
+        </td>
+        <td>
+            <button onClick="javascript:addLeadToCampaign();" value="Go" id="Go">Go!</button>
+        </td>
+      </tr>
+    </table>
+    </apex:form>
+    <script type="text/javascript">
+
+        var openPrimTab = function openPrimTab(casId) {
+            sforce.console.generateConsoleUrl(['/' + casId], openConsoleUrl);
+         }
+        var openConsoleUrl = function showConsoleUrl(result) {
+            sforce.console.openConsoleUrl(null, result.consoleUrl, true, null, null, null);
+         }
+
+        function addLeadToCampaign(leadType, campaignId) {
+            var leadType = document.getElementById('{!$Component.addLead.leadRecordType}');
+            var campaign = document.getElementById('{!$Component.addLead.campaign}');
+
+//            var leadTypeId = document.getElementById('{!$Component.addLead.leadRecordType}').selectedIndex;
+//            var campaignId = document.getElementById('{!$Component.addLead.campaign}').selectedIndex;
+
+            alert('add new lead ('+leadType.options[leadType.selectedIndex].text+') '
+                + 'to campaign ('+campaign.options[campaign.selectedIndex].text+')');
+        }
+
+        function closeSubTabs(result) {
+            for(var i = 1; i < result.ids.length; i++) {
+                sforce.console.closeTab(result.ids[i]);
+            }
+        }
+
+    </script>
+</apex:page>

@@ -1,0 +1,93 @@
+<apex:component controller="C360InteractionsController">
+	<apex:attribute name="consId" description="Constituent Id" type="String" required="true" />
+	<apex:outputPanel id="interactionsOut">
+		<span id="interactionLoad">Loading...</span>
+		<span id="interactionNone" style="display:none;">None</span>
+		<table id="interactionRes" style="display:none;" data-role="table" class="ui-responsive table-stroke">
+		    <thead>
+                <tr>
+                    <th data-field="ContactDate">Contact Date</th>
+                    <th data-field="ContactCategory">Contact Category</th>
+                    <th data-field="ContactType">Contact Type</th>
+                    <th data-field="TransactionSource.Technique">Technique</th>
+					<th data-field="ResponseCategory">Response Category</th>
+                    <th data-field="ResponseType">Response Type</th>
+                    <th data-field="ResponseDate">Response Date</th>
+                    <th data-field="TransactionSource.Code">Source Code</th>
+                    <th data-field="Staff">Staff</th>
+                    <th data-field="LongComments">Comments</th>
+                </tr>
+            </thead>
+		</table>
+	    <script type="text/javascript">
+	        $j = jQuery.noConflict();
+
+	        if ((c360PageLoaders === undefined || c360PageLoaders === null))
+	        	c360PageLoaders =  {};
+
+	        if (c360PageLoaders["{!SUBSTITUTE($Component.interactionsOut, ':', '_')}"] === undefined || c360PageLoaders["{!SUBSTITUTE($Component.interactionsOut, ':', '_')}"] === null)
+	        	c360PageLoaders["{!SUBSTITUTE($Component.interactionsOut, ':', '_')}"] = new C360PageLoader({ 
+	        		constituentId: "{!consId}", 
+	        		onComplete: {!SUBSTITUTE($Component.interactionsOut, ':', '_')}_allDone,
+	        		//onPageComplete:  {!SUBSTITUTE($Component.interactionsOut, ':', '_')}_pageDone,
+	        		remoteAction: "{!$RemoteAction.C360InteractionsController.getInteractionPage}",
+	        		onError: {!SUBSTITUTE($Component.interactionsOut, ':', '_')}_pageErr});
+
+	        c360PageLoaders["{!SUBSTITUTE($Component.interactionsOut, ':', '_')}"].getPages();
+			
+			/*
+	        function {!SUBSTITUTE($Component.interactionsOut, ':', '_')}_pageDone(retrieved, totRes, results) {
+	        	alert(retrieved + " out of " + totRes);
+	        }*/
+
+	        function {!SUBSTITUTE($Component.interactionsOut, ':', '_')}_pageErr(err) {
+	        	var tbl = $j(document.getElementById("{!$Component.interactionsOut}")).children("#interactionRes");
+	        	var load = $j(document.getElementById("{!$Component.interactionsOut}")).children("#interactionLoad");
+	        	var none = $j(document.getElementById("{!$Component.interactionsOut}")).children("#interactionNone");
+	        	tbl.hide();
+	        	load.hide();
+	        	none.show();
+	        }
+
+	        function {!SUBSTITUTE($Component.interactionsOut, ':', '_')}_allDone(retrieved, totRes, results) {
+	        	var tbl = $j(document.getElementById("{!$Component.interactionsOut}")).children("#interactionRes");
+	        	var load = $j(document.getElementById("{!$Component.interactionsOut}")).children("#interactionLoad");
+	        	var none = $j(document.getElementById("{!$Component.interactionsOut}")).children("#interactionNone");
+	        	if (results.length > 0) {
+		        	for (var i = 0; i < results.length; i++) {
+		        		var res = results[i];
+		        		var transSrc = res.TransactionSource;
+		        		var vSrc = (transSrc !== undefined && transSrc !== null);
+		        		/*var dt = new Date(res.ContactDate);
+		        		var month = "0" + (dt.getMonth() + 1);
+		        		month = month.substring(month.length - 2, month.length);
+		        		var day = "0" + dt.getDate();
+		        		day = day.substring(day.length - 2, day.length);
+		        		var strDate = dt.getFullYear() + "-" + month + "-" + day;*/
+			        	tbl.append(
+				        	"<tr style='vertical-align: text-top;'>" +
+				        	"<td style='border-top: solid 1px black;'>" + (res.ContactDate !== undefined ? res.ContactDate : "") + "</td>" +
+				            "<td style='border-top: solid 1px black;'>" + (res.ContactCategory !== undefined ? res.ContactCategory : "") + "</td>" +
+				            "<td style='border-top: solid 1px black;'>" + (res.ContactType !== undefined ? res.ContactType : "") + "</td>" +
+				            "<td style='border-top: solid 1px black;'>" + (vSrc ? (transSrc.Technique !== undefined ? transSrc.Technique : "") : "") + "</td>" +
+							"<td style='border-top: solid 1px black;'>" + (res.ResponseCategory !== undefined ? res.ResponseCategory : "") + "</td>" +
+				            "<td style='border-top: solid 1px black;'>" + (res.ResponseType !== undefined ? res.ResponseType : "") + "</td>" +
+				            "<td style='border-top: solid 1px black;'>" + (res.ResponseDate !== undefined ? res.ResponseDate : "") + "</td>" +
+				            "<td style='border-top: solid 1px black;'>" + (vSrc ? (transSrc.Code !== undefined ? transSrc.Code : "") : "") + "</td>" +
+				            "<td style='border-top: solid 1px black;'>" + (res.Staff !== undefined ? res.Staff : "") + "</td>" +
+				            "<td style='border-top: solid 1px black;'>" + (res.LongComments !== undefined ? res.LongComments : "") + "</td></tr>");
+			        }
+			        tbl.show();
+			        load.hide();
+			        none.hide();
+			    }
+			    else {
+			    	tbl.hide();
+		        	load.hide();
+		        	none.show();
+			    }
+	        }
+
+	    </script>
+    </apex:outputPanel>
+</apex:component>

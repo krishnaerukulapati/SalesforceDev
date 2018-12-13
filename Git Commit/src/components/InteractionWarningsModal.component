@@ -1,0 +1,90 @@
+<apex:component controller="InteractionWarningsController" allowDML="true">
+
+	<apex:attribute name="inputConsId" description="Constituent Id passed from parent VF page" assignTo="{!modConsId}" type="String" required="true"/>
+
+	<apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  /> <!-- enables dialog-->
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/> <!-- enables styling for modal-->
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/> <!-- more styling for modal? -->
+
+	<style type="text/css">
+        body {
+            margin: 0px;
+        }
+
+        .table-disposition{
+            width: 100%;
+        }
+
+        .table-disposition > tbody > tr > td {
+            padding-bottom: 5px;
+            padding-right: 5px;
+        }
+
+        .chosen-container .chosen-results {
+          overflow-y: scroll;
+          max-height: 90px;
+        }
+    </style>
+
+	<script type="text/javascript">
+
+	var $j = jQuery.noConflict();
+
+	function checkForWarnings() {
+		//put in JS function so parent VF page can call this
+        reLoadWarningModal();  //this called the actionFunction
+	}
+
+	function closeWarnMod(){
+		intWarnModal.dialog( "close" );
+	}
+
+	function openWarnMod(){
+       	intWarnModal.dialog( "option", "title", "WARNING" );
+       	intWarnModal.dialog( "open" );	
+	}
+
+    function applyUI() { //applies dialog to div tag below
+        intWarnModal = $j("#interactionWarnMod").dialog({
+            autoOpen: false,
+            width: 475,
+            //height: 285,
+            modal: true,
+            resizable: false,
+            position: { my: "center top", at: "center top" }
+        });
+    }
+
+    function enableWarnLink() {
+    	$j("#warnModLink").show();
+    }
+
+    $j(document).ready(function() {
+        applyUI(); //creates modal and hides it
+    });
+
+	</script>
+
+	<apex:form >
+		<apex:actionFunction action="{!reLoadWarnings}" rerender="warningsOutputPanel" name="reLoadWarningModal" oncomplete="validateWarnings()"/>
+		<div id="interactionWarnMod" title="Interaction Warnings" name="Modal">
+			<apex:outputPanel id="warningsOutputPanel">
+				<script type="text/javascript"> //script is here so when rerender is called JS function has updated controller value
+					function validateWarnings(){
+						if ({!modHasWarnings}){
+       						enableWarnLink();
+       						openWarnMod();
+       					}
+					}
+				</script>
+				<apex:repeat value="{!modalInteractions}" var="warning" id="theRepeat">
+        			<apex:outputText value="{!warning.LongComments}" id="theValue"/><br/><br/>
+    			</apex:repeat>
+			</apex:outputPanel>
+			<div class="ui-dialog-buttonset" align="right">
+                <button onclick="closeWarnMod();" type="button" class="button">OK</button>
+            </div>
+		</div>
+	</apex:form>
+
+</apex:component>

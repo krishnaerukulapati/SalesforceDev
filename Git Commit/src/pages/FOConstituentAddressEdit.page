@@ -1,0 +1,221 @@
+<apex:page docType="html-5.0" controller="FOConstituentAddressEditController" showheader="false" sidebar="false" standardStylesheets="false">
+    <apex:stylesheet value="{!URLFOR($Resource.SupportJs, 'chosen.css')}" />
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'chosen.jquery.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.Bootstrap, '/bootstrap-3.0.0/dist/js/bootstrap.min.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.Bootstrap, '/bootstrap-3.0.0/dist/css/bootstrap.min.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.alsacFO, 'alsacFO.css')}" />
+    <script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=true"></script>
+
+
+    <script>
+        $j = jQuery.noConflict();
+        $j(document).ready(function() {
+            $j(".chosen-select").chosen();
+        });
+
+        $j(function() {
+            $j(":text").addClass("ui-corner-all");
+            $j("button").button();
+            $j("button").css("float", "right");
+            $j("td").addClass("alsac-widget");
+        });
+
+        <!--$( document).ready(function() { -->
+            function callzip(){
+               // alert('Test');
+                var hnlzipcode=document.getElementById('{!$Component.form.Zipcode}').value;
+                //alert(hnlzipcode);
+                var zip =hnlzipcode;
+                <!-- var zip=document.getElementById('{!$Component.form.zip}').value; -->
+                var lat;
+                var lng;
+                var geocoder = new google.maps.Geocoder();
+               // alert(geocoder);
+                geocoder.geocode({ 'address': zip ,'componentRestrictions':{'country':'US'}}, function (results, status) {
+                    if (status == google.maps.GeocoderStatus.OK) {
+                        geocoder.geocode({'latLng': results[0].geometry.location}, function(results, status) {
+                            if (status == google.maps.GeocoderStatus.OK) {
+                                if (results[1]) {
+                                    var loc = getCityState(results);
+                                }
+                                else {
+                                    alert('Unable to find address');
+                                }
+                            }
+                        });
+                    }
+                });
+            
+            function getCityState(results) {
+                var a = results[0].address_components;
+                var city, state;
+                var zippy;
+                var enteredzipcode=document.getElementById('{!$Component.form.Zipcode}').value;
+
+                for(i = 0; i <  a.length; ++i) {
+                    var t = a[i].types;
+                    if(compIsType(t, 'administrative_area_level_1'))
+                        state = a[i].long_name; //store the state
+                    else if(compIsType(t, 'locality'))
+                        city= a[i].long_name; //store the city
+                    else if(compIsType(t, 'postal_code'))
+                        zippy=a[i].long_name;
+                                
+                }
+                document.getElementById('j_id0:form:City').value = city;
+
+                var el  = $j(".stateSelect");
+                var options = el.find("option"); //get the state options
+                var stateCode = "";
+
+                el.val(""); //deselect everything
+                var stateCode = options.filter(function() {
+                  return $j(this).text() === state;
+                }).first().attr("value");
+
+                el.val(stateCode); //set the state drop down
+                el.trigger("chosen:updated"); //update the chosen item        
+            }
+            
+            function compIsType(t, s) { 
+                for(z = 0; z < t.length; ++z) {
+                    if(t[z] == s) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+    </script>
+
+    
+    
+    <apex:form id="form" >
+    <apex:pageMessages />
+            
+        <div id="edit-info" class="container-fluid container-indent">
+            <div class="row">
+                <div class="col-md-5 col-sm-10 col-xs-12 ">
+                    <h4>Address Edit</h4>
+                    <hr />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-5 col-sm-10 col-xs-12 form-padding">
+                    <div class="col-xs-12 col-sm-4">
+                        <label>Status: </label>
+                        <apex:selectList styleClass="chosen-select form-control" value="{!Status}" multiselect="false" size="1">
+                            <apex:selectOption itemLabel="" itemValue=""/>
+                            <apex:selectOptions value="{!statusTypes}"/>
+                        </apex:selectList>
+                    </div>
+                    <div class="col-xs-12 col-sm-4">
+                        <label>Type: </label>
+                        <apex:selectList styleClass="chosen-select form-control" value="{!addressTypeCode}" multiselect="false" size="1">
+                            <apex:selectOption itemLabel="" itemValue=""/>
+                            <apex:selectOptions value="{!addrTypes}"/>
+                        </apex:selectList>
+                    </div>                  
+                </div>
+            </div>            
+            <div class="row">
+                <div class="col-md-5 col-sm-10 col-xs-12 form-padding">
+                    <div class="col-xs-12 col-sm-4">
+                        <label>Street 1: </label>
+                        <apex:inputText value="{!street1}" styleClass="form-control" />
+                    </div>
+                    <div class="col-xs-12 col-sm-4">
+                        <label>Street 2: </label>
+                        <apex:inputText value="{!street2}" styleClass="form-control" />
+                    </div>
+                    <div class="col-xs-12 col-sm-4">
+                        <label>Street 3: </label>
+                        <apex:inputText value="{!street3}" styleClass="form-control" />
+                    </div>                         
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-5 col-sm-10 col-xs-12 form-padding">
+                    <div class="col-xs-12 col-sm-6">
+                        <label>City: </label>
+                        <apex:input type="text" id="City"  value="{!City}" html-placeholder="City*" styleclass="form-control stp_cntrl cty-name"/>
+                    </div>
+                    <div class="col-xs-12 col-sm-6">
+                        <label>State: </label>
+                        <apex:outputPanel id="stateList"> 
+                            <apex:actionStatus startText="Requesting..." id="resStatus">
+                                <apex:facet name="stop">
+                                    <apex:selectList id="stateSelect" styleClass="chosen-select stateSelect form-control" value="{!state}" multiselect="false" size="1">
+                                        <apex:selectOption itemLabel="" itemValue=""/>
+                                        <apex:selectOptions value="{!states}" id="State"/>
+                                    </apex:selectList>
+                                </apex:facet>
+                            </apex:actionStatus>
+                        </apex:outputPanel>
+                    </div>                                            
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-5 col-sm-10 col-xs-12 form-padding">
+                    <div class="col-xs-12 col-sm-3">
+                        <label>Zip Code: </label>
+                        <apex:input type="text" value="{!zipCode}" html-placeholder="Zip Code*" id="Zipcode" onblur="callzip();" html-maxlength="7" styleClass="form-control" />
+                    </div> 
+                    <div class="col-xs-12 col-sm-3">
+                        <label>Zip Extension: </label>
+                        <apex:inputText value="{!zipExtension}" styleClass="form-control" />
+                    </div>  
+                    <div class="col-xs-12 col-sm-6">
+                        <label>Country: </label>
+                        <apex:selectList styleClass="chosen-select form-control" value="{!country}" multiselect="false" size="1">
+                            <apex:selectOption itemLabel="" itemValue=""/>
+                            <apex:selectOptions value="{!countries}"/>
+                            <apex:actionSupport event="onchange" action="{!changeCountry}" rerender="stateList" oncomplete="choosify()"/>
+                        </apex:selectList>
+                    </div>
+                                        
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-5 col-sm-10 col-xs-12 form-padding">
+                    <div class="col-xs-12 col-sm-6 checkbox">
+                        <label>Preferred<apex:inputCheckbox value="{!preferred}" /></label>
+                    </div>                      
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-5 col-sm-10 col-xs-12 form-padding">
+                    <div class="col-xs-12">
+                        <label>Comments: </label>
+                        <apex:inputTextarea value="{!comments}" rows="2" styleClass="form-control" />
+                    </div>                        
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-5 col-sm-10 col-xs-12 form-padding form-submit-padding">
+                    <div class="col-sm-3 col-sm-offset-6">
+                        <button type="button" onclick="cancelFunc();" class="btn btn-default btn-sm btn-block">Cancel</button>
+                    </div>
+                    <div class="col-sm-3">
+                        <button type="button" onclick="saveFunc();" class="btn btn-primary btn-sm btn-block">Save</button>
+                    </div>
+                    <apex:actionFunction action="{!cancel}" name="cancelFunc"/>
+                    <apex:actionFunction action="{!save}" name="saveFunc" />
+                </div>
+            </div>
+        </div>
+
+    </apex:form>
+
+    <script>
+        function choosify() {
+            $j(".chosen-select").chosen();
+        }
+    </script>
+</apex:page>

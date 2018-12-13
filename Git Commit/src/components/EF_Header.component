@@ -1,0 +1,40 @@
+<apex:component >
+
+<div id="header" class="row">
+
+    <div class="logo col-sm-3">
+        <img src="{!$Resource.IntranetLogo}" class="img-responsive" />
+        <span class="hidden">Company Name</span>
+    </div>
+
+    <div class="col-sm-9 hidden-xs">
+
+        <div class="user-wrapper pull-right">
+            <div class="pull-right">
+                <c:EF_User />
+            </div>
+        </div><!--/.user-wrapper -->
+
+        <div class="pull-right">
+            <div class="input-group search help" data-container="body" data-toggle="popover" data-placement="bottom" data-trigger="manual" data-content="Search for files, people, articles, or Chatter posts">
+                <input type="text" class="form-control " placeholder="Search" name="srch-term" id="srch-term" />
+                <div class="input-group-btn hidden-xs">
+                    <button class="btn-bs btn-default" type="submit" onclick="searchResult();"><i class="glyphicon glyphicon-search"></i></button>
+                </div>
+            </div>
+
+        </div>
+
+    </div><!--/.col-sm-8 -->
+
+</div><!--/#header -->
+
+<script>
+function searchResult(){
+    var searchURL= '/apex/EF_IntranetSearch?searchString='+$('#srch-term').val();
+    //alert(searchURL);
+    window.location.href=searchURL;
+}
+</script>
+
+</apex:component>

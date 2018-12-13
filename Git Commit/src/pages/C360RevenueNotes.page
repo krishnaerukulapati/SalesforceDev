@@ -1,0 +1,62 @@
+<apex:page controller="C360RevenueNotesController" showheader="false" sidebar="false" standardStylesheets="false">
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <script>
+        var $j = $.noConflict();
+
+        function applyUI() {
+            $j( ".accordionDis" ).accordion({ disabled: true, icons: {activeHeader: "ui-icon-home"}, heightStyle: "content"});
+            $j("button").button();
+            $j("button").css("float", "right");
+            $j("button").css("clear", "both");
+            $j("tr").hover(function() {
+                $j(this).addClass("ui-state-hover");
+            },function() {
+                $j(this).removeClass("ui-state-hover");
+            }
+            );
+        }
+
+        $j(function() {
+            applyUI();
+        });
+    </script>
+    <apex:outputPanel rendered="{!!isRevenueNotes}">
+        No revenue notes for selected transaction    
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!isRevenueNotes}"> 
+        <apex:form >
+            Page {!currPage} of {!totalPages}
+            <apex:outputPanel rendered="{!currPage > 1}">
+            <button type="button" onclick="prevPage();">Previous Page</button>
+            </apex:outputPanel>
+            <apex:outputPanel rendered="{!currPage < totalPages}">
+            <button type="button" onclick="nextPage();">Next Page</button>
+            </apex:outputPanel>
+            <apex:actionFunction action="{!prevPage}" name="prevPage"/>
+            <apex:actionFunction action="{!nextPage}" name="nextPage"/>
+            <table width="100%">
+                    <tr class="ui-widget-header">
+                        <th>Title</th>
+                        <th>Note Type</th>
+                        <th>Date</th>
+                        <th>Notes</th>
+                    </tr>
+                <apex:repeat value="{!revNotesList}" var="rvn" id="revenue">
+                    <tr>
+                        <td>{!rvn.Title}</td>
+                        <td>{!rvn.NoteType}</td>
+                        <td><apex:outputText value="{0, date, MM/dd/yyyy}">
+                            <apex:param value="{!DATEVALUE(rvn.Date_x)}"></apex:param>
+                            </apex:outputText></td>
+                        <td><apex:outputText value="{!rvn.HtmlNote}" escape="false" /></td>
+                    </tr> 
+                </apex:repeat>
+            </table>
+        </apex:form>
+    </apex:outputPanel>
+</apex:page>

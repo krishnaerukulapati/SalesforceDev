@@ -1,0 +1,141 @@
+<apex:page controller="FOConstituentPreferenceEditController" showheader="false" sidebar="false" standardStylesheets="false">
+    <apex:stylesheet value="{!URLFOR($Resource.SupportJs, 'chosen.css')}" />
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'jquery.mask.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'chosen.jquery.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.Bootstrap, '/bootstrap-3.0.0/dist/js/bootstrap.min.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.Bootstrap, '/bootstrap-3.0.0/dist/css/bootstrap.min.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.alsacFO, 'alsacFO.css')}" />
+
+
+    <script>
+        $j = jQuery.noConflict();
+        $j(document).ready(function() {
+            $j(".datepicker").datepicker();
+            $j(".chosen-select").chosen();
+        });
+
+        $j(function() {
+            $j(":text").addClass("ui-corner-all");
+            $j("button").button();
+            $j("button").css("float", "right");
+            $j("td").addClass("alsac-widget");
+        });
+
+    </script>
+    
+    <apex:pageMessages ></apex:pageMessages>
+    <apex:form >
+
+
+        <div id="edit-info" class="container-fluid container-indent">
+            <div class="row">
+                <div class="col-md-5 col-sm-10 col-xs-12 ">
+                    <h4>Preferences Edit</h4>
+                    <hr />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-5 col-sm-10 col-xs-12 form-padding">
+                    <div class="col-xs-4">
+                        <label>Status: </label>
+                        <apex:selectList styleClass="chosen-select" value="{!Status}" multiselect="false" size="1">
+                            <apex:selectOption itemLabel="" itemValue=""/>
+                            <apex:selectOptions value="{!statusTypes}"/>
+                        </apex:selectList>
+                    </div>                               
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-5 col-sm-10 col-xs-12 form-padding">
+                    <div class="col-xs-6">
+                        <label>Preference Type: </label>
+                        <apex:selectList styleClass="chosen-select" value="{!preferenceType}" multiselect="false" size="1"
+                            rendered="{!ISBLANK(contId)}">
+                            <apex:selectOption itemLabel="" itemValue=""/>
+                            <apex:selectOptions value="{!preferenceTypes}"/>
+                            <apex:actionSupport event="onchange" action="{!changePrefType}" rerender="prefList,prefValList" status="resPref,resVal" oncomplete="choosify()"/>
+                        </apex:selectList>
+                        <apex:outputText rendered="{!NOT(ISBLANK(contId))}">
+                            <p class="form-control-static">{!preferenceTypeDesc}</p>
+                        </apex:outputText>
+                    </div>
+                    <div class="col-xs-6">
+                        <label>Preference: </label>
+                        <apex:outputPanel id="prefList" rendered="{!ISBLANK(contId)}"> 
+                            <apex:actionStatus id="resPref">
+                                <apex:facet name="start">Requesting...</apex:facet>
+                                <apex:facet name="stop">
+                                    <apex:outputPanel layout="none">
+                                        <apex:selectList styleClass="chosen-select" value="{!preference}" multiselect="false" size="1">
+                                            <apex:selectOption itemLabel="" itemValue=""/>
+                                            <apex:selectOptions value="{!preferences}"/>
+                                            <apex:actionSupport event="onchange" action="{!changePref}" rerender="prefValList" status="resVal" oncomplete="choosify()"/>
+                                        </apex:selectList>
+                                    </apex:outputPanel>
+                                </apex:facet>
+                            </apex:actionStatus>
+                        </apex:outputPanel>
+                        <apex:outputText rendered="{!NOT(ISBLANK(contId))}">
+                            <p class="form-control-static">{!preference}</p>
+                        </apex:outputText>
+                    </div>                      
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-5 col-sm-10 col-xs-12 form-padding">
+                    <div class="col-xs-6">
+                        <label>Value: </label>
+                        <apex:outputPanel id="prefValList"> 
+                            <apex:actionStatus startText="Requesting..." id="resVal">
+                                <apex:facet name="stop">
+                                    <apex:selectList styleClass="chosen-select" value="{!preferenceValue}" multiselect="false" size="1">
+                                        <apex:selectOption itemLabel="" itemValue=""/>
+                                        <apex:selectOptions value="{!preferenceValues}"/>
+                                    </apex:selectList>
+                                </apex:facet>
+                            </apex:actionStatus>
+                        </apex:outputPanel>
+                    </div>                   
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-5 col-sm-10 col-xs-12 form-padding">
+                    <div class="col-xs-6">
+                        <label>Start Date: </label>
+                        <apex:inputText styleClass="datepicker form-control" value="{!startDate}" />
+                    </div>
+                    <div class="col-xs-6">
+                        <label>End Date: </label>
+                        <apex:inputText styleClass="datepicker form-control" value="{!endDate}" />
+                    </div>                      
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-5 col-sm-10 col-xs-12 form-padding form-submit-padding">
+                    <div class="col-sm-3 col-sm-offset-6">
+                        <button type="button" onclick="cancelFunc();" class="btn btn-default btn-xs btn-block">Cancel</button>
+                    </div>
+                    <div class="col-sm-3">
+                        <button type="button" onclick="saveFunc();" class="btn btn-primary btn-xs btn-block">Save</button>
+                    </div>
+                    <apex:actionFunction action="{!cancel}" name="cancelFunc"/>
+                    <apex:actionFunction action="{!save}" name="saveFunc" />
+                </div>
+            </div>
+        </div>
+
+
+    </apex:form>
+    <script>
+        function choosify() {
+            $j(".chosen-select").chosen();
+        }
+    </script>
+</apex:page>

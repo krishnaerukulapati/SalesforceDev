@@ -1,0 +1,36 @@
+<apex:page ><apex:includeScript value="/support/console/28.0/integration.js"/>
+    <A HREF="#" onClick="fireConstituentApplied();return false">
+        Complete.  Click here to refresh case.</A> 
+
+    <script type="text/javascript">
+        var tabId;
+        function getTabId() {
+            //First find the ID of the current tab to close it
+            //alert('getTabId');
+            sforce.console.getEnclosingTabId(closeSubtab);
+        }
+        
+        var closeSubtab = function closeSubtab(result) {
+            //Now that we have the tab ID, we can close it
+            //alert('closeSubtab: ' + result.id);
+            tabId = result.id;
+            fireConstituentApplied();
+            //alert('tabId: ' + tabId);
+        };
+        
+        function fireConstituentApplied() { 
+         //raises and event that the highlights section is registred to receive to close the sub tab and refresh the primary tab
+            //alert('raising event message/tabId: ' + tabId);
+            sforce.console.fireEvent("ConstituentApplied", tabId);
+         }
+        
+        var prevOnLoad = window.onload;
+        window.onload = function() {
+            if (prevOnLoad) {
+                prevOnLoad();
+            }
+            getTabId();
+            //closeThisTab();
+        }
+  </script>
+</apex:page>

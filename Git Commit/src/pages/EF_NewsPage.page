@@ -1,0 +1,89 @@
+<!--@ Modified by : Sil 
+    @ Modified On : 10-March-2014 
+    @ purpose     : Fixed Error Recent News Links as category type was not dynamic]
+    @ chageId     : c001
+    -----------------------------------------------------------------------------------------------
+    -->
+<apex:page docType="html-5.0" showHeader="false" sidebar="false" standardStylesheets="true" applyHtmlTag="false" applyBodyTag="false" controller="EdgeforceIntranetNewsPageController" >
+    <apex:composition template="EF_Template">
+        <apex:define name="body">
+            <div class="row ef-content news-page">
+                <div class="col-sm-12">
+                    <apex:outputPanel id="NewsPanel">
+                        <div class="section-content top">
+                            <apex:form >
+                                <apex:inputHidden value="{!offSet}" id="offSetText"/>
+                                <ul class="news-list">
+                                    <apex:repeat value="{!displayList}" var="content">
+                                        <li>                                                                                 <!-- c001 -->
+                                            <a class="article-title" href="/apex/EF_Content?id={!content.articleId}&category={!content.categorytype}&tabName=Home">
+                                                <h3>{!content.title}</h3>
+                                                <span class="glyphicon glyphicon-link"></span>
+                                            </a>
+                                            <ul class="article-tags">
+                                                <li class="tag-label">Tags:</li>
+                                                <apex:repeat value="{!content.tagsList}" var="tag">
+                                                    <li><a href="/apex/EF_IntranetSearch?searchType=News&searchString={!tag}"><span class="label label-info">{!tag}</span></a></li>
+                                                </apex:repeat>
+                                                <br class="clear" />
+                                            </ul><!--/.article-tags -->
+                                            <p class="summary">
+                                                <apex:outputText value="{!content.summary}" escape="false"/>                    <!-- c001 -->
+                                                <a class="read-more" href="/apex/EF_Content?id={!content.articleId}&category={!content.categorytype}&tabName=Home"><span class="glyphicon glyphicon-chevron-right"></span> Read More</a>
+                                            </p>
+                                            <ul class="social-stats">
+                                                <li>
+                                                    {!socialInfoMap[content.articleId].noOfLikes}
+                                                    <apex:outputText value="{!IF(socialInfoMap[content.articleId].noOfLikes != 1, ' Likes', ' Like')}" />
+                                                </li>
+                                                <li>
+                                                    {!socialInfoMap[content.articleId].noOfComments}
+                                                    <apex:outputText value="{!IF(socialInfoMap[content.articleId].noOfComments != 1, ' Comments', ' Comment')}" />
+                                                </li>
+                                                <li>
+                                                    {!socialInfoMap[content.articleId].noOfFollowers}
+                                                    <apex:outputText value="{!IF(socialInfoMap[content.articleId].noOfFollowers != 1, ' Followers', ' Follower')}" />
+                                                </li>
+                                                <br class="clear" />
+                                            </ul><!--/.social-stats -->
+                                        </li>
+                                    </apex:repeat>
+                                    <br class="clear" />
+                                </ul><!--/.news-list -->
+                                <apex:actionFunction name="changePage" action="{!addToDispalyList}" reRender="NewsPanel" />
+                                <div class="list-paging">
+                                    <div class="paging-stats">Showing {!offSetInt+1}-{!endWith} of {!totalNews} News Items</div>
+                                    <ul class="pager">
+                                        <li class="pager-link"><a href="#">Previous</a></li>
+                                        <apex:repeat value="{!paginationno}" var="num">
+                                            <li class="pager-link"><a class="{!IF(num == offSet, 'active', '')}" href="#">{!num}</a></li>
+                                        </apex:repeat>
+                                        <li class="pager-link"><a href="#">Next</a></li>
+                                    </ul>
+                                </div>
+                                <script>
+                                    $(".pager-link a").each(function(){
+                                        if($(this).text()=='Previous' && ("{!isFirst}"=='true')){
+                                            $(this).addClass('disabled');
+                                        }
+                                        else if($(this).text()=='Next' && ("{!isLast}"=='true')){
+                                            $(this).addClass('disabled');
+                                        }
+                                        else if($(this).text()==$('input[id$=offSetText]').val()){
+                                            $(this).addClass('disabled');
+                                        }
+                                    });
+                                    $('body').delegate('.pager-link a','click',function(){
+ 
+                                        $('input[id$=offSetText]').val($(this).text());
+                                        changePage();
+                                        });
+                                </script>
+                            </apex:form>
+                        </div><!--/.section-content -->
+                    </apex:outputPanel>
+                </div><!--/.col-sm-12 -->
+            </div><!--/.row -->
+        </apex:define>
+    </apex:composition>
+</apex:page>

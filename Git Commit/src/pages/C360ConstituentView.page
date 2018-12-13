@@ -1,0 +1,266 @@
+<apex:page standardController="case" extensions="C360ConstituentSearchController" showHeader="false" sidebar="false" standardStylesheets="false">
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:stylesheet value="{!URLFOR($Resource.SupportJs, 'jqueryMobile/jquery.mobile.icons-1.4.5.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.SupportJs, 'jqueryMobile/jquery.mobile.structure-1.4.5.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.SupportJs, 'jqueryMobile/themes/alsac.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:includeScript value="{!URLFOR($Resource.C360UtilJs)}"/>
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'jqueryMobile/jquery.mobile-1.4.5.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'bootTable/bootstrap-table.min.js')}"/>   
+    <!-- table sorter
+    <apex:stylesheet value="{!URLFOR($Resource.TableSorter, 'tablesorter-master/css/theme.grey.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.TableSorter, 'tablesorter-master/js/jquery.tablesorter.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.TableSorter, 'tablesorter-master/js/jquery.tablesorter.widgets.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.TableSorter, 'tablesorter-master/js/widgets/widget-reflow.js')}"/>
+    <style>
+    /* REQUIRED CSS: change your reflow breakpoint here (35em below) */
+    @media ( max-width: 35em ) {
+        .ui-table-reflow td,
+        .ui-table-reflow th {
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+            float: right;
+            /* if not using the stickyHeaders widget (not the css3 version)
+             * the "!important" flag, and "height: auto" can be removed */
+            width: 100% !important;
+            height: auto !important;
+        }
+        /* reflow widget */
+        .ui-table-reflow tbody td[data-title]:before {
+            color: #469;
+            font-size: .9em;
+            content: attr(data-title);
+            float: left;
+            width: 50%;
+            white-space: pre-wrap;
+            text-align: bottom;
+            display: inline-block;
+        }
+        /* allow toggle of thead */
+        thead.hide-header {
+            display: none;
+        }
+    }
+    .ui-table-reflow .ui-table-cell-label {
+        display: none;
+    }
+    </style> -->
+    <script>
+        var $j = $.noConflict();
+        $j(document).ready(function () {
+            $j("[isConsole]").val(sforce.console.isInConsole());
+        });
+
+        function applySorterTran(id) {
+            // simple reflow widget (table with 1 header row)
+
+            /*$j(document.getElementById(id)).tablesorter({
+                theme: 'blue',
+                widgets: ['zebra', 'reflow'],
+                widgetOptions : {
+                    // class name added to make it responsive (class name within media query)
+                    reflow_className    : 'ui-table-reflow',
+                    // header attribute containing modified header name
+                    reflow_headerAttrib : 'data-name',
+                    // data attribute added to each tbody cell
+                    // it contains the header cell text, visible upon reflow
+                    reflow_dataAttrib   : 'data-title'
+                }
+            });*/
+        }
+        
+        function getURLParameter(sParam) {
+            var sPageURL = window.location.search.substring(1);
+            var sURLVariables = sPageURL.split('&');
+            for (var i = 0; i < sURLVariables.length; i++) {
+                var sParameterName = sURLVariables[i].split('=');
+                if (sParameterName[0] == sParam) {
+                    return sParameterName[1];
+                }
+            }
+        }
+        
+        function selectConstituent(conName) {
+            var constituentId = getURLParameter('consId');
+            console.log(constituentId);
+            var WindowMessage = {
+                name: 'SELECT_CONSTITUENT',
+                constituentId: constituentId,
+                constituentName: conName
+            };
+            //For security, don't want to continue using wildcard for the targetOrigin
+            window.parent.postMessage(WindowMessage, '*');
+        }
+    </script>
+
+    <apex:form >
+        <div data-role="header">
+            <apex:inputHidden value="{!isConsole}" html-isConsole="true"/>
+            <a href="javascript:navigate('{!backURL}');" class="ui-icon-circle-triangle-w">Back</a>
+                <apex:commandLink action="{!createCase}">
+                    <apex:param value="{!con.UUID}" name="SelectUUID"/>
+                    <apex:param value="{!con.ConstituentId}" name="ConsId"/>
+                    <apex:param value="{!IF(UPPER(con.Type_x.Code) = 'INDIVIDUAL', con.LongName, con.Name)}" name="SelectName"/>
+                    <apex:param value="{!con.Type_x.Code}" name="SelectConType"/>
+                    Case
+                </apex:commandLink>
+            <h3>{!con.Type_x.Code}</h3>
+        </div>
+        <h3>{!con.LongName}</h3>
+        <a style="{!IF($CurrentPage.parameters.isFromEventDetail=='true','','display:none;')}" href="javascript:selectConstituent('{!con.LongName}')">Select Constituent</a>
+        <div data-role="collapsible">
+            <h4>Address</h4>
+            <table data-role="table" id="table-column-toggle" class="ui-responsive table-stroke">
+                <thead>
+                    <tr>
+                        <th>Address</th>
+                        <th data-priority="1">Type</th>
+                        <th data-priority="2">Status</th>
+                        <th data-priority="3">Preferred</th>
+                    </tr>
+                </thead>
+                <apex:repeat value="{!con.Profile.Addresses}" var="addr" id="addressGrid">
+                    <tr>
+                        <td>
+                        <apex:outputPanel rendered="{!NOT(OR(ISNULL(addr.Street1), ISBLANK(addr.Street1)))}">
+                                <apex:outputText value="{!addr.Street1}" /><br/>
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!LEN(addr.Street2) > 0}">
+                                <apex:outputText value="{!addr.Street2}" /><br/>
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!LEN(addr.Street3) > 0}">
+                                <apex:outputText value="{!addr.Street3}" /><br/>
+                            </apex:outputPanel>
+                            <apex:outputText value="{!addr.City}" />,
+                            <apex:outputText value="{!addr.State}" />,
+                            <apex:outputText value="{!addr.ZipCode}" />
+                        </td>
+                        <td>{!addr.AddressType.Code}</td>
+                        <td>{!addr.Status}</td>
+                        <td>{!IF(addr.Preferred, 'YES', 'NO')}</td>
+                    </tr>
+                </apex:repeat>
+            </table>
+        </div>
+        <div data-role="collapsible">
+            <h4>Phones</h4>
+            <table data-role="table" id="table-column-toggle" class="ui-responsive table-stroke">
+                <thead>
+                    <tr>
+                        <th>Phone</th><th data-priority="1">Type</th><th data-priority="2">Status</th><th data-priority="3">Preferred</th>
+                    </tr>
+                </thead>
+                <apex:repeat value="{!con.Profile.Phones}" var="phn" id="phnGrid">
+                    <tr>
+                        <td style="white-space: pre">{!phn.PhoneNumber}</td>
+                        <td>{!phn.PhoneType.Code}</td>
+                        <td>{!phn.Status}</td>
+                        <td>{!IF(phn.Preferred, 'YES', 'NO')}</td>
+                    </tr>
+                </apex:repeat>
+            </table>    
+        </div>
+        <div data-role="collapsible">
+            <h4>Emails</h4>
+            <table data-role="table" id="table-column-toggle" class="ui-responsive table-stroke">
+                <thead>
+                    <tr>
+                        <th>Email</th><th data-priority="1">Type</th><th data-priority="2">Status</th><th data-priority="3">Preferred</th>
+                    </tr>
+                </thead>
+                <apex:repeat value="{!con.Profile.Emails}" var="eml" id="emlGrid">
+                    <tr>
+                        <td style="white-space: pre">{!eml.EmailAddress}</td>
+                        <td>{!eml.EmailType.Code}</td>
+                        <td>{!eml.Status}</td>
+                        <td>{!IF(eml.Preferred, 'YES', 'NO')}</td>
+                    </tr>
+                </apex:repeat>
+            </table>    
+        </div>
+        <div data-role="collapsible">
+            <h4>Preferences</h4>
+            <table data-role="table" id="table-column-toggle" class="ui-responsive table-stroke">
+                <thead>
+                    <tr>
+                        <th>Type</th><th data-priority="1">Preference</th><th data-priority="2">Value</th>
+                    </tr>
+                </thead>
+                <apex:repeat value="{!con.Preferences}" var="pref" id="prefGrid">
+                    <tr>
+                        <td style="white-space: pre">{!pref.PreferenceType}</td>
+                        <td>{!pref.Preference}</td>
+                        <td>{!pref.PreferenceValue}</td>
+                    </tr>
+                </apex:repeat>
+            </table>    
+        </div>
+        <div data-role="collapsible">
+            <h4>Transactions</h4>
+            <c:C360TransactionsView consId="{!con.ConstituentId}" loadedMethod="applySorterTran">
+            </c:C360TransactionsView>
+        </div>
+
+        <div data-role="collapsible">
+            <h4>Interactions</h4>
+            <c:C360InteractionsView consId="{!con.ConstituentId}">
+            </c:C360InteractionsView>   
+        </div>
+
+        <div data-role="collapsible">
+            <h4>Interests</h4>
+            <table data-role="table" id="table-column-toggle" class="ui-responsive table-stroke">
+                <thead>
+                    <th>Interest</th>
+                    <th>Status</th>
+                </thead>
+                <apex:repeat value="{!ints}" var="interest" id="interestGrid">
+                    <tr>
+                        <td>{!interest.Interest}</td>
+                        <td>{!interest.Status}</td>
+                    </tr>
+                </apex:repeat>
+            </table>    
+        </div>
+
+        <div data-role="collapsible">
+            <h4>Relationships</h4>
+            <table data-role="table" id="table-column-toggle" class="ui-responsive table-stroke">
+                <thead>
+                    <th>Household/Organization</th>
+                    <th>Type</th>
+                </thead>
+                <apex:repeat value="{!con.Relationships}" var="rel" id="rel">
+                    <tr>
+                        <td>{!IF(rel.RelatedConstituent.Type_x.Code = 'Individual', rel.RelatedConstituent.LongName, rel.RelatedConstituent.Name)}</td>
+                        <td>{!rel.RelatedConstituent.Type_x.Code}</td>
+                    </tr>
+                </apex:repeat>
+            </table>    
+        </div>
+
+        <div data-role="collapsible">
+            <h4>Cross References</h4>
+            <table data-role="table" id="table-column-toggle" class="ui-responsive table-stroke">
+                <thead>
+                    <th>System</th>
+                    <th>Id</th>
+                </thead>
+                <apex:repeat value="{!xrs}" var="xr" id="xr">
+                    <tr>
+                        <td>{!xr.Sys.Name}</td>
+                        <td>{!xr.XRefKey}</td>
+                    </tr>
+                </apex:repeat>
+            </table>    
+        </div>
+    </apex:form>
+    <script>
+        function navigate(url) {
+            if (typeof sforce.one == 'undefined') window.open(url, "_self");
+            else sforce.one.navigateToURL(url); //sforce.one.back()
+            //window.history.back();
+        }
+    </script>
+</apex:page>

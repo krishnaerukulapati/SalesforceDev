@@ -1,0 +1,50 @@
+<apex:page standardController="case" extensions="FOHighlightsController" showheader="false" sidebar="false" standardStylesheets="false">
+    <apex:includeScript value="/support/console/31.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.Bootstrap, '/bootstrap-3.0.0/dist/css/bootstrap.min.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.Bootstrap, '/bootstrap-3.0.0/dist/css/bootstrap-theme.min.css')}" />
+
+    <style type="text/css">
+        .top5 { margin-top:5px; }
+        .top10 { margin-top:10px; }
+        .top15 { margin-top:15px; }
+        .top20 { margin-top:20px; }
+        .bottom5 { margin-bottom:5px; }
+        .bottom10 { margin-bottom:10px; }
+        .bottom15 { margin-bottom:15px; }
+        .bottom20 { margin-bottom:20px; }
+    </style>
+
+    <apex:pageMessages id="messages"></apex:pageMessages>
+    <apex:form >
+    	<div class="row">
+    		<div class="col-xs-12">
+    			<div class="name">{!LongName}</div>
+    		</div>                
+    	</div>
+    	<div class="row">
+    		<div class="col-xs-12">
+    			<div class="address">{!Address}</div>              
+    		</div>
+    	</div>
+    	<div class="row">
+    		<div class="col-xs-12">
+    			<div class="phone">{!Phone}</div>             
+    		</div>
+    	</div>
+    	<div class="row">
+    		<div class="col-xs-12">
+    			<div class="email">{!Email}</div>              
+    		</div>
+    	</div>
+    	<div class="row">
+    		<div class="col-xs-12">
+    			<a href="{!URLFOR($Page.FOInteractions)}&id={!caseId}, 'Interactions', 'viewInteractions')">Interactions</a>            
+    		</div>
+    	</div>	        
+    </apex:form>   
+</apex:page>

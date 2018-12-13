@@ -1,0 +1,13 @@
+<apex:page showheader="false" sidebar="false" standardStylesheets="false" controller="EventRecruitedController" action="{!updateEvent}">
+    <apex:includeScript value="/support/console/36.0/integration.js" />
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}" />
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}" />
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+
+    <div>
+        <apex:pageMessages id="messages"></apex:pageMessages>
+    </div>
+
+</apex:page>

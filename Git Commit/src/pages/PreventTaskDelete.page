@@ -1,0 +1,10 @@
+<apex:page standardController="Task" action="{! if ($Profile.Name != 'System Administrator',
+null,
+URLFOR($Action.Task.Delete, $CurrentPage.Parameters.id,[retURL='/007'],true))}">
+    <apex:pageBlock >
+        <apex:PageMessage summary="You are not allowed to delete Tasks"
+            severity="Warning"
+            strength="3"/>
+        <apex:pageMessages />
+    </apex:pageBlock>
+</apex:page>

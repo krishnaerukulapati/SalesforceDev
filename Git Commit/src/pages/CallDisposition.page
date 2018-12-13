@@ -1,0 +1,131 @@
+<apex:page controller="CallDispositionController" showHeader="true" sidebar="true" standardStylesheets="false">
+	
+<!-- 	<apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+
+    <script type="text/javascript">
+        var $j = $.noConflict();
+
+        function applyUI() {
+            $j( ".accordionDis" ).accordion({ disabled: true, icons: {activeHeader: "ui-icon-home"}, heightStyle: "content"});
+            $j("button").button();
+            $j("button").css("float", "right");
+            $j("tr").hover(function() {
+                    $j(this).addClass("ui-state-hover");
+                },function() {
+                    $j(this).removeClass("ui-state-hover");
+                }
+            );
+        }
+
+        $j(function() {
+            applyUI();
+        });
+    </script> -->
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous"/>
+    <apex:stylesheet value="{!URLFOR($Resource.FontAwesome, 'css/font-awesome.css')}" />
+    <apex:includeScript value="/support/console/29.0/integration.js" />
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/
+        rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/
+        U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
+
+    <style type="text/css">
+        .table tr:nth-child(odd) {
+          background-color: #fafafa;
+          border: 1px solid #fafafa;
+          border-bottom: 1px solid #f8f8f8;
+        }
+    
+        .thead-blue  {
+          background: #5C82B1 !important;
+          border: 1px solid #4F75A4;
+          color: #f7f7f7;
+        }
+
+        .page-item.active .page-link{
+            background-color: #5C82B1 !important;
+            border-color: #4F75A4;
+        }
+
+        body{
+            font-size: 1.2em;
+        }
+
+        .fa-spinner{
+            font-size: 1.2em;
+        }
+    </style>
+    <script type="text/javascript">
+        var $j = $.noConflict();
+
+        function applyUI() {
+            $j("tr").hover(function () {
+            }, function () {
+                $j(this).removeClass("ui-state-hover");
+            }
+            );
+
+            $j('#prevButton').on('click', function () {
+              prevPageFunc();
+            });
+
+            $j('#nextButton').on('click', function () {
+              nextPageFunc();
+            });
+
+            $j('.page-item').click(function(e){
+                if ($j(this).hasClass('active'))
+                    return false;
+                $j(".page-link").each(function (i) { $j(this).attr('tabindex', -1); });
+                $j('.page-item').addClass('disabled');
+                $j(this).find( ".page-link" ).html('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
+            });
+
+            $j('[data-toggle="tooltip"]').tooltip();
+        }
+
+        $j(function () {
+            applyUI();
+        });
+    </script>
+
+
+
+
+    <apex:outputPanel rendered="{!!hasDispos}">
+        No Disposition
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!hasDispos}">
+        <apex:form >
+            <table class="table table-sm table-hover results-table">
+                <tr class="thead-blue">
+                    <th>Id</th>
+                    <th>Caller Id</th>
+                    <th>Call Date</th>
+                    <th>Type</th>
+                    <th>Value</th>
+                    <th>Comment</th>
+                </tr>
+                <apex:repeat value="{!dispoList}" var="dis">
+                    <apex:outputPanel layout="none">
+                        <tr>
+                            <td>{!dis.id}</td>                         
+                            <td>{!dis.CallerId__c}</td>
+                            <td>{!dis.CallDate__c}</td>
+                            <td>{!dis.DispositionType__c}</td>
+                            <td>{!dis.DispositionValue__c}</td>
+                            <td>{!dis.DispositionComments__c}</td> 
+                        </tr>
+                    </apex:outputPanel>
+                </apex:repeat>
+            </table>
+        </apex:form>
+    </apex:outputPanel>
+</apex:page>

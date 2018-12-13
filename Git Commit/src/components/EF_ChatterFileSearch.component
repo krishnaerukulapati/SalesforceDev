@@ -1,0 +1,95 @@
+<apex:component controller="EdgeForceIntranetChtFileSearchController">
+
+    <div class="col-sm-4 pull-left">
+        <input placeholder="Search Files"  id="_searchBoxchatter" class="searchBox form-control" onkeyup="performinitialSearch_chatter(this.value);" />  
+    </div>
+
+    <br class="clear" />
+
+    <apex:form >
+            <apex:actionfunction name="processfileSearch_chatter" action="{!processfileSearch}" reRender="searchResultPanel_chatter"  status="panelsearchStatus">
+                <apex:param name="searchInput" assignTo="{!searchInputinController}" value=""/>
+            </apex:actionfunction>
+            <apex:actionfunction name="processfilesSearchMore_chatter" action="{!processfilesSearchMore}" reRender="searchResultPanel_chatter"  status="panelsearchStatus"/>
+            <apex:actionfunction name="RefreshResult_chatter" action="{!clear}" reRender="searchResultPanel_chatter" />           
+    </apex:form>
+
+    <apex:outputpanel id="searchResultPanel_chatter">  
+            <script>
+                $('#resultTable').empty();
+            </script>
+
+            <div class="row">
+                <ul id="resultTable" class="file-search resulttable">
+
+                    <apex:repeat value="{!listoffiles}" var="chatterfiles">
+                        <script>
+                            var url;
+                            var createdate=new Date('{!chatterfiles.CreatedDate}');
+                            var parseddate=[createdate.getDate(), createdate.getMonth()+1, createdate.getFullYear()].join('/');
+                            var filetype='{!chatterfiles.fileType}';
+                            
+                            //alert(filetype);
+                            if(filetype=="TEXT")
+                                url="/sfc/images/docicons/doctype_txt_32.png";
+                            else if(filetype=="WORD_X" || filetype=='WORD')
+                                 url="/sfc/images/docicons/doctype_word_32.png";
+                            else if(filetype=="POWER_POINT_X" || filetype== 'POWER_POINT')
+                                 url="/sfc/images/docicons/doctype_ppt_32.png";
+                            else if(filetype="PDF")
+                                 url="/sfc/images/docicons/doctype_pdf_32.png";
+                            else
+                                 url="/sfc/images/docicons/doctype_word_32.png";
+                                 //alert('{!chatterfiles.title}');
+                                 //$('#resultTable').append('<tr><td>'+'jdso'+'</td></tr>');
+                                 $('#resultTable').append('<li class="col-sm-3"><div class="wrapper"><div class="user-image"><a class="anchor"><img class="doc" src="'+url+'"/></a></div><div class="user-detail"><div class="name"><a href="/sfc/servlet.shepherd/version/download/'+'{!chatterfiles.id}'+'?asPdf=false&operationContext=CHATTER" target="_blank" >'+'{!chatterfiles.title}'+'</a></div><div class="title"><i class="glyphicon glyphicon-calendar"></i>'+parseddate+'</div><div class="company"><i class="glyphicon glyphicon-user" ></i>'+'{!chatterfiles.CreatedBy.FirstName}'+' '+ '{!chatterfiles.CreatedBy.LastName}'+'</div></div><br class="clear" /></div></li>');
+                                            //alert('here');        
+                        </script>
+                    </apex:repeat>
+                </ul>
+            </div>
+    </apex:outputpanel>
+
+    <apex:actionStatus startText="(Retrieving data...)" id="panelsearchStatus" layout="block">
+            <apex:facet name="start">
+                <div id="loadingdiv">
+                    <center>
+                        <img src="{!URLFOR($Resource.loader)}"/>
+                    </center>
+                </div>
+            </apex:facet>
+            <apex:facet name="stop"></apex:facet>
+    </apex:actionStatus>
+
+
+    <script>
+
+    var timer;
+        function performinitialSearch_chatter(inputText){
+             clearTimeout(timer);
+             timer = setTimeout(function () {
+                if(inputText != null && inputText != '' && inputText.length>=2){
+                    processfileSearch_chatter(inputText)
+                }else{
+                    RefreshResult_chatter();
+                }
+            },750);
+        }
+        $(window).scroll(function(){ 
+                if(isScrollBottom_chatter()){ 
+                    var searchText = $('#_searchBoxchatter').val();
+                    if(searchText != null && searchText != '' && searchText.length >=2 ){  
+                        processfilesSearchMore_chatter();
+                    }else{
+                        RefreshResult_chatter();
+                    }
+                }
+        }); 
+        function isScrollBottom_chatter() { 
+            var documentHeight = $(document).height(); 
+            var scrollPosition = $(window).height() + $(window).scrollTop(); 
+            return (documentHeight >= scrollPosition-1); 
+        }
+    </script>
+
+</apex:component>

@@ -1,0 +1,20 @@
+<apex:page showHeader="true" sidebar="true" standardController="lead" extensions="WaitBreakController">
+	
+	<apex:outputPanel >
+		<apex:form >
+			<table>
+				<tbody>
+					<tr>
+						<th>
+							Requesting:
+						</th>
+						<td>
+							Purposely exceding concurrent API calls
+						</td>						
+					</tr>
+				</tbody>
+			</table>
+		</apex:form>
+	</apex:outputPanel>
+
+</apex:page>

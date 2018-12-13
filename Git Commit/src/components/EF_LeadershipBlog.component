@@ -1,0 +1,60 @@
+<!-- 
+// (c) 2014 Appirio, Inc.
+//
+// New Executive blog section 
+//
+// 24 Sept, 2014   Sumit Tanwar    Original (Ref. T-321629)
+// <Last Modified Date>     <Last Modified By>    <What modification done with task/story/ issue number>
+-->
+
+<apex:component controller="EdgeForceIntranetBlogController"> 
+<apex:attribute name="LCpageId" description="This is the Page Id for displaying intranet Leadership Corners" type="String" assignTo="{!pageId}"/>
+<script>
+        $(document).ready(function(){
+            $('a[href="#"]').attr("href","javascript:void(0)");
+        });
+    </script>
+    <div id="ef_leadershipBlog" class="carousel slide" data-ride="carousel">
+
+        <!-- Indicators -->
+        <ol class="carousel-indicators">
+            <li data-target="#ef_leadershipBlog" data-slide-to="0" class="active"></li>
+            <li data-target="#ef_leadershipBlog" data-slide-to="1"></li>
+            <li data-target="#ef_leadershipBlog" data-slide-to="2"></li>
+        </ol>
+
+        <!-- Wrapper for slides -->
+        <div class="carousel-inner">
+            <apex:variable value="{!0}" var="slideCount"/>
+            <apex:repeat value="{!leadershipBlogList}" var="ldrBlog">
+                <apex:variable value="{!slideCount+1}" var="slideCount"/>
+                
+                <div class="item {!IF(slideCount == 1, 'active','')}">
+                                                                                                                                                                              <!-- c001 -->                 
+                    <apex:image style="width:100%" value="/servlet/servlet.FileDownload?file={!ldrBlog.content.Attachments[0].Id}&otherId=" rendered="{!ldrBlog.content.Attachments != null && ldrBlog.content.Attachments.size > 0}"/>                    
+                    <apex:image style="width:100%" value="{!$Resource.NoImage}" rendered="{!ldrBlog.content.Attachments != null && ldrBlog.content.Attachments.size == 0}"/>                    
+                                    
+                    <div style="padding:15px">                                                                                                                                                                                                                                                                         <!-- c002 -->
+                        <a id="newsTitle" href="{!IF(ldrBlog.content.URL__c != '',IF(contains(ldrBlog.content.URL__c, 'http') || contains(ldrBlog.content.URL__c, 'https'), ldrBlog.content.URL__c, 'https://' + ldrBlog.content.URL__c),'/apex/EF_Content?id='+ldrBlog.content.Id+'&category=' + URLEncode(ldrBlog.content.Type__c)+ '&tabName='+PageId)}" target="{!If(ldrBlog.content.URL__c != '', '_blank', '_self')}">
+                            <h5>{!ldrBlog.contentversionfordisplay.Name}</h5>
+                        </a>
+                        <p>{!ldrBlog.contentversionfordisplay.Summary__c}</p>
+                       <div class="buttons">
+                                                                                                                                                                                                                                                                                                                                                       <!-- c002 -->
+                            <a class="btn-bs btn-sm btn-secondary" href="{!IF(ldrBlog.content.URL__c != '',IF(contains(ldrBlog.content.URL__c, 'http') || contains(ldrBlog.content.URL__c, 'https'), ldrBlog.content.URL__c, 'https://' + ldrBlog.content.URL__c),'/apex/EF_Content?id='+ldrBlog.content.Id+'&category=' + URLEncode(ldrBlog.content.Type__c)+ '&tabName='+PageId)}" target="{!If(ldrBlog.content.URL__c != '', '_blank', '_self')}">{!$Label.More}</a>
+                        </div>
+                        
+                    </div><!--/.carousel-caption -->
+                </div><!--/.item -->
+            </apex:repeat>
+        </div>
+        <!-- Controls -->
+        <a class="left carousel-control" href="#ef_leadershipBlog" data-slide="prev">
+            <span class="glyphicon glyphicon-chevron-left"></span>
+        </a>
+        <a class="right carousel-control" href="#ef_leadershipBlog" data-slide="next">
+            <span class="glyphicon glyphicon-chevron-right"></span>
+        </a>
+
+    </div><!--/.carousel -->
+</apex:component>

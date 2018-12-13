@@ -1,0 +1,59 @@
+<apex:component controller="EdgeForcetopCommComponentcont" allowDML="true">
+
+<apex:outputPanel id="bodyPanel" layout="block">
+    <ul class="communities">
+        <apex:repeat value="{!memberWrapperList}" var="mList">
+        <li>
+            <a href='/apex/EF_ChatterGroup?g={!mList.grpItem.id}&Portal={!If($CurrentPage.Name = "IntranetPortalClinical",URLEncode("Clinical Development & Medical"),URLEncode("R&D"))}' target="_blank">
+                <img src="{!mList.grpItem.SmallPhotoUrl}" />
+                <span class="content">
+                    <span class="group">{!mList.grpItem.Name}</span>
+                    <span class="stats">{!mList.grpItem.MemberCount}&nbsp;Members</span>
+                    <input type="text" value="{!mList.grpItem.id}" class="hiddenID" style="visibility:hidden;" />
+                </span>
+            </a>
+            <div class="controls">
+                <!--<a href="#" class="btn-bs btn-sm btn-primary"><span class="visible-xs">{!$Label.Follow}</span><span class="glyphicon glyphicon-plus hidden-xs"></span></a>
+                -->
+                <apex:component rendered="{!mList.follow}">
+                    <a href="javascript:void(0)" class="btn-bs btn-sm btn-primary" onclick="followGroup(this)"><span class="visible-xs">{!$Label.Follow}</span><span class="glyphicon glyphicon-plus hidden-xs"></span></a>
+                </apex:component>
+                <apex:component rendered="{!mList.unFollow}">
+                    <a href="javascript:void(0)" class="btn-bs btn-sm btn-primary" onclick="unFollowGroup(this)"><span class="visible-xs">{!$Label.unFollow}</span><span class="glyphicon glyphicon-minus hidden-xs"></span></a>
+                </apex:component>
+                <br class="clear" />
+            </div><!--/.controls -->
+            <br class="clear" />
+        </li>
+        </apex:repeat>
+    </ul>
+</apex:outputpanel>
+
+<!--
+<a class="view-more" href="#">
+    <span>view all</span>
+    <span class="arrows">&raquo;</span>
+    <br class="clear" />
+</a>
+-->
+
+<apex:form >
+    <apex:inputHidden value="{!grpId}" id="grpId"/>
+    <apex:actionFunction action="{!follownewGroup}" name="followGroupAction" reRender="bodyPanel"/>
+    <apex:actionFunction action="{!unFollowGroup}" name="unfollowGroupAction" reRender="bodyPanel"/>
+</apex:form>
+
+    <script>
+        function followGroup(ref){
+            $("input[id$=grpId]").val($(ref).closest('li').find(".hiddenID").val());
+            //alert($(ref).closest('td').prev('td').find(".hiddenID").val());
+            followGroupAction();
+        }
+        function unFollowGroup(ref){
+            $("input[id$=grpId]").val($(ref).closest('li').find(".hiddenID").val());
+            //alert($(ref).closest('td').prev('td').find(".hiddenID").val());
+            unfollowGroupAction();
+        }
+    </script>
+
+</apex:component>

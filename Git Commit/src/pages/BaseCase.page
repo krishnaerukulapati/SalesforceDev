@@ -1,0 +1,4 @@
+<apex:page showheader="false" sidebar="false" standardStylesheets="false">
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <p>No case detail here!</p>
+</apex:page>

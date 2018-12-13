@@ -1,0 +1,70 @@
+<apex:page docType="html-5.0" showHeader="false" sidebar="false" standardStylesheets="true" applyHtmlTag="false" applyBodyTag="false" controller="EdgeForceIntranetTeamController">
+    <apex:composition template="EF_Template">
+        <apex:define name="body">
+
+            <div class="row">
+                <div class="col-sm-12 ef-content team">
+                    <h1>{!groupName}</h1>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <h4>{!$Label.Resources}</h4>
+                            <div class="section-content">
+                                <c:EF_Resources rendered="{!showCRMContent}"/>
+                                <c:EF_CustomDocuments rendered="{!!showCRMContent}"/>
+                            </div><!--./section-content -->
+                            <h4>Quick Links</h4>
+                            <div class="section-content pad-less side">
+                                <c:EF_QuickLinks LinkPageId="{!groupName}"/>
+                            </div>
+                        </div><!--/.col-sm-3 -->
+                        <div class="col-sm-9">
+
+                            <div class="carousel hidden-xs hidden-sm">
+                                <c:EF_Banner BannerPageId="{!pageName}" />
+                            </div>
+    
+                            <h4>{!$Label.News}</h4>
+                            <div class="section-content pad-less">
+                                <c:EF_TeamNews newsfeedpageId="{!groupName}" />
+                            </div><!-- /.section-content -->
+
+                            <h4>{!$Label.Chatter}</h4>
+                            <div class="section-content chatter">
+                                <chatter:feed entityId="{!groupId}"></chatter:feed> 
+                            </div>
+                            <a class="btn-bs btn-sm btn-primary read-more visible-xs" href="/apex/EF_ChatterFull">View full Chatter feed</a>
+                        </div><!--/.col-sm-9 -->
+                    </div><!--/.row -->
+                </div><!--/.col-sm-12 ef-content -->
+            </div><!--/.row -->
+
+            <script>
+                $(document).ready(function(){
+                    function getURLParameter(name) {
+                        return decodeURI((RegExp(name + '=' + '(.+?)(&|$)').exec(location.search)||[,null])[1]);
+                    }
+                    var pageName = getURLParameter("tabName");
+                    $("#menuDiv ul:first > li > a").each(function(){
+                        if ($(this).text().toLowerCase() == pageName.toLowerCase()){
+                            $(this).parent().addClass("active");
+                        }else{
+                            $(this).parent().removeClass("active");
+                        }
+                    });
+                        $('.defaultBannerImage').attr('src','{!$Resource.TeamBanner}');  
+                    /*
+                    if(screen.width <= 480 || navigator.userAgent.match(/Android/i) || navigator.userAgent.match(/webOS/i) || navigator.userAgent.match(/iPhone/i) || navigator.userAgent.match(/iPod/i)) {
+                    $('.defaultBannerImage').css('height','160px');
+                    $('.defaultBannerImage').css('width','100%');
+                    $('.carousel').css('height','98px');
+                  }else {
+                    $('.defaultBannerImage').css('height','245px');
+                    $('.defaultBannerImage').css('width','705px');
+                  } 
+                */
+                });
+            </script>
+
+        </apex:define>
+    </apex:composition>
+</apex:page>

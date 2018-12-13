@@ -1,0 +1,78 @@
+<apex:page showHeader="false" sidebar="false"> 
+	<!-- This script takes the endpoint URL parameter passed from the deployment 
+  		page and makes it the action for the form -->
+	
+	<script type='text/javascript' src='https://c.la5cs.salesforceliveagent.com/content/g/js/30.0/deployment.js'></script>
+    <script type="text/javascript">
+	     (function() { 
+			function handlePageLoad() {
+				var endpointMatcher = new RegExp("[\\?\\&]endpoint=([^&#]*)");
+				document.getElementById('prechatForm').setAttribute('action',
+				decodeURIComponent(endpointMatcher.exec(document.location.search)[1]));
+		    } 
+
+		    if (window.addEventListener) {
+				window.addEventListener('load', handlePageLoad, false);
+			}
+			else {
+				window.attachEvent('onload', handlePageLoad, false);
+			}
+		})(); 
+
+	    function addCustomMaps() {
+	    	/*var name = document.getElementById("name").value;
+	    	var phone = document.getElementById("phone").value;
+	    	var email = document.getElementById("email").value;
+
+	    	liveagent.addCustomDetail("First Name", firstName, true);
+	    	liveagent.addCustomDetail("Last Name", lastName, true);
+	    	liveagent.addCustomDetail("Email Address", email, true);*/
+
+/* Sets the display name of the visitor in the agent console when engaged in a chat */
+//liveagent.setName(name);
+
+/* Adds a custom detail called Contact Email and sets it value to jane@doe.com */
+//liveagent.addCustomDetail('Contact Name', name);
+/* Adds a custom detail called Contact Email and sets it value to jane@doe.com */
+//liveagent.addCustomDetail('Contact E-mail', email);
+
+/* Creates a custom detail called Phone Number and sets the value to 415-555-1212 */
+//liveagent.addCustomDetail('Phone Number', phone);
+
+/* Creates a custom detail called Phone Number and sets the value to 415-555-1212 */
+//liveagent.addCustomDetail('Case Status', 'New');
+
+/* Creates a custom detail called Phone Number and sets the value to 415-555-1212 */
+//liveagent.addCustomDetail('SearchTerms', '||||||||||||' + email, false);
+
+/* Creates a custom detail called Phone Number and sets the value to 415-555-1212 */
+//liveagent.addCustomDetail('Case Origin', 'Phone');
+
+//liveagent.findOrCreate("Case").map("Status","Case Status",false,false,true).map("SearchTerms__c","SearchTerms",false,false,true).map("Origin","Case Origin",false,false,true).saveToTranscript("CaseId").showOnCreate();
+	//document.getElementById("SearchTerms").value +=  document.getElementById("email").value;
+	document.getElementById("prechat_field_name").value +=  document.getElementById("name").value;
+	    }
+	</script>
+	<h1>Pre-chat Form</h1> 
+	<form method='post' id='prechatForm'> 
+		<!--<input type="hidden" name="liveagent.prechat:CaseStatus" value="New" />
+		<input type="hidden" name="liveagent.prechat:SearchTerms" id="SearchTerms" value="||||||||||||" />
+		<input type="hidden" name="liveagent.prechat:CaseOrigin" value="Phone" />
+		<input type="hidden" name="liveagent.prechat.findorcreate.map:Case" value="Subject,CaseSubject;Status,CaseStatus;Origin,CaseOrigin;RecordTypeId,CaseRecordType;SearchTerms__c,SearchTerms" />
+		<input type="hidden" name="liveagent.prechat.findorcreate.map.doCreate:Case" value="Subject,true;Status,true;Origin,true;SearchTerms__c,true" />
+		<input type="hidden" name="liveagent.prechat.findorcreate.showOnCreate:Case" value="true" />
+		<input type="hidden" name="liveagent.prechat.findorcreate.saveToTranscript:Case" value="CaseId" />-->
+		<input type='hidden' name="liveagent.prechat.name" id="prechat_field_name" /><br/>
+		Name: <input type='text' name="liveagent.prechat:Name" id="name" /><br/>
+		Email Address: <input type='text' name='liveagent.prechat:EmailAddress' id="email" /><br />
+		Subject: <input type='text' name="liveagent.prechat:CaseSubject"/><br />
+		Phone: <input type='text' name='liveagent.prechat:Phone' /><br />
+
+		<input type="submit" value="Request Chat" id="prechat_submit" onclick="addCustomMaps()" /> 
+		<style type="text/css"> 
+			p {
+				font-weight: bolder;
+			} 
+		</style> 
+	</form> 
+</apex:page>

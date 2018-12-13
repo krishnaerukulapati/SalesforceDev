@@ -1,0 +1,63 @@
+<!-- 
+// (c) 2014 Appirio, Inc.
+//
+// <Summary of the requirements that we have received in the task/story>
+//
+// <Created Date>   <Created By>    Original (Ref. <Task No.>)
+// 15th Sept, 2014   Sumit Tanwar    Added new row to the details, About me, manager name Ref: T-319473
+-->
+
+<apex:page docType="html-5.0" showHeader="false" sidebar="false" standardStylesheets="true" applyHtmlTag="false" applyBodyTag="false" standardController="User">
+    <apex:composition template="EF_Template">
+        <apex:define name="body">
+
+            <div class="row ef-content view-profile">
+                <div class="col-sm-8">
+                    <h4>User Detail</h4>
+                    <div class="section-content">
+                        <div class="view-user-profile">
+                            <apex:image value="{!User.FullPhotoUrl}" />
+                            <div class="user-details">
+                                <div class="name">{!User.Name}</div>
+                                <div class="user-title"><span></span>{!User.Title}</div>
+                                <div class="manager-name"><span class="glyphicon glyphicon-user"></span>{!User.Manager.Name}</div>
+                                <div class="about-me"><span class="glyphicon glyphicon-comment"></span>{!User.AboutMe}</div>
+                                <div class="business-function"><span class="glyphicon glyphicon-briefcase"></span> {!User.User_Business_Function__c}</div>
+                                <div class="user-address"><span class="glyphicon glyphicon-globe"></span> {!User.Street}, {!User.City}, {!User.Country}</div>
+                                <div class="user-phone"><span class="glyphicon glyphicon-earphone"></span> {!User.Phone}</div>
+                                <div class="user-email"><span class="glyphicon glyphicon-envelope"></span> {!User.Email}</div>
+                            </div><!--/.user-details -->
+                            <a class="btn-bs btn-secondary pull-right" href="/apex/EF_UserProfile"><span class="glyphicon glyphicon-pencil"></span> Edit</a>
+                            <br class="clear" />
+                        </div><!--/.view-user-profile -->
+                    </div><!--/.section-content -->
+                    
+                    <h4>Expertise</h4>
+                    <div class="section-content pad-less">
+                        <apex:image value="{!$Resource.UserProfile}/tags.png" width="96%"/>
+                    </div><!--/.section-content -->
+
+                    <h4>Badges</h4>
+                    <div class="section-content">
+                        <ul class="badge-list">
+                            <li><apex:image value="{!$Resource.UserProfile}/badge-asset.png" /></li>
+                            <li><apex:image value="{!$Resource.UserProfile}/badge-cal.png" /></li>
+                            <li><apex:image value="{!$Resource.UserProfile}/badge-cs.png" /></li>
+                            <li><apex:image value="{!$Resource.UserProfile}/badge-hitr.png" /></li>
+                            <br class="clear" />
+                        </ul>
+                    </div><!--/.section-content -->
+                </div><!--/.col-sm-8 -->
+
+                <div class="col-sm-4">
+                    <h4>Chatter</h4>
+                    <div class="section-content chatter">
+                        <c:EF_Chatter />
+                    </div>
+                    <a class="btn-bs btn-sm btn-primary read-more visible-xs" href="/apex/EF_ChatterFull">View full Chatter feed</a>
+                </div><!--/.col-sm-4 -->
+            </div><!--/.row -->
+
+        </apex:define>
+    </apex:composition>
+</apex:page>

@@ -1,0 +1,91 @@
+<apex:component controller="ConstituentAsyncController" allowDML="true">
+    <apex:includeScript value="/support/console/31.0/integration.js" />
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}" />
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}" />
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <apex:includeScript value="{!URLFOR($Resource.ECCConsole)}" />
+    <apex:includeScript value="{!URLFOR($Resource.DetailTabAutoRefresh)}" />
+    <link class="user" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+
+
+    <apex:form >
+        <apex:actionFunction action="{!reLoad}" rerender="pageRender" name="reLoadPage" />
+        <apex:outputPanel id="pageRender">
+            <apex:outputPanel rendered="{!!isConsLoaded}">
+                Loading Constituent.
+                <div class="spinner">
+                    <div class="rect1"></div>
+                    <div class="rect2"></div>
+                    <div class="rect3"></div>
+                    <div class="rect4"></div>
+                    <div class="rect5"></div>
+                </div>
+            </apex:outputPanel>
+            <apex:outputPanel rendered="{!isConsLoaded}">
+                <apex:outputPanel rendered="{!!isCaseSet}">
+                    <div class="form-message">
+                        <h3>Please click save and select a constituent.</h3>
+                    </div>
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{!AND(isCaseSet, !isUUIDSet, !c360Error)}">
+                    <div class="form-message">
+                        <h3>No constituent selected.</h3><br />
+                        <button onclick="openSubtabC360('{!URLFOR($Page.C360Search)}&cid={!caseId}', 'Select Constituent', 'assignConstituent'); return false;">Select Constituent</button>
+
+                        <script>
+                            $j = jQuery.noConflict();
+                            $j(document).ready(function () {
+                                sforce.console.getSubtabIds(null, closeSubTabs);
+                            });
+
+                            function closeSubTabs(result) {
+                                for (var i = 1; i < result.ids.length; i++) {
+                                    sforce.console.closeTab(result.ids[i]);
+                                }
+                                var isRCase = {!isResearchCase};
+                            if (isRCase) {
+                                openPrimaryTab('{!URLFOR($Page.C360Search)}&cid={!caseId}', 'Search Again', 'searchAgain');
+                            }
+                                // else {
+                                //     openSubtabC360('{!URLFOR($Page.C360Search)}&cid={!caseId}', 'Select Constituent', 'assignConstituent');
+                                // }
+                            }
+                        </script>
+                        <apex:actionFunction name="reLoadConst" action="{!reLoad}" rerender="pageRender" />
+                    </div>
+                </apex:outputPanel>
+                <apex:outputPanel layout="none" rendered="{!AND(isCaseSet, isUUIDSet, !c360Error)}">
+                    <apex:outputPanel rendered="{!isVIP}">
+                        <style>
+                            #c360highlight tbody {
+                                background: #6699FF;
+                            }
+                        </style>
+                    </apex:outputPanel>
+                    <apex:outputPanel rendered="{!AND(isCaseSet, c360Error)}">
+                        <div class="form-message">
+                            <h3>Error loading constituent.  Please try again later...</h3>
+                        </div>
+                    </apex:outputPanel>
+                    <div class="form-control">
+                        <div>Contact: <a href="javascript:openSubtabC360('/apex/C360RelationshipDetail?id={!caseId}', 'Relationships', 'viewRelationships')">{!ConsType}</a></div>
+                        <div class="name"><a href="javascript:openSubtabC360('/apex/C360ConstituentBasicEdit?id={!caseId}', 'Basic', 'viewBasic')"><apex:outputText value="{!LongName}" /></a></div>
+                        <div class="address"><a href="javascript:openSubtabC360('/apex/C360AddressDetail?id={!caseId}', 'Address', 'viewAddress')"><apex:outputText value="{!Address}" /></a></div>
+                        <div class="phone"><a href="javascript:openSubtabC360('/apex/C360PhoneDetail?id={!caseId}', 'Phone', 'viewPhone')"><apex:outputText value="{!Phone}" /></a></div>
+                        <div class="email"><a href="javascript:openSubtabC360('/apex/C360EmailDetail?id={!caseId}', 'Email', 'viewEmail')"><apex:outputText value="{!Email}" /></a></div>
+
+                        <!-- attempting to conditionally display research options -->
+                        <apex:outputPanel layout="block" rendered="{!isResearchCase}">
+                            <a href="javascript:openSubtabC360('/apex/EventHistorySummary?ID={!caseID}&type=Case_Constituent', 'Event History', 'Event History')">View Event History</a>
+                        </apex:outputPanel>
+
+                        <a href="javascript:openSubtabC360('/apex/CaseHistory?id={!caseId}', 'Case History', 'caseHistory')">Cases</a> <a href="javascript:openSubtabC360('/apex/LeadHistory?id={!caseId}', 'Lead History', 'leadHistory')">Leads</a> <a href="javascript:openSubtabC360('/apex/OppHistory?id={!caseId}', 'Opportunity History', 'oppHistory')">Opportunities</a>
+                    </div>
+
+                </apex:outputPanel>
+            </apex:outputPanel>
+        </apex:outputPanel>
+    </apex:form>
+</apex:component>

@@ -1,0 +1,107 @@
+<apex:page docType="html-5.0" showHeader="false" sidebar="false" standardStylesheets="true" applyHtmlTag="false" applyBodyTag="false" controller="EdgeForceEventCalendarController">
+        <apex:composition template="EF_Template">
+                <apex:define name="body">
+
+                <link href="{!$Resource.fullcalendar}/fullcalendar/fullcalendar.css" rel="stylesheet" />
+                <link href='{!$Resource.fullcalendar}/fullcalendar/fullcalendar.print.css' rel="stylesheet" media="print" />
+
+                <script src="{!$Resource.fullcalendar}/lib/jquery-ui.custom.min.js"></script>
+                <script src="{!$Resource.fullcalendar}/fullcalendar/fullcalendar.js" rel="stylesheet" />
+                <script>
+                        //$.noConflict();
+                        $(document).ready(function() {
+                                $('#calendar').fullCalendar({
+                                        header: {
+                                                left: 'prev,next today',
+                                                center: 'title',
+                                                right: 'month,agendaWeek,agendaDay'
+                                        },
+                                        selectable: false,
+                                        selectHelper: false,            
+                                        editable: false,
+                                        events: {!jsonOutput}
+                                });
+                        });
+                </script>
+                
+        <div id="formWrap">
+                <!--
+                <apex:outputPanel rendered="{!If($CurrentPage.parameters.Portal == 'R&D', true, false)}">
+                        <c:IntranetHeaderMobileRD />
+                </apex:outputPanel>
+
+                <apex:outputPanel rendered="{!If($CurrentPage.parameters.Portal == 'Clinical Development & Medical' , true, false)}">
+                        <c:IntranetHeaderMobileRDClinical />
+                </apex:outputPanel>
+
+                <apex:outputPanel rendered="{!If(portal == 'Regulatory Affairs' , true, false)}">
+                        <c:IntranetMenu2 />
+                </apex:outputPanel>
+
+                <apex:outputPanel rendered="{!If(portal == 'R&D', true, false)}">
+                        <c:IntranetMenu2RD />
+                </apex:outputPanel>
+
+                <apex:outputPanel rendered="{!If(portal == 'Clinical Development & Medical' , true, false)}">
+                        <c:IntranetMenuClinical /> 
+                </apex:outputPanel>
+                -->
+
+                <apex:form >
+                        <apex:actionFunction name="filterEvents" action="{!fetchEvents}" rerender="calendarPanel" />
+
+                        <div class="row ef-content event-calendar">
+                                <div class="col-sm-3">
+                                        <h4>Event Filter</h4>
+                                        <div class="section-content">
+                                                <div class="form-group">
+                                                    <apex:outputLabel value="Event Type"/>
+                                                    <apex:inputField value="{!event.Event_Type__c}" styleClass="form-control" />
+                                                </div><!--/.form-group -->
+                                                <apex:commandButton id="searchButton" styleClass="btn-bs btn-primary pull-right" status="status" value="Filter" reRender="articlePanel" onClick="filterEvents();"/>
+                                                <br class="clear" />
+                                        </div><!--/.section-content -->
+                                </div><!--/.col-sm-3 -->
+                                <div class="col-sm-9">
+                                        <h4>Events</h4>
+                                        <div class="section-content">
+                                                <apex:outputPanel layout="block" id="calendarPanel">
+                                                        <apex:outputPanel rendered="{!isSearch}">
+                                                                <script>
+                                                                        $('#calendar').fullCalendar({
+                                                                                header: {
+                                                                                        left: 'prev,next today',
+                                                                                        center: 'title',
+                                                                                        right: 'month,agendaWeek,agendaDay'
+                                                                                },
+                                                                                selectable: false,
+                                                                                selectHelper: false,
+                                                                                editable: false,
+                                                                                events: {!jsonOutput}
+                                                                        });
+                                                                </script>
+                                                        </apex:outputPanel>
+                                                        <div id='calendar'></div>
+                                                </apex:outputPanel> 
+                                        </div><!--/.section-content -->
+                                </div><!--/.col-sm-9 -->
+                        </div><!--/.row -->
+                </apex:form>
+
+                <apex:outputPanel rendered="{!$CurrentPage.parameters.Portal == 'Regulatory Affairs'}">
+                        <div id="flashWrap">
+                                <!-- apex:flash tag to display SFDC's built-in flash document viewer with some parameters -->
+                                <apex:flash id="theFlash" src="/_swf/121310/sfc/flex/DocViewer.swf" flashvars="shepherd_prefix=/sfc/servlet.shepherd&v={!$CurrentPage.parameters.newValue}&mode=bubble" height="97%" width="100%" /> 
+                        </div>
+                        <div id="buttonWrap">
+                                <!-- Fullscreen exit button for IE -->
+                                <button>Exit Fullscreen</button>
+                        </div>
+                </apex:outputPanel>
+        </div><!--/#formWrap -->
+
+
+
+                </apex:define>
+        </apex:composition>
+</apex:page>

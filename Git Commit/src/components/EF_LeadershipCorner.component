@@ -1,0 +1,60 @@
+<!--@ Modified by : Sil 
+    @ Modified On : 10-March-2014 
+    @ purpose     : Fixed Error 'Subscript is invalid because list is emptyError is in expression' 
+         @ chageId     : c001
+    @ purpose     : Recent News was not Coming as Content Type was hard-coded in code.made that dynamic.
+        @ chageId     : c002
+    -----------------------------------------------------------------------------------------------
+    -->
+<apex:component controller="EdgeForceIntranetLdrshipCornerController"> 
+    <apex:attribute name="LCpageId" description="This is the Page Id for displaying intranet Leadership Corners" type="String" assignTo="{!pageId}"/>
+    <script>
+        $(document).ready(function(){
+            $('a[href="#"]').attr("href","javascript:void(0)");
+        });
+    </script>
+
+    <div id="ef_leadership" class="carousel slide" data-ride="carousel">
+
+        <!-- Indicators -->
+        <ol class="carousel-indicators">
+            <li data-target="#ef_leadership" data-slide-to="0" class="active"></li>
+            <li data-target="#ef_leadership" data-slide-to="1"></li>
+            <li data-target="#ef_leadership" data-slide-to="2"></li>
+        </ol>
+
+        <!-- Wrapper for slides -->
+        <div class="carousel-inner">
+            <apex:variable value="{!0}" var="slideCount"/>
+            <apex:repeat value="{!leadershipCornerList}" var="ldrCorner">
+                <apex:variable value="{!slideCount+1}" var="slideCount"/>
+                <div class="item {!IF(slideCount == 1, 'active','')}">
+                                                                                                                                                                              <!-- c001 -->                 
+                    <apex:image style="width:100%" value="/servlet/servlet.FileDownload?file={!ldrCorner.content.Attachments[0].Id}&otherId=" rendered="{!ldrCorner.content.Attachments != null && ldrCorner.content.Attachments.size > 0}"/>                    
+                    <apex:image style="width:100%" value="{!$Resource.NoImage}" rendered="{!ldrCorner.content.Attachments != null && ldrCorner.content.Attachments.size == 0}"/>                    
+                                    
+                    <div style="padding:15px">                                                                                                                                                                                                                                                                         <!-- c002 -->
+                        <a id="newsTitle" href="{!IF(ldrCorner.content.URL__c != '',IF(contains(ldrCorner.content.URL__c, 'http') || contains(ldrCorner.content.URL__c, 'https'), ldrCorner.content.URL__c, 'https://' + ldrCorner.content.URL__c),'/apex/EF_Content?id='+ldrCorner.content.Id+'&category=' + URLEncode(ldrCorner.content.Type__c)+ '&tabName='+PageId)}" target="{!If(ldrCorner.content.URL__c != '', '_blank', '_self')}">
+                            <h5>{!ldrCorner.contentversionfordisplay.Name}</h5>
+                        </a>
+                        <p>{!ldrCorner.contentversionfordisplay.Summary__c}</p>
+                       <div class="buttons">
+                                                                                                                                                                                                                                                                                                                                                       <!-- c002 -->
+                            <a class="btn-bs btn-sm btn-secondary" href="{!IF(ldrCorner.content.URL__c != '',IF(contains(ldrCorner.content.URL__c, 'http') || contains(ldrCorner.content.URL__c, 'https'), ldrCorner.content.URL__c, 'https://' + ldrCorner.content.URL__c),'/apex/EF_Content?id='+ldrCorner.content.Id+'&category=' + URLEncode(ldrCorner.content.Type__c)+ '&tabName='+PageId)}" target="{!If(ldrCorner.content.URL__c != '', '_blank', '_self')}">{!$Label.More}</a>
+                        </div>
+                    </div><!--/.carousel-caption -->
+                </div><!--/.item -->
+            </apex:repeat>
+        </div>
+
+        <!-- Controls -->
+        <a class="left carousel-control" href="#ef_leadership" data-slide="prev">
+            <span class="glyphicon glyphicon-chevron-left"></span>
+        </a>
+        <a class="right carousel-control" href="#ef_leadership" data-slide="next">
+            <span class="glyphicon glyphicon-chevron-right"></span>
+        </a>
+
+    </div><!--/.carousel -->
+
+</apex:component>

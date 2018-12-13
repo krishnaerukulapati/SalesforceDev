@@ -1,0 +1,87 @@
+<apex:page standardController="case" extensions="C360DetailController">
+    <apex:outputPanel rendered="{!!isUUIDSet}">
+        No constituent selected.    
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!isUUIDSet}">
+        <apex:form >
+            <apex:pageBlock title="{!name}">
+                First Name: <apex:outputText value="{!con.FirstName}"/>
+                Last Name: <apex:outputText value="{!con.LastName}"/>
+            </apex:pageBlock>
+            <apex:pageBlock title="Address">
+                <apex:pageBlockTable value="{!con.Profile.Addresses}" var="addr">
+                    <apex:column >
+                        <apex:commandLink action="{!EditAddress}" value="Edit">
+                            <apex:param assignTo="{!contId}" value="{!addr.ContactId}" name="DetailContId"/>
+                        </apex:commandLink>
+                    </apex:column>
+                    <apex:column headerValue="Type">
+                        <apex:outputText value="{!addr.AddressType.Code}"/>
+                    </apex:column> 
+                    <apex:column headerValue="Status">
+                        <apex:outputText value="{!addr.Status}"/>
+                    </apex:column> 
+                    <apex:column headerValue="Preferred">
+                        <apex:outputText value="{!IF(addr.Preferred, 'YES', 'NO')}"/>
+                    </apex:column>
+                    <apex:column headerValue="Address">
+                        <apex:outputPanel rendered="{!NOT(OR(ISNULL(addr.Street1), ISBLANK(addr.Street1)))}">
+                            <apex:outputText value="{!addr.Street1}" /><br/>
+                        </apex:outputPanel>
+                        <apex:outputPanel rendered="{!NOT(OR(ISNULL(addr.Street2), ISBLANK(addr.Street2)))}">
+                            <apex:outputText value="{!addr.Street2}" /><br/>
+                        </apex:outputPanel>
+                        <apex:outputPanel rendered="{!NOT(OR(ISNULL(addr.Street3), ISBLANK(addr.Street3)))}">
+                            <apex:outputText value="{!addr.Street3}" /><br/>
+                        </apex:outputPanel>
+                        <apex:outputText value="{!addr.City}" />,
+                        <apex:outputText value="{!addr.State}" />,
+                        <apex:outputText value="{!addr.ZipCode}" />
+                    </apex:column> 
+                </apex:pageBlockTable>
+            </apex:pageBlock>
+            <apex:pageBlock title="Phone">
+                <apex:pageBlockTable value="{!con.Profile.Phones}" var="phn">
+                    <apex:column >
+                        <apex:commandLink action="{!EditPhone}" value="Edit">
+                            <apex:param assignTo="{!contId}" value="{!phn.ContactId}" name="DetailContId"/>
+                        </apex:commandLink>
+                    </apex:column>
+                    <apex:column headerValue="Type">
+                        <apex:outputText value="{!phn.PhoneType.Code}"/>
+                    </apex:column> 
+                    <apex:column headerValue="Status">
+                        <apex:outputText value="{!phn.Status}"/>
+                    </apex:column> 
+                    <apex:column headerValue="Preferred">
+                        <apex:outputText value="{!IF(phn.Preferred, 'YES', 'NO')}"/>
+                    </apex:column>
+                    <apex:column headerValue="Phone">
+                        <apex:outputText value="{!phn.PhoneNumber}"/>
+                    </apex:column> 
+                </apex:pageBlockTable>
+            </apex:pageBlock>
+            <apex:pageBlock title="Email">
+                <apex:pageBlockTable value="{!con.Profile.Emails}" var="eml">
+                    <apex:column >
+                        <apex:commandLink action="{!EditEmail}" value="Edit">
+                            <apex:param assignTo="{!contId}" value="{!eml.ContactId}" name="DetailContId"/>
+                        </apex:commandLink>
+                    </apex:column>
+                    <apex:column headerValue="Type">
+                        <apex:outputText value="{!eml.EmailType.Code}"/>
+                    </apex:column> 
+                    <apex:column headerValue="Status">
+                        <apex:outputText value="{!eml.Status}"/>
+                    </apex:column> 
+                    <apex:column headerValue="Preferred">
+                        <apex:outputText value="{!IF(eml.Preferred, 'YES', 'NO')}"/>
+                    </apex:column>
+                    <apex:column headerValue="Email">
+                        <apex:outputText value="{!eml.EmailAddress}"/>
+                    </apex:column> 
+                </apex:pageBlockTable>
+            </apex:pageBlock>
+        </apex:form>
+    </apex:outputPanel>
+</apex:page>

@@ -1,0 +1,137 @@
+<apex:page controller="EdgeForceVideoGalleryController" docType="html-5.0" showHeader="false" sidebar="false" standardStylesheets="true" applyHtmlTag="false" applyBodyTag="false">
+    <apex:composition template="EF_Template">
+        <apex:define name="body">
+           
+            <h1>Gallery Content</h1>
+            <div class="video-gallery">
+                <div id="currentGalleryContent" class="row">
+                    <apex:outputPanel rendered="{!currentRecord != null}">
+                        <div class="col-sm-8">
+                            <div class="main-content">
+                                <iframe width="100%" height="500" src="https://www.youtube.com/embed/{!currentRecord.Video__c}" frameborder="0" allowfullscreen="true"></iframe>        
+                            </div>
+                        </div>
+                        <div class="col-sm-4" id="sideCol">
+                            <h4 onclick="showVideoData('detail')">{!currentRecord.Name}</h4>
+                            <div id="recordDetailContainer" class="section-content">
+                                <div id="videoDetailContainer">
+                                    By:&nbsp;<a href="/apex/EF_ViewUserProfile?id={!user.id}">{!user.Name}</a>
+                                    <a href="/apex/EF_VideoGallery?uid={!user.id}" target="_self">[{!userVideoCount} {!IF(userVideoCount==1,'video','videos')}]</a>
+                                    <p class="timestamp">Uploaded on:&nbsp;<apex:outputField value="{!currentRecord.CreatedDate}"/></p>
+                                    <p>{!currentRecord.Video_Caption__c}</p>
+                                </div>
+                                <span id="commentPuller" class="label pull-right">
+                                    <a href="javascript:showCommentPostBlock()">Add Comment</a>
+                                </span>
+                                <span id="commentHider" class="label pull-right">
+                                    <a href="javascript:hideCommentPostBlock()">Cancel</a>
+                                </span>
+                                <hr/>
+                                <div id="videoChatterContainer" class="chatter">
+                                    <chatter:feed entityId="{!currentRecord.Id}"/>
+                                </div>
+                            </div>
+                        </div>
+                    </apex:outputPanel>
+                </div>
+
+                <apex:outputPanel rendered="{!isFilteredByAuthor}">
+                    <p>
+                        <a href="/apex/EF_VideoGallery" target="_self" class="pull-right">[Show All]</a>
+                        Showing videos uploaded by {!user.Name}
+                    </p>
+                </apex:outputPanel>
+
+
+                <div class="video-content-control">
+                    <apex:form >
+                        <div class="pull-left">
+                            <label class="filter-label">Sort By:</label>
+                            <apex:selectList styleClass="filter-form form-control" value="{!orderByField}" size="1" multiselect="false">
+                                <apex:actionSupport event="onchange" action="{!fetchData}" reRender="galleryMenu"/>
+                                <apex:selectOptions value="{!listOfOrderingFields}"/>
+                            </apex:selectList>
+                        </div>
+                        <div class="pull-left">
+                            <label class="filter-label">Items Per Page:&nbsp;</label>
+                            <apex:selectList styleClass="filter-form form-control" value="{!pageSize}" size="1" multiselect="false">
+                                <apex:actionSupport event="onchange" action="{!fetchData}" reRender="galleryMenu"/>
+                                <apex:selectOptions value="{!listOfPageSizes}"/>
+                            </apex:selectList>  
+                        </div>
+                        <ul class="pager pull-right">
+                            <li class="{!IF(hasPrevious,'','disabled')}"><a href="javascript:goToPrevSet()">Previous</a></li>
+                            <li class="{!IF(hasNext,'','disabled')}"><a href="javascript:goToNextSet()">Next</a></li>
+                        </ul>
+                        <br class="clear" />
+                        <apex:actionFunction name="goToNextSet" action="{!goToNextPage}" reRender="galleryMenu"/>
+                        <apex:actionFunction name="goToPrevSet" action="{!goToPreviousPage}" reRender="galleryMenu"/>
+                    </apex:form>
+                </div><!--/.video-content-controls -->
+
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="gallery-wrapper">
+                            <apex:outputPanel layout="block" id="galleryMenu" styleClass="row">
+                                <apex:repeat value="{!listOfVideoContent}" var="contList">
+                                    <apex:repeat value="{!contList}" var="cont">
+                                        <div class="col-sm-4">
+                                            <div class="video-content">
+                                                <a href="/apex/EF_VideoGallery?id={!cont.id}" target="_self" >
+                                                    <img src="https://i1.ytimg.com/vi/{!cont.Video__c}/0.jpg" class="img-responsive" />
+                                                    <h5>{!cont.Name}</h5>
+                                                </a>
+                                                <p class="timestamp">Uploaded on:&nbsp;<apex:outputField value="{!cont.CreatedDate}"/></p>
+                                                <p class="description">{!cont.Video_Caption__c}</p>
+                                            </div>
+                                        </div>
+                                    </apex:repeat>
+                                </apex:repeat>
+                            </apex:outputPanel>
+                            <hr />
+                            <ul class="pager pull-right">
+                                <li class="{!IF(hasPrevious,'','disabled')}"><a href="javascript:goToPrevSet()">Previous</a></li>
+                                <li class="{!IF(hasNext,'','disabled')}"><a href="javascript:goToNextSet()">Next</a></li>
+                            </ul>
+                        </div>
+                    </div><!--/.col-sm-12 -->
+                </div><!--/.row -->
+            </div><!--/.video-gallery -->
+            <script>
+                $ = jQuery.noConflict();
+                
+                $(function(){
+                    var maxHeight = 500 - $("#sideCol h4").height() - 20;
+                    $("#recordDetailContainer").css("max-height",maxHeight+'px');
+                    $("#recordDetailContainer").css("height",maxHeight+'px');
+                });
+            
+                function showVideoData(what){
+                    $('#videoChatterContainer').slideToggle();
+                    /**
+                    if(what=='detail'){
+                        $('#videoChatterContainer').slideUp();
+                        $('#videoDetailContainer').slideDown();
+                    }else{
+                        $('#videoChatterContainer').slideDown();
+                        $('#videoDetailContainer').slideUp();    
+                    }
+                    */
+                }
+            
+                function showCommentPostBlock(){
+                    $(".publishercontainer").slideDown();
+                    $("#commentPuller").hide();
+                    $("#commentHider").show();
+                }
+            
+                function hideCommentPostBlock(){
+                    $(".publishercontainer").slideUp();
+                    $("#commentPuller").show();
+                    $("#commentHider").hide();
+                }
+            </script>
+        </apex:define>
+    </apex:composition>
+</apex:page>

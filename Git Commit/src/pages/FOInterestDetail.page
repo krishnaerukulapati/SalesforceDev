@@ -1,0 +1,83 @@
+<apex:page controller="FODetailInterestController" showheader="false" sidebar="false" standardStylesheets="false">
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.alsacFO, 'alsacFO.css')}" />
+
+    <script> 
+        var $j = $.noConflict();
+
+        function applyUI() {
+            $j( ".accordionDis" ).accordion({ disabled: true, icons: {activeHeader: "ui-icon-home"}, heightStyle: "content"});
+            $j("button").button();
+            $j("button").css("float", "right");
+            $j("button").css("clear", "both");
+            $j("tr").hover(function() {
+                    $j(this).addClass("ui-state-hover");
+                },function() {
+                    $j(this).removeClass("ui-state-hover");
+                }
+            );
+        }
+
+        $j(function() {
+            applyUI();
+        });
+    </script>
+    <apex:outputPanel rendered="{!!isUUIDSet}">
+        No constituent selected.    
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!isUUIDSet}">
+        <apex:form >
+            <div class="form-element">
+                <label>Duplicates: </label>
+                <apex:selectList value="{!consId}" size="1">
+                    <apex:selectOptions value="{!items}"/>
+                    <apex:actionSupport event="onchange" action="{!changeCons}"/>
+                </apex:selectList>
+                <button type="button" onclick="newIntFunc();">New Interest</button>
+                <apex:actionFunction action="{!NewInterest}" name="newIntFunc"/>
+            </div>
+
+            <table class="results-table" width="100%">
+                <tr class="ui-widget-header">
+                    <th></th>
+                    <th>Interest</th>
+                    <th>Program Type</th>
+                    <th>Status</th>
+                </tr>
+                <apex:repeat value="{!ints}" var="interest" id="email">
+                    <tr>
+                        <td>
+                            <a href="javascript:if(confirm('Are you sure?')) setContId('{!interest.Interest}');">Remove</a>
+                            <!--<apex:commandLink action="{!RemoveInterest}" value="Remove">
+                                <apex:param assignTo="{!contId}" value="{!interest.Interest}" name="DetailContId"/>
+                                <apex:param assignTo="{!consId}" value="{!consId}" name="ConsId"/>
+                            </apex:commandLink>-->
+                        </td>
+                        <td>{!interest.Interest}</td>
+                        <td>{!interest.Status}</td>
+                    </tr>
+                </apex:repeat>
+                <apex:actionFunction action="{!RemoveInterest}" name="remIntFunc">
+                    <apex:param assignTo="{!contId}" value="" name="DetailContId"/>
+                    <apex:param assignTo="{!consId}" value="" name="ConsId"/>
+                </apex:actionFunction>
+            </table>
+            <apex:inputHidden value="{!contId}" id="contIdParm"></apex:inputHidden>  
+            <script type="text/javascript">
+                var hdnId = '{!$Component.contIdParm}';
+            </script>
+        </apex:form>
+    </apex:outputPanel>
+    
+    <script type="text/javascript">
+        function setContId(contId) {
+            document.getElementById(hdnId).value = contId;
+            remIntFunc();
+        }
+    </script>
+</apex:page>

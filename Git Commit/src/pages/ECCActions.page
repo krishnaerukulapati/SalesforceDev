@@ -1,0 +1,66 @@
+<apex:page standardController="case" extensions="ECCActionsController" showchat="true" showheader="false">
+<apex:includeScript value="/support/console/29.0/integration.js"/>
+<table>
+    <tr>
+        <td>
+            <a href="javascript:openSubtabC360('{!URLFOR($Page.C360Interactions)}', 'Interactions', 'viewInteractions')">View Interactions</a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <a href="javascript:openSubtabC360('{!URLFOR($Page.C360RelationshipDetail)}', 'Relationships', 'viewRelationships')">View Relationships</a>
+        </td>
+    </tr>
+</table>
+    <script type="text/javascript">
+        var url;
+        var title;
+        var label;
+        var tabId;
+        
+        function openSubtabC360(pUrl, pTitle, pLabel) {
+            url = pUrl;
+            title = pTitle;
+            label = pLabel;
+            //First find the ID of the primary tab to put the new subtab in
+            sforce.console.getFocusedPrimaryTabId(getObjectId);
+        }
+        
+        var getObjectId = function getObjectId(result) {
+            tabId = result.id;
+            sforce.console.getFocusedPrimaryTabObjectId(openSubtab);
+        }
+        
+        var openSubtab = function openSubtab(result) {
+            //Now that we have the primary tab ID, we can open a new subtab in it
+            //var primaryTabId = result.id;
+            sforce.console.openSubtab(tabId, url + '&id=' + result.id, true,
+                title, null, null, label);
+        };
+        /*
+        var eventHandler = function (result) {
+            //alert('Focus changed to a different primary tab. The primary tab ID is:' + result.id + 'and the object Id is:' + result.objectId);
+            tabId = result.id;
+            pageId = result.objectId;
+        };
+        sforce.console.onFocusedPrimaryTab(eventHandler);
+        
+        function testGetFocusedPrimaryTabId() {
+            sforce.console.getFocusedPrimaryTabId(showTabId);
+        }
+        
+        var showTabId = function showTabId(result) {
+            //Display the tab ID
+            alert('Tab ID: ' + result.id);
+        };*/
+        
+        function OpenBBEC() //bbecId)
+        {
+            /*var url = "https://dmsqaapp.lb.alsac.local/dms/webui/webshellpage.aspx?databasename=" +
+                "DMS#pageType=p&pageId=88159265-2b7e-4c7b-82a2-119d01ecd40f&recordId=" + bbecId;
+            var win=window.open(url, '_blank');
+            win.focus();*/
+            sforce.console.fireEvent("OpenBBEC");
+        }
+    </script>
+</apex:page>

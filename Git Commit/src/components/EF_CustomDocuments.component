@@ -1,0 +1,98 @@
+<apex:component controller="EdgeforceDocumentCompController">
+     <apex:form >
+       <apex:actionfunction name="processDocument" action="{!processDocument}" reRender="modalPanel,bodyPanel" oncomplete=" $('#_contentModal').modal('show');">
+        <apex:param value="" name="DocumentIdParam" assignTo="{!DocumentInController}"/>
+       </apex:actionfunction>
+    </apex:form>
+
+    <!-- new way -->
+    <div class="panel-group nav-panel" id="accordion">
+        <apex:repeat value="{!listofResourceCategories}" var="category">
+            <div class="panel panel-default">
+                <a class="panel-heading" data-toggle="collapse" data-parent="#accordion" href="#collapseOne{!category}">
+                    <span class="glyphicon glyphicon-plus"></span>
+                    <span class="glyphicon glyphicon-minus"></span>
+                    <span class="panel-title">{!category}</span>
+                </a><!--/.panel-heading -->
+                <div id="collapseOne{!category}" class="panel-collapse collapse in">
+                    <div class="panel-body">
+                        <ul class="side-nav">
+                            <apex:repeat value="{!mapofcategoryandContents[category]}" var="contentdata">
+                                <li>
+                                    <p style="padding: 0px">
+                                      
+                                        <apex:outputPanel rendered="{!(contentdata.Document_Location__c =='Attachment' && (contentdata.URL__c == null || contentdata.URL__c == ''))}">
+                                          <a id="{!contentdata.Id}" onclick="processDocument('{!contentdata.Id}')" href="#" >{!contentdata.Name}</a> 
+                                        </apex:outputPanel>
+
+                                        <apex:outputPanel rendered="{!contentdata.URL__c != null && contentdata.URL__c != ''}">
+                                          <a target="_blank" id="{!contentdata.Id}" href="{!contentdata.URL__c}" >{!contentdata.Name}</a>
+                                        </apex:outputPanel>
+                                        
+                                        <apex:outputPanel rendered="{!(contentdata.Document_Location__c =='Chatter') && (contentdata.URL__c == null || contentdata.URL__c == '')}">
+                                          <a  id="{!contentdata.Id}"  onclick="processDocument('{!contentdata.Id}')"  href="#" >{!contentdata.Name}</a> 
+                                        </apex:outputPanel>
+                                         <!--  <apex:outputPanel rendered="{! contentdata.Document_Location__c =='Attachment'   && (contentdata.URL__c != null && contentdata.URL__c != '')}">
+                                          <p>No preview is available for this file type.</p>
+                                        </apex:outputPanel>-->
+
+                                    </p>
+                                </li>
+                            </apex:repeat>
+                        </ul><!--/.side-nav -->
+                    </div><!--/.panel-body -->
+                </div><!--/.collapseOne -->
+            </div><!--/.panel -->
+        </apex:repeat>
+        <apex:outputPanel rendered="{!!contentFlag }" >
+            There is no content for display        
+        </apex:outputpanel> 
+    </div><!--/.panel-group -->
+
+  
+
+    
+     
+      <apex:outputPanel id="modalPanel">
+        
+        <div class="modal fade" id="_contentModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="background-color:transparent;">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div id="_modalHeader" class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                             <h4 class="modal-title" id="_ModalLabel">{!currentDoc.docname}</h4>
+                             <apex:outputPanel rendered="{!currentICId != null && mapofContentIdandContent[currentICId].document_location__c == 'Attachment'}">                                                    
+                                <a style="float:right" class="btn btn-primary" href="/servlet/servlet.FileDownload?file={!currentDoc.docId}">Download</a>
+                             </apex:outputPanel>
+                             <apex:outputPanel rendered="{!currentICId != null && mapofContentIdandContent[currentICId].document_location__c == 'Chatter'}">
+                                <a style="float:right" class="btn btn-primary" href="/sfc/servlet.shepherd/version/download/{!currentDoc.docId}">Download</a>
+                              </apex:outputPanel> <br/>   
+                       <!-- <p><span class="badge">Tags</span>&nbsp;{!versionDataforUI.TagCsv}</p> --> 
+                    </div><!--/.modal-content -->
+                    <div id="_modalBody" class="modal-body">
+                       <apex:outputPanel id="bodyPanel">
+                           <apex:outputPanel rendered="{!currentDoc.docType == null || !Contains(allowedPreviewFormats,currentDoc.docType)}">
+                                <div class="well"> No preview is available for this file type. </div>
+                            </apex:outputPanel>  
+                            <apex:outputPanel rendered="{!currentDoc.docType != null && Contains(allowedPreviewFormats,currentDoc.docType)}">
+	                             <apex:outputPanel rendered="{!currentICId != null && mapofContentIdandContent[currentICId].document_location__c == 'Attachment'}">                         
+	                                 <embed style="height:500px;" src="/servlet/servlet.FileDownload?file={!currentDoc.docId}"  width="100%" height="100%" align="middle"/> 
+	                                
+	                             </apex:outputPanel> 
+	                             <apex:outputPanel rendered="{!currentICId != null && mapofContentIdandContent[currentICId].document_location__c == 'Chatter'}">
+	                               <embed style="height:500px;" src="/_swf/188001/sfc/flex/DocViewer.swf" flashvars="shepherd_prefix=/sfc/servlet.shepherd&v={!currentDoc.docId}&mode=bubble" width="100%" height="100%" align="middle" id="renditionSmall" quality="high" bgcolor="#ffffff" name="renditionSmall" allowscriptaccess="sameDomain" allowfullscreen="true" pluginspage="http://www.adobe.com/go/getflashplayer" wmode="opaque" type="application/x-shockwave-flash"/>
+	                              </apex:outputPanel>  
+                            </apex:outputPanel> 
+                          </apex:outputPanel>   
+                    </div>
+                    <div class="modal-footer">
+                        <!--<chatter:feed entityId="{!versionDataforUI.Id}"> </chatter:feed>-->
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                    </div><!--/.modal-footer -->
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+    </apex:outputPanel>
+     
+ 
+</apex:component>

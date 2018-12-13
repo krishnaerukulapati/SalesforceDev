@@ -1,0 +1,460 @@
+<apex:page docType="html-5.0" controller="FOConstituentAddController" showheader="false" sidebar="false" standardStylesheets="false">
+    <apex:stylesheet value="{!URLFOR($Resource.SupportJs, 'chosen.css')}" />
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+
+    <apex:includeScript value="{!URLFOR($Resource.Bootstrap, '/bootstrap-3.0.0/dist/js/bootstrap.min.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'jquery.mask.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'chosen.jquery.min.js')}"/>
+    
+    <apex:stylesheet value="{!URLFOR($Resource.Bootstrap, '/bootstrap-3.0.0/dist/css/bootstrap.min.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.alsacFO, 'alsacFO.css')}" />
+    <script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=true"></script>
+    
+    <!--
+    <script>
+        function fname(){
+        alert(document.getElementById('j_id0:form:selectedstate').value);
+    }
+     
+    </script>
+    -->
+    
+    <script>
+        $j = jQuery.noConflict();
+        $j(document).ready(function() {
+            $j(".datepicker").datepicker();
+            $j(".chosen-select").chosen();
+            $j(".chosen-deselect").chosen({
+                allow_single_deselect: true
+            });
+        });
+
+        $j(function() {
+            $j(":text").addClass("ui-corner-all");
+            $j("button").button();
+            $j("button").css("float", "right");
+            $j("td").addClass("alsac-widget");
+        });
+
+        
+        function showName(selector) {
+            selector = selector.replace(/:/g, "\\:");
+
+            console.log($j("input[id^=" + selector + "]:checked"));
+
+            if ($j("input[id^=" + selector + "]:checked").val() == "INDIVIDUAL") {
+                $j("#notIndividual").hide();
+                $j("#isIndividual").show();
+            }
+            else {
+                $j("#notIndividual").show();
+                $j("#isIndividual").hide();
+            }
+        }
+
+        $j(function() {
+            $j( ".accordion" ).accordion({
+                collapsible: true,
+                heightStyle: "content"
+            });
+            $j('#address').accordion( "option", "show", true );
+            $j('#phone').accordion( "option", "show", true );
+            $j('#email').accordion( "option", "show", true );
+            $j("#radio").buttonset();
+            $j(":text").addClass("ui-corner-all");
+            $j("#notIndividual").hide();
+        });
+
+        function callzip(){
+            //alert('Test');
+            var hnlzipcode=document.getElementById('{!$Component.form.Zipcode}').value;
+           // alert(hnlzipcode);
+            var zip =hnlzipcode;
+            <!-- var zip=document.getElementById('{!$Component.form.zip}').value; -->
+            var lat;
+            var lng;
+            var geocoder = new google.maps.Geocoder();
+           // alert(geocoder);
+            geocoder.geocode({ 'address': zip ,'componentRestrictions':{'country':'US'}}, function (results, status) {
+                if (status == google.maps.GeocoderStatus.OK) {
+                     //alert(status == google.maps.GeocoderStatus.OK);
+                    geocoder.geocode({'latLng': results[0].geometry.location}, function(results, status) {
+                        if (status == google.maps.GeocoderStatus.OK) {
+                            if (results[1]) {
+                                var loc = getCityState(results);         
+                            }
+                            else {
+                                alert('Unable to find address');
+                            }
+                        }
+                    });
+                }
+            });
+        
+            function getCityState(results) {
+                // alert('CItyState');
+                var a = results[0].address_components;
+                var city, state;
+                var zippy;
+                var enteredzipcode=document.getElementById('{!$Component.form.Zipcode}').value;
+                var el  = $j(".stateSelect");
+                var options = el.find("option"); //get the state options
+                var stateCode = "";
+
+                 //alert(enteredzipcode);    
+                for(i = 0; i <  a.length; ++i) {
+                    var t = a[i].types;
+                    if(compIsType(t, 'administrative_area_level_1')) {
+                        state = a[i].long_name; //store the state
+                    }
+                    
+                    else if(compIsType(t, 'locality')) {
+                        city= a[i].long_name; //store the city
+                    }
+                        
+                    else if(compIsType(t, 'postal_code')) {
+                        zippy=a[i].long_name;
+                    }       
+                }
+
+                document.getElementById('j_id0:form:City').value = city;
+
+                el.val(""); //deselect everything
+                
+                var stateCode = options.filter(function() {
+                  return $j(this).text() === state;
+                }).first().attr("value");
+
+                el.val(stateCode); //set the state drop down
+                el.trigger("chosen:updated"); //update the chosen item
+            }
+            
+            function compIsType(t, s) { 
+                for(z = 0; z < t.length; ++z) 
+                if(t[z] == s)
+                return true;
+                return false;
+            }
+        }
+
+    </script>
+            
+    <apex:pageMessages ></apex:pageMessages>
+    <apex:form id="form">
+    <!--<apex:commandButton value="Click me" onclick="fname();"/>-->
+         <div>
+            <div class="accordion" id="basic">
+                <h3>Basic</h3>
+                <div>
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-6 col-sm-10 col-xs-12 form-padding">
+                                <div class="col-xs-12 alsac-widget">
+                                    <label>Search Type:</label>
+                                    <div id="radio">
+                                        <apex:selectRadio value="{!scope}" onclick="showName('{!$Component.rdo}');" id="rdo" rendered="{!ISBLANK(campAddReferral)}">
+                                            <apex:selectOption itemLabel="Person" itemValue="INDIVIDUAL"/>
+                                            <apex:selectOption itemLabel="Household" itemValue="HOUSEHOLD" rendered="{!ISBLANK(relConsId)}"/>
+                                            <apex:selectOption itemLabel="Organization" itemValue="ORGANIZATION" rendered="{!ISBLANK(relConsId)}"/>
+                                        </apex:selectRadio>
+                                        <apex:selectRadio value="{!scope}" onclick="showName('{!$Component.rdo1}');" id="rdo1" rendered="{!NOT(ISBLANK(campAddReferral))}">
+                                            <apex:selectOption itemLabel="Coordinator" itemValue="INDIVIDUAL"/>
+                                            <apex:selectOption itemLabel="Organizer" itemValue="ORGANIZATION"/>
+                                        </apex:selectRadio>
+                                    </div>
+                                </div>          
+                            </div>
+                        </div>
+                        <div id="notIndividual">
+                            <div class="row">
+                                <div class="col-md-6 col-sm-10 col-xs-12 form-padding">
+                                    <div class="col-xs-6">
+                                        <label>Name: </label>
+                                        <apex:inputText value="{!name}" styleClass="form-control" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="isIndividual">
+                            <div class="row">
+                                <div class="col-md-6 col-sm-10 col-xs-12 form-padding">
+                                    <div class="col-xs-6">
+                                        <label>Title: </label>
+                                        <apex:selectList styleClass="chosen-select" value="{!titleCode}" multiselect="false" size="1">
+                                            <apex:selectOption itemLabel="(none)" itemValue=""/>
+                                            <apex:selectOption itemLabel="No Title" itemValue="NT"/>
+                                            <apex:selectOptions value="{!titles}"/>
+                                        </apex:selectList>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 col-sm-10 col-xs-12 form-padding">
+                                    <div class="col-xs-6">
+                                        <label>First Name: </label>
+                                        <apex:inputText value="{!firstName}" styleClass="form-control" />
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <label>Middle Name: </label>
+                                        <apex:inputText value="{!middleName}" styleClass="form-control" />
+                                    </div>                        
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 col-sm-10 col-xs-12 form-padding">
+                                    <div class="col-xs-6">
+                                        <label>Last Name: </label>
+                                        <apex:inputText value="{!lastName}" styleClass="form-control" />
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <label>Suffix: </label>
+                                        <apex:selectList styleClass="chosen-select" value="{!suffixCode}" style="width: 100px;" multiselect="false" size="1">
+                                            <apex:selectOption itemLabel="(none)" itemValue=""/>
+                                            <apex:selectOptions value="{!suffixes}"/>
+                                        </apex:selectList>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 col-sm-10 col-xs-12 form-padding">
+                                    <div class="col-xs-6">
+                                        <label>Birth Date: </label>
+                                        <apex:inputText styleClass="datepicker form-control" value="{!BirthDate}" />
+                                    </div>
+                                    <div class="col-xs-6 checkbox">
+                                        <div class="form-control-static"><label>Preferred<apex:inputCheckbox value="{!preferred}" /></label></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 col-sm-10 col-xs-12 form-padding">
+                                <div class="col-xs-12 form-padding-large">
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion" id="address" width="100%">
+                <h3>Address</h3>
+                <div>
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-6 col-sm-10 col-xs-12 form-padding">
+                                <div class="col-xs-4">
+                                    <label>Status: </label>
+                                    <apex:selectList styleClass="chosen-select" value="{!addStatus}" multiselect="false" size="1">
+                                        <apex:selectOption itemLabel="" itemValue=""/>
+                                        <apex:selectOptions value="{!statusTypes}"/>
+                                    </apex:selectList>
+                                </div>
+                                <div class="col-xs-4">
+                                    <label>Type: </label>
+                                    <apex:selectList styleClass="chosen-select" value="{!addressTypeCode}" multiselect="false" size="1">
+                                        <apex:selectOption itemLabel="" itemValue=""/>
+                                        <apex:selectOptions value="{!addrTypes}"/>
+                                    </apex:selectList>
+                                </div>                  
+                            </div>
+                        </div>            
+                        <div class="row">
+                            <div class="col-md-6 col-sm-10 col-xs-12 form-padding">
+                                <div class="col-xs-4">
+                                    <label>Street 1: </label>
+                                    <apex:inputText value="{!street1}" styleClass="form-control" />
+                                </div>
+                                <div class="col-xs-4">
+                                    <label>Street 2: </label>
+                                    <apex:inputText value="{!street2}" styleClass="form-control" />
+                                </div>
+                                <div class="col-xs-4">
+                                    <label>Street 3: </label>
+                                    <apex:inputText value="{!street3}" styleClass="form-control" />
+                                </div>                         
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 col-sm-10 col-xs-12 form-padding">
+                                <div class="col-xs-6">
+                                    <label>City: </label>
+                                    <apex:input type="text" id="City"  value="{!City}" html-placeholder="City*" styleclass="form-control stp_cntrl cty-name"/>
+                                </div>
+                                <div class="col-xs-6">
+                                    <label>State: </label>
+                                    <apex:outputPanel id="stateList"> 
+                                        <apex:actionStatus startText="Requesting..." id="resStatus">
+                                            <apex:facet name="stop">
+                                                <apex:selectList id="stateSelect" styleClass="chosen-select stateSelect" value="{!state}" multiselect="false" size="1">
+                                                    <apex:selectOption itemLabel="" itemValue=""/>
+                                                    <apex:selectOptions value="{!states}" id="State"/>
+                                                </apex:selectList>
+                                            </apex:facet>
+                                        </apex:actionStatus>
+                                    </apex:outputPanel>
+                                </div>                                            
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 col-sm-10 col-xs-12 form-padding">
+                                <div class="col-xs-3">
+                                    <label>Zip Code: </label>
+                                    <apex:input type="text" value="{!zipCode}" html-placeholder="Zip Code*" id="Zipcode" onblur="callzip();" html-maxlength="7" styleClass="form-control" />
+                                </div> 
+                                <div class="col-xs-3">
+                                    <label>Zip Extension: </label>
+                                    <apex:inputText value="{!zipExtension}" styleClass="form-control" />
+                                </div>  
+                                <div class="col-xs-6">
+                                    <label>Country: </label>
+                                    <apex:selectList styleClass="chosen-select" value="{!country}" multiselect="false" size="1">
+                                        <apex:selectOption itemLabel="" itemValue=""/>
+                                        <apex:selectOptions value="{!countries}"/>
+                                        <apex:actionSupport event="onchange" action="{!changeCountry}" rerender="stateList" oncomplete="choosify()"/>
+                                    </apex:selectList>
+                                </div>
+                                                    
+                            </div>
+                        </div><div class="row">
+                            <div class="col-md-6 col-sm-10 col-xs-12 form-padding">
+                                <div class="col-xs-12">
+                                    <label>Comments: </label>
+                                    <apex:inputTextarea value="{!addComments}" rows="2" styleClass="form-control" />
+                                </div>                        
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 col-sm-10 col-xs-12 form-padding">
+                                <div class="col-xs-12 form-padding-large">
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion" id="email" width="100%">
+                <h3>Email</h3>
+                <div>
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-6 col-sm-10 col-xs-12 form-padding">
+                                <div class="col-xs-4">
+                                    <label>Status: </label>
+                                    <apex:selectList styleClass="chosen-deselect" value="{!eStatus}" multiselect="false" size="1">
+                                        <apex:selectOption itemLabel="" itemValue=""/>
+                                        <apex:selectOptions value="{!statusTypes}"/>
+                                    </apex:selectList>
+                                </div>                               
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 col-sm-10 col-xs-12 form-padding">
+                                <div class="col-xs-6">
+                                    <label>Email Address: </label>
+                                    <apex:inputText styleClass="form-control" value="{!email}" />
+                                </div>
+                                <div class="col-xs-6">
+                                    <label>Type: </label>
+                                    <apex:selectList styleClass="chosen-deselect" value="{!emailTypeCode}" multiselect="false" size="1">
+                                        <apex:selectOption itemLabel="" itemValue=""/>
+                                        <apex:selectOptions value="{!emailTypes}"/>
+                                    </apex:selectList>
+                                </div>                      
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 col-sm-10 col-xs-12 form-padding">
+                                <div class="col-xs-12">
+                                    <label>Comments: </label>
+                                    <apex:inputTextarea value="{!eComments}" rows="2" styleClass="form-control" />
+                                </div>                        
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 col-sm-10 col-xs-12 form-padding">
+                                <div class="col-xs-12 form-padding-large">
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion" id="phone" width="100%">
+                <h3>Phone</h3>
+                <div>
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-6 col-sm-10 col-xs-12 form-padding">
+                                <div class="col-xs-4">
+                                    <label>Status: </label>
+                                    <apex:selectList styleClass="chosen-deselect" value="{!phStatus}" multiselect="false" size="1">
+                                        <apex:selectOption itemLabel="" itemValue=""/>
+                                        <apex:selectOptions value="{!statusTypes}"/>
+                                    </apex:selectList>
+                                </div>                               
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 col-sm-10 col-xs-12 form-padding">
+                                <div class="col-xs-6">
+                                    <label>Phone Number: </label>
+                                    <apex:inputText styleClass="phone form-control" value="{!phoneNumber}" />
+                                </div>
+                                <div class="col-xs-6">
+                                    <label>Type: </label>
+                                    <apex:selectList styleClass="chosen-deselect" value="{!PhoneTypeCode}" multiselect="false" size="1">
+                                        <apex:selectOption itemLabel="" itemValue=""/>
+                                        <apex:selectOptions value="{!phoneTypes}"/>
+                                    </apex:selectList>
+                                </div>                      
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 col-sm-10 col-xs-12 form-padding">
+                                <div class="col-xs-12">
+                                    <label>Comments: </label>
+                                    <apex:inputTextarea value="{!phComments}" rows="2" styleClass="form-control" />
+                                </div>                        
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 col-sm-10 col-xs-12 form-padding">
+                                <div class="col-xs-12 form-padding-large">
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-6 col-sm-10 col-xs-12 form-padding form-submit-padding">
+                    <div class="col-sm-3 col-sm-offset-6">
+                        <button type="button" onclick="cancelFunc();" class="btn btn-default btn-xs btn-block">Cancel</button>
+                    </div>
+                    <div class="col-sm-3">
+                        <button type="button" onclick="saveFunc();" class="btn btn-primary btn-xs btn-block">Save</button>
+                    </div>
+                    <apex:actionFunction action="{!cancel}" name="cancelFunc"/>
+                    <apex:actionFunction action="{!save}" name="saveFunc" />
+                </div>
+            </div>   
+        </div>     
+    </apex:form>
+    <script>
+        function choosify() {
+            $j(".chosen-select").chosen();
+        }
+    </script>
+    
+</apex:page>

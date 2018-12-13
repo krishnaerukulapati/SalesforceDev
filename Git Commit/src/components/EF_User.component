@@ -1,0 +1,16 @@
+<apex:component controller="EdgeForceIntranetHeaderCompController" >
+
+    <!-- Default Image  
+    <img src="{!$Resource.EF_Boilerplate}/img/user_blank.png" class="user-photo" /> 
+    -->
+    <apex:image value="{!currentUser.SmallPhotoUrl}" styleClass="user-photo"/>
+    <div class="user">
+        <div class="name">{!$Label.Welcome}<span>{!currentUser.Name}</span></div>
+        <ul class="user-nav">
+            <li><a href="/apex/EF_UserProfile">{!$Label.User_Profile}</a></li>
+            <li><a href="/apex/EF_Logout">{!$Label.Logout}</a></li>
+            <li class="hidden-xs"><a id="help" href="#"><span class="glyphicon glyphicon-question-sign"></span></a></li>
+        </ul>
+    </div><!--/.user -->
+
+</apex:component>

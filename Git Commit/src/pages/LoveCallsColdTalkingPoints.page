@@ -1,0 +1,3 @@
+<apex:page standardController="Lead" tabStyle="Lead">
+<flow:interview name="Love_Calls_Cold_Talking_Points"/>
+</apex:page>

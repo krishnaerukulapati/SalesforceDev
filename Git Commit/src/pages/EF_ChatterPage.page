@@ -1,0 +1,232 @@
+<apex:page docType="html-5.0" showHeader="false" sidebar="false" standardStylesheets="true" applyHtmlTag="false" applyBodyTag="false" controller="EdgeForceIntranetChatterController" title="Chatter - Edgeforce">
+    <apex:composition template="EF_Template">
+        <apex:define name="body">
+            <title>Chatter - EdgeForce</title>
+
+            <div class="row ef-content chatter-page">
+                <div class="col-sm-3">
+                    <a href="/apex/EF_ViewUserProfile?Id={!$User.Id}" class="user-header">
+                        <div class="edit-overlay"></div>
+                       
+                        <img src="{!currentUser.smallPhotoUrl}" class="user-photo" />
+                        <div class="user-name">{!currentUser.Name}</div>
+                        <br class="clear" />
+                    </a>
+                    <div class="section-content">
+                        <apex:form >
+                            <ul class="side-nav">
+                                <li><apex:commandLink value="{!$Label.Feed}" action="{!showFeed}" reRender="rightpagepanel"><span class="glyphicon glyphicon-comment"></span></apex:commandLink></li>
+                                <li><apex:commandLink value="{!$Label.People}" action="{!showPeople}" reRender="rightpagepanel"><span class="glyphicon glyphicon-user"></span></apex:commandLink></li>
+                                <li>
+                                    <apex:commandLink value="{!$Label.Communities}" action="{!showGroup}" reRender="rightpagepanel"><span class="glyphicon glyphicon-tree-deciduous"></span></apex:commandLink>
+                                    <apex:actionFunction name="showMorePeople" action="{!showMorePeople}" reRender="peoplePanel"/>
+                                </li>
+                            </ul>
+                        </apex:form>
+                    </div><!--/.section-content -->
+                </div><!--/.col-sm-3 -->
+
+                <div class="col-sm-9">
+                    <apex:outputPanel id="rightpagepanel">
+
+                        <apex:outputPanel rendered="{!isFeed}">
+                            <h4>{!$Label.Feed}</h4>
+                            <div class="section-content chatter">
+                                <chatter:feed entityId="{!$User.Id}"/>
+                            </div><!--/.section-content -->
+                            <a class="btn-bs btn-sm btn-primary read-more visible-xs" href="/apex/EF_ChatterFull">View full Chatter feed</a>
+                        </apex:outputPanel><!--/.feeds panel -->
+
+                        <apex:outputPanel rendered="{!isPeople}" id="peoplePanel">
+                            <div class="header-bg-wrapper">
+                                <div class="header-bg"></div>
+                            </div>
+                            <h4>{!$Label.People}</h4>
+                            <div class="section-content">
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <input type="text" id="filter" onkeyup="searchfun(this);" class="form-control" placeholder="Search People" />
+                                    </div><!--/.row -->
+                                    <ul class="people-search col-sm-12">
+                                        <apex:repeat value="{!chatterUsers}" var="chatterUser">
+                                            <li class="col-sm-6">
+                                                <div class="wrapper">
+                                                    <div class="user-image">
+                                                        <a href="/apex/EF_ViewUserProfile?Id={!chatterUser.id}" >
+                                                            <img src="{!chatterUser.SmallPhotoUrl}" />
+                                                        </a>
+                                                    </div>
+                                                    <div class="user-detail">
+                                                        <div class="name"><a href="/apex/EF_ViewUserProfile?Id={!chatterUser.id}">{!chatterUser.Name}</a></div>
+                                                        <div class="title">{!chatterUser.Title}</div>
+                                                        <div class="company">{!chatterUser.CompanyName}</div>
+                                                    </div>
+                                                    <div class="gift">
+                                                        <chatter:follow entityId="{!chatterUser.id}" rendered="{!chatterUser.userType='Standard'}"/>
+                                                        <apex:outputPanel rendered="{!chatterUser.userType!='Standard'}">Can't Follow</apex:outputPanel>
+                                                    </div>
+                                                    <br class="clear" />
+                                                </div><!--/.wrapper -->
+                                            </li>
+                                        </apex:repeat>
+                                    </ul>
+                                </div><!--/.row -->
+                            </div><!--/.section-content -->
+                        </apex:outputPanel><!--/.people panel -->
+
+                        <apex:outputPanel rendered="{!isGroup}">
+
+                            <div class="header-bg-wrapper">
+                                <div class="header-bg">&nbsp;</div>
+                            </div>
+                            <h4>{!$Label.Communities} </h4>
+                            <div class="section-content">
+                                <button data-toggle="modal" data-target="#myModal" class="btn-bs btn-sm btn-primary create-new-community">Create New Community</button>
+                                <br class="clear" />
+                                <ul class="people-search col-sm-12">
+                                    <apex:repeat value="{!userGroups}" var="userGroup">
+                                        <li class="col-sm-4">
+                                            <div class="wrapper">
+                                                <div class="user-image"><img src="{!userGroup.SmallPhotoUrl}" /></div>
+                                                <div class="user-detail">
+                                                    <div class="name"><a href="/apex/EF_ChatterGroup?g={!userGroup.id}" >{!userGroup.Name}</a></div>
+                                                    <div class="title">{!userGroup.MemberCount}&nbsp;Members</div>
+                                                </div>
+                                                <br class="clear" />
+                                            </div>
+                                        </li>
+                                    </apex:repeat>
+                                </ul>
+                                <br class="clear" />
+                            </div><!--/.section-content -->
+
+                            <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Create New Community <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button></h5>
+                                        </div><!--/.modal-header -->
+
+                                        <div class="modal-body">
+                                            <apex:form >
+                                                <div class="form-group">
+                                                    <label for="grpNameText">Group Name</label>
+                                                    <apex:inputtext value="{!groupName}"  styleClass="form-control" id="grpNameText"></apex:inputtext>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label>Description</label>
+                                                    <apex:inputTextarea value="{!groupDesc}" styleClass="form-control"></apex:inputTextarea>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label>Group Access</label>
+                                                    <div class="radio">
+                                                        <label>
+                                                            <input type="radio" value="public" name="accessRadio" onclick="updateAccessField(this);" checked="true"/>
+                                                            Public - Everyone can see updates and join.
+                                                        </label>
+                                                    </div>
+                                                    <div class="radio">
+                                                        <label>
+                                                            <input type="radio" value="private" name="accessRadio" onclick="updateAccessField(this);" />
+                                                            Private - Only members can see updates. Membership requires approval.
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <hr />
+                                                <div class="form-group">
+                                                    <label>Automatic Archiving</label>
+                                                    <div class="radio">
+                                                        <label>
+                                                            <input type="radio" value="false" name="archiveRadio" onclick="updateArchiveField(this);" checked="true"/> 
+                                                            Archive this group if there are no posts or comments for 90 days.
+                                                        </label>
+                                                    </div>
+                                                    <div class="radio">
+                                                        <label>
+                                                            <input type="radio" value="true" name="archiveRadio" onclick="updateArchiveField(this);"/>
+                                                            Don’t automatically archive this group.
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <apex:inputHidden value="{!access}" id="accessHidden"></apex:inputHidden>
+                                                <apex:inputHidden value="{!isAutoArchieve}" id="archiveHidden"></apex:inputHidden>
+                                                <apex:actionFunction name="createGroup" action="{!createNewGroup}"></apex:actionFunction>
+                                            </apex:form>
+                                        </div><!--/.modal-body -->
+                                        <div class="modal-footer">
+                                            <button type="button"  onclick="validate()" class="btn-bs btn-default">Save</button>
+                                            <button type="button" class="btn-bs btn-primary" data-dismiss="modal">Cancel</button>
+                                        </div>
+                                    </div><!--/.modal-content -->
+                                </div><!--/.modal-dialog -->
+                            </div><!--/.modal -->
+
+                        </apex:outputPanel><!--/.group panel -->
+                    </apex:outputPanel><!--/.rightpagepanel -->
+                </div><!--/.col-sm-9 -->
+
+            </div><!--/.row -->
+
+            <script>
+                function updateAccessField(ref){
+                     $("input[id$=accessHidden]").val($(ref).val());
+                     if($(ref).val()=="private"){
+                             $("input[id$=allowCustomerchk]").removeAttr("disabled");
+                     }
+                     else{
+                             $("input[id$=allowCustomerchk]").attr("disabled","true");
+                     }
+                }
+                function updateArchiveField(ref){
+                     $("input[id$=archiveHidden]").val($(ref).val());
+                }
+                function validate(){
+                        if($("input[id$=grpNameText]").val()==""){
+                                alert('Please enter Group Name');
+                        }
+                        else{
+                                createGroup();
+                        }
+                }
+                
+                // Function
+                function filterTable(value) {
+                        if (value != "") {
+                                $("#table tbody>tr").hide();
+                                $("#table td:contains-ci('" + value + "')").parent("tr").show();
+                        } else {
+                                $("#table tbody>tr").show();
+                        }
+                }
+                
+                // jQuery expression for case-insensitive filter
+                $.extend($.expr[":"], {
+                        "contains-ci": function (elem, i, match, array) {
+                                return (elem.textContent || elem.innerText || $(elem).text() || "").toLowerCase().indexOf((match[3] || "").toLowerCase()) >= 0;
+                        }
+                });
+                
+                
+                vent listener
+                function searchfun(ref){
+                        filterTable($(ref).val());
+                }
+                
+                
+                $(window).scroll(function(){ 
+                            if(isScrollBottom()){ 
+                                 showMorePeople();
+                            }
+                    }); 
+                    
+                    function isScrollBottom() { 
+                            var documentHeight = $(document).height(); 
+                            var scrollPosition = $(window).height() + $(window).scrollTop(); 
+                            return (documentHeight == scrollPosition); 
+                }
+            </script>
+
+        </apex:define>
+    </apex:composition>
+</apex:page>

@@ -1,0 +1,232 @@
+<apex:page docType="html-5.0" controller="FOHeroesCheckInController" showheader="false" sidebar="false" standardStylesheets="false">
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <apex:includeScript value="{!URLFOR($Resource.Bootstrap, '/bootstrap-3.0.0/dist/js/bootstrap.min.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.Bootstrap, '/bootstrap-3.0.0/dist/css/bootstrap.min.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.alsacFO, 'alsacFO.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.FontAwesome, '/css/font-awesome.css')}" />
+
+    <script>
+        var $j = $.noConflict();
+
+        function applyUI() {
+            $j( ".accordionDis" ).accordion({ disabled: true, icons: {activeHeader: "ui-icon-home"}, heightStyle: "content"});
+            $j("button").button();
+            $j("button").css("float", "right");
+            //$j("button").css("clear", "both");
+            $j("tr.hover").hover(function() {
+                $j(this).addClass("ui-state-hover");
+            },function() {
+                $j(this).removeClass("ui-state-hover");
+            }
+            );
+        }
+
+        $j(function() {
+            applyUI();
+        });
+    </script>
+
+    <script>
+        function copyToClipboard(text) {
+            window.prompt("Press Ctrl + C to copy to clipboard:", text);
+        }
+    </script>
+
+    <style>
+        body {
+            font-size: 12px;
+        }
+
+        .form-control-checkbox {
+            vertical-align: text-bottom;
+            height: 20px;
+            width: 20px;
+        }
+
+        .input-group-addon {
+            font-size: 12px;
+        }
+
+        label {
+            font-size: 12px;
+        }
+
+        .row {
+            margin-bottom: 10px;
+        }
+    </style>
+
+    <apex:pageMessages id="messages"></apex:pageMessages>
+
+    
+      <apex:form >
+
+    <div id="edit-info" class="container-fluid container-indent">
+    <div class="row">
+    <div class="col-sm-12 form-group">
+
+    <!-- Render errors if any ID is invalid -->
+    <apex:outputpanel rendered="{!(eventId == '0') || (consId == '0') || (campId == '0')}">
+        <div class="col-sm-6">
+            <div class="row">
+                <div class="col-sm-12">
+                    <h4>Marathon Support</h4>
+                </div>
+            </div>
+            <apex:outputpanel rendered="{!eventId == '0'}">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <h5>Event ID for this lead is invalid or has no event registration data.</h5>
+                    </div>
+                </div>
+            </apex:outputpanel>
+            <apex:outputpanel rendered="{!consId == '0'}">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <h5>Constituent ID for this lead is invalid.</h5>
+                    </div>
+                </div>
+            </apex:outputpanel>
+            <apex:outputpanel rendered="{!campId == '0'}">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <h5>Campaign ID for this lead is invalid.</h5>
+                    </div>
+                </div>
+            </apex:outputpanel>
+        </div>
+    </apex:outputpanel>
+
+    <!-- Render only if all IDs are valid; they may still be wrong, but they are not null -->
+    <apex:outputpanel rendered="{!(eventId != '0') && (consId != '0') && (campId != '0')}">
+    <div class="col-sm-6">
+        <div class="row">
+            <div class="col-sm-12">
+                <h4>Marathon Support</h4>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-5">
+                <apex:inputCheckbox styleClass="form-control-checkbox" value="{!led.CheckedIn__c}"></apex:inputCheckbox>
+                <label>Checked In</label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-10">
+                <label>Amount Paid</label>
+                <div class="input-group">
+                    <span class="input-group-addon">$</span>
+                    <apex:inputField styleClass="form-control" value="{!led.CheckInPaymentAmount__c}"></apex:inputField>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-5">
+                <label>Singlet Ordered:</label>&nbsp;&nbsp;{!so.SingletOrdered__C}
+            </div>
+            <div class="col-sm-5">
+                <label>Needs Recommit:</label>&nbsp;&nbsp;
+                <apex:outputPanel rendered="{!needsRecommit}">
+                    <a href="javascript:openSubtabC360('{!URLFOR($Page.C360NewDonationStart)}&id={!led.Id}', 'Recommit', 'recommit')">Yes</a>                                                           
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{!!needsRecommit}">No</apex:outputPanel>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-10">
+                <label>Personal Incentive Link:</label>&nbsp;&nbsp;<apex:outputPanel rendered="{!showIncentiveLink}"><a target="_blank" href="{!incentiveURL}">Available</a></apex:outputPanel><apex:outputPanel rendered="{!!showIncentiveLink}">Unavailable</apex:outputPanel>
+            </div>
+            <div class="col-sm-10">           
+                <label>Personal Recommit Link:</label>&nbsp;&nbsp;
+                <apex:outputLink value="{!recommitLink}&pagename={!RecommitLanding}&trConsID={!TRConsId}" 
+                    onclick="copyToClipboard('{!recommitLink}&pagename={!RecommitLanding}&trConsID={!TRConsId}')"
+                    rendered="{!NOT(ISNULL(TRConsId))&&NOT(ISNULL(RecommitLanding))}">
+                    <apex:outputText value="{!recommitLink}&pagename={!RecommitLanding}&trConsID={!TRConsId}"/>&nbsp;<span class="fa fa-clipboard"></span>                                        
+                </apex:outputLink>
+                <apex:outputText value="Cannot be generated because the campaign's Recommit Landing Page is blank." 
+                    rendered="{!ISNULL(RecommitLanding)&&NOT(ISNULL(TRConsId))}"/>
+                <apex:outputText value="Cannot be generated because the lead's TR ID is blank."
+                    rendered="{!ISNULL(TRConsId)&&NOT(ISNULL(RecommitLanding))}"/>
+                <apex:outputText value="Cannot be generated because the lead's TR ID and the campaign's Recommit Landing Page are blank." 
+                    rendered="{!ISNULL(TRConsId)&&ISNULL(RecommitLanding)}"/>
+            </div>            
+        </div>
+        <div class="row">
+            <div class="col-sm-10">
+                <label>Notes</label>&nbsp;&nbsp;<apex:inputTextarea styleClass="form-control" rows="4" value="{!led.CheckInNotes__c}"></apex:inputTextarea>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-5">
+                <button type="button" class="btn btn-sm btn-block btn-primary" onclick="checkIn();">Update</button>
+                <apex:actionFunction action="{!checkIn}" name="checkIn"/>
+            </div>
+        </div>
+        
+
+        <!--table width="100%">
+          <tr>
+            <td><label>Checked In:</label>&nbsp;&nbsp;<apex:inputCheckbox value="{!led.CheckedIn__c}"></apex:inputCheckbox></td>
+            <td>&nbsp;</td>
+            <td><label>Amount Paid:</label>&nbsp;&nbsp;<apex:inputField value="{!led.CheckInPaymentAmount__c}"></apex:inputField></td>
+            <td>&nbsp;</td>
+            <td><label>Notes:</label>&nbsp;&nbsp;<apex:inputTextarea value="{!led.CheckInNotes__c}"></apex:inputTextarea></td>
+            <td>&nbsp;</td>
+            <td><label>Singlet Ordered:</label>&nbsp;&nbsp;{!so.SingletOrdered__C}</td>
+            <td>&nbsp;</td>
+            <td><label>Needs Recommit:</label>&nbsp;&nbsp;<apex:outputPanel rendered="{!needsRecommit}"><a href="javascript:openSubtabC360('{!URLFOR($Page.C360NewDonationStart)}&id={!led.Id}', 'Recommit', 'recommit')">Yes</a></apex:outputPanel><apex:outputPanel rendered="{!!needsRecommit}">No</apex:outputPanel></td>
+            <td>&nbsp;</td>
+            <td><label>Personal Incentive Link:</label>&nbsp;&nbsp;<apex:outputPanel rendered="{!showIncentiveLink}"><a target="_blank" href="{!incentiveURL}">Available</a></apex:outputPanel><apex:outputPanel rendered="{!!showIncentiveLink}">Unavailable</apex:outputPanel></td>
+            <td>&nbsp;</td>
+            <td align="right"><button type="button" onclick="checkIn();">Update</button></td>
+            <apex:actionFunction action="{!checkIn}" name="checkIn"/>
+          </tr>
+        </table-->
+    </div>
+    <div class="col-sm-5">
+        <div class="row">
+            <div class="col-sm-12">
+                <h4>Incentives</h4>
+            </div>            
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <apex:outputpanel rendered="{!iis.size == 0}">
+                  <div id="noInt">No incentives available for selected constituent.</div>
+                </apex:outputpanel>
+                <apex:outputpanel rendered="{!iis.size != 0}">
+                  <table class="results-table" width="100%">
+                  <thead>
+                    <tr class="ui-widget-header">
+                        <th>Category</th>
+                        <th>Property</th>
+                        <th>Value</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <apex:repeat value="{!iis}" var="ii">
+                      <tr class="hover">
+                        <td>{!ii.Category__c}</td>
+                        <td>{!ii.Property__c}</td>
+                        <td>{!ii.Value__c}</td>
+                      </tr>
+                    </apex:repeat>
+                    </tbody>
+                  </table>
+                </apex:outputpanel>
+            </div>            
+        </div>        
+    </div>
+    </apex:outputpanel>
+
+    </div>
+    </div>
+    </div>
+      </apex:form>
+    <apex:includeScript value="{!URLFOR($Resource.ECCConsole)}" />
+</apex:page>

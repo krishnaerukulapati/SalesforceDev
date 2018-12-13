@@ -1,0 +1,353 @@
+<apex:page controller="RecruitEventController" standardStylesheets="false" action="{!init}">
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"    />
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <style>
+        input[type="text"], textarea {
+            font-weight: normal;
+            width: 95%;
+         }
+         td {
+            vertical-align: top;
+         }
+
+         .headerRow {
+            border-bottom: #ccc 1px solid;
+         }
+
+         .headerRow td {
+            padding-top: 3px;
+            padding-bottom: 3px;
+        }
+
+        .spacerRow td {
+            height: 5px;
+        }
+    </style>
+    <script>
+        var $j = $.noConflict();
+        
+        $j(function() {
+            $j( ".accordion" ).accordion({
+                collapsible: true,
+                heightStyle: "content"
+            });
+            $j(".EventDate").attr('onfocus','');
+            
+            
+            $j(".eventStartDate").datepicker({
+                onSelect: function(selected) {
+                    $j(".eventEndDate").datepicker("option","minDate", selected);
+                    $j(".eventEndDate").val(selected);
+                    var startDate = new Date($j(".eventStartDate").val());
+                    var year = startDate.getFullYear();
+                    var month = startDate.getMonth() + 1;
+                    if (month > 6) {
+                        year++;
+                    }
+                    $j("#FY").html(year);
+                }
+            });
+            $j(".eventEndDate").datepicker({});
+            
+            if($j(".eventEndDate").val() != ''){
+                var endDate = new Date($j(".eventEndDate").val());
+                var month = endDate.getMonth() + 1;
+                var day= endDate.getDate() + 1;
+                if(month < 10) {
+                    month = '0' + month;
+                }
+                if(day < 10){
+                    day= '0'+day;
+                }
+                $j(".eventEndDate").val(month +'/'+day+'/'+endDate.getFullYear());
+            }
+
+            if($j(".eventStartDate").val() != ''){
+                var startDate = new Date($j(".eventStartDate").val());
+                var month = startDate.getMonth() + 1;
+                var day= startDate.getDate() + 1;
+                
+                if(month < 10) {
+                    month = '0'+month;
+                }
+                if(day < 10) {
+                    day= '0'+day;
+                }
+                $j(".eventStartDate").val(month +'/'+day+'/'+startDate.getFullYear());
+                $j(".eventEndDate").datepicker("option","minDate",month +'/'+day+'/'+startDate.getFullYear());
+            }
+
+            /*var prevOnLoad = window.onload;
+            window.onload = function() {
+            if (prevOnLoad) {
+                prevOnLoad();
+                }
+            sforce.console.fireEvent("ProfileEdited");
+            }*/
+            
+        });
+    </script>
+    <apex:form > 
+        <div>
+            <div class="accordion" id="edit-info">
+                <h3>Event Information</h3>
+                <div>
+                    <table width="100%">
+                        <tr>
+                            <td colspan="4" >
+                                <apex:pageMessages id="messages"></apex:pageMessages>
+                            </td>
+                         </tr>
+                        <tr class="headerRow">
+                            <td colspan="2" style="text-align: right;">
+                                <apex:commandButton value="Save"    status="status" action="{!saveEvent}" />
+                            </td>
+                            <td colspan="2">
+                                <apex:commandButton value="Cancel"  status="status" />
+                            </td>
+                        </tr>
+
+                        <tr class="headerRow">  
+                            <td colspan="2">
+                                <h2>Constituents</h2>
+                            </td>
+                            <td colspan="2">
+                                <h2>Participant Details</h2>
+                            </td>
+                        </tr>
+                        <tr class="spacerRow"><td colspan="4"></td></tr>
+                        <tr>
+                            <td class="tdName" style="width: 10%"><label>Organizer </label></td>
+                            <td class="tdName clear" style="width: 20%">
+                                <apex:outputPanel style="color:black;"  rendered="{!Organizer.first_name__c != NULL || Organizer.last_name__c != NULL}">
+                                {!Organizer.first_name__c} {!Organizer.last_name__c}
+                                </apex:outputPanel>
+                                <apex:outputPanel style="color:black;"  rendered="{!Organizer.first_name__c == NULL &&  Organizer.last_name__c == NULL}">
+                                    {!Organizer.name__c}
+                                </apex:outputPanel>
+                            </td>
+                            <td class="tdName" style="width: 10%"><label>Expected Participants </label></td>
+                            <td class="tdName clear" style="width: 20%">
+                                    <apex:inputField value="{!event.ExpectedParticipants__c}"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="width: 5%"><label>Coordinator </label></td>
+                            <td class="tdName clear" style="width: 20%">
+                                <apex:outputPanel style="color:black;"  rendered="{!Coordinator.first_name__c!= NULL || Coordinator.last_name__c!=NULL}">{!Coordinator.first_name__c} {!Coordinator.last_name__c}</apex:outputPanel>
+                                <apex:outputPanel style="color:black;"  rendered="{!Coordinator.First_Name__c== NULL && Coordinator.Last_Name__c==NULL }">{!Coordinator.name__c}</apex:outputPanel>
+                                <apex:commandLink action="{!changeCoord}" value="Change Coordinator" rendered="{!eventOpp == null}"></apex:commandLink>
+                            </td>
+                            <td class="tdName" style="width: 10%"><label>Material Language </label></td>
+                            <td class="tdName clear" style="width: 20%">
+                                <apex:inputField value="{!MaterialLang.EventAttributeValue__c}"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="tdName" style="width: 10%"><label>Coordinator Email </label></td>
+                            <td class="tdName clear" style="width: 20%">{!Coordinator.email_address__c}
+                            <apex:outputPanel rendered="{!NOT(ISBLANK(Coordinator.email_address__c))}">
+                            <a href="javascript:openSubtabC360('{!URLFOR($Page.C360EmailDetail)}&id={!leadId}&leadType=COORDINATOR', 'Coordinator Email', 'viewCoordinatorEmail')">Change email</a>
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!ISBLANK(Coordinator.email_address__c)}">
+                            <a href="javascript:openSubtabC360('{!URLFOR($Page.C360EmailDetail)}&id={!leadId}&leadType=COORDINATOR', 'Coordinator Email', 'viewCoordinatorEmail')">Add email</a>
+                            </apex:outputPanel>
+                            </td>
+                            <td class="tdName" style="width: 10%"></td>
+                            <td class="tdName clear" style="width: 20%"></td>
+                        </tr>
+                        <tr class="headerRow">
+                            <td colspan="4">
+                                <h2>Event Information</h2>
+                            </td>
+                        </tr>
+                        <tr class="spacerRow"><td colspan="4"></td></tr>
+                        <tr>
+                            <td class="tdName" style="width: 10%"><label>Event Name <font color="#FF0000">*</font></label></td>
+                            <apex:outputPanel rendered="{!editRecruitEvent != 'true'}">
+                            <td class="tdName clear" style="width: 20%">
+                                <apex:inputField value="{!event.EventName__c}"/>
+                            </td>
+                            </apex:outputPanel>
+
+                            <apex:outputPanel rendered="{!editRecruitEvent == 'true'}">
+                            <td class="tdName clear" style="width: 20%">{!event.EventName__c} </td>
+                            </apex:outputPanel>
+                            
+                            <td style="width: 5%"><label>Event Start Date <font color="#FF0000">*</font> </label></td>
+                            <td class="tdName clear" style="width: 20%">
+                                <apex:outputPanel style="float:left;" >
+                                    <apex:inputText styleClass="EventDate eventStartDate" value="{!StartDate}"/>
+                                </apex:outputPanel>
+                                <apex:outputPanel style="margin-left:5%;float:left;" >
+                                    <label>Fiscal Year </label><span id='FY'>{!Event.FiscalYear__c}</span>
+                                </apex:outputPanel>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="tdName" style="width: 10%"><label>Event Type </label></td>
+                            <td class="tdName clear" style="width: 20%">{!et.EventTypeName__c}</td>
+                            <td class="tdName" style="width: 10%"><label>Event End Date </label></td>
+                            <td class="tdName clear" style="width: 20%">
+                                <apex:inputText styleClass="EventDate eventEndDate" value="{!EndDate}"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="tdName" style="width: 10%"><label>Event Code </label></td>
+                            <td class="tdName clear" style="width: 20%">{!Event.EventCode__c}</td>
+                            <td class="tdName" style="width: 10%"><label>Phone </label></td>
+                            <td class="tdName clear" style="width: 20%">
+                                <apex:inputField value="{!Event.ContactPhone__c}"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="tdName" style="width: 10%;"><label>Event Location <font color="#FF0000">*</font> </label></td>
+                            <td class="tdName clear" style="width: 20%">
+                                <apex:inputText value="{!Location.EventAttributeValue__c}"/> 
+                            </td>
+                            <td style="width: 5%"><label>Email </label></td>
+                            <td class="tdName clear" >
+                                <apex:inputField value="{!Event.ContactEmail__c}"/> 
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="tdName" style="width: 10%;"><label>Event Time <font color="#FF0000">*</font></label></td>
+                            <td class="tdName clear" style="width: 20%">
+                                <apex:inputText value="{!EventTime.EventAttributeValue__c}" /> 
+                            </td>
+                            <td style="width: 5%"><label>Type of Event <font color="#FF0000">*</font> </label></td>
+                            <td class="tdName clear" >
+                                <apex:selectList value="{!TypeOfEvent.EventAttributeValue__c}" size="1" multiselect="false">
+                                    <apex:selectOptions value="{!SurveyQuestions}"></apex:selectOptions>
+                                </apex:selectList>  
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="tdName" style="width: 10%;"><label>Event Description </label></td>
+                            <td class="tdName clear" style="width: 20%">
+                                <apex:inputField value="{!event.EventDescription__c}"/>
+                            </td>
+                            <td style="width: 5%"><label>Contact Preference </label></td>
+                            <td class="tdName clear" >
+                                <apex:selectList value="{!Event.PreferredContactTypeID__c}" size="1" multiselect="false">
+                                    <apex:selectOptions value="{!lstContactTypes}"></apex:selectOptions>
+                                </apex:selectList>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="tdName" style="width: 10%"><label>Offline Only </label></td>
+                            <td class="tdName clear" style="width: 20%">
+                                <apex:inputCheckbox value="{!OfflineOnlyUI}"/>  
+                            </td>
+                            <td style="width: 5%"><label>Status</label></td>
+                            <td class="tdName clear">
+                                <apex:selectList value="{!Event.StatusID__c}" size="1" multiselect="false">
+                                    <apex:selectOptions value="{!lstStatuses}"></apex:selectOptions>
+                                </apex:selectList><br/>         
+                            </td>
+                        </tr>
+                        <tr class="headerRow">
+                            <td class="tdName" style="width: 10%"></td>
+                            <td class="tdName clear" style="width: 20%"></td>
+                            <td style="width: 5%"><label>Cancellation Reason</label></td>
+                            <td class="tdName clear">
+                                <apex:selectList value="{!Event.ReasonID__c}" size="1" multiselect="false">
+                                    <apex:selectOptions value="{!lstReasons}"></apex:selectOptions>
+                                </apex:selectList><br/> 
+                            </td>
+                        </tr>
+                        <tr class="spacerRow"><td colspan="4"></td></tr>
+                        <tr>
+                            <td class="tdName" style="width: 10%"><label>Send Kit </label></td>
+                            <td class="tdName clear" style="width: 20%">                
+                                <apex:inputCheckbox value="{!Event.SendKit__c}"/>       
+                            </td>
+                            <td style="width: 5%"><label>Send Incentives </label></td>
+                            <td class="tdName clear" style="width: 20%">
+                            <apex:inputCheckbox value="{!Event.SendIncentives__c}"/>                
+                            </td>
+                        </tr>   
+                        <tr>
+                            <td class="tdName" style="width: 10%"><label>Shipping Address </label></td>
+                            <td class="tdName clear" style="width: 20%">
+                                <apex:inputField value="{!Event.ShipToAddress__c}"/><br/>
+                            </td>
+                            <td class="tdName" style="width: 5%"><label>Event Address </label></td>
+                            <td class="tdName clear" style="width: 20%">                
+                                <apex:inputField value="{!Event.Address__c}"/><br/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="tdName" style="width: 10%"><label>Shipping Address2 </label></td>
+                            <td class="tdName clear" style="width: 20%">
+                                <apex:inputField value="{!Event.ShipToAddress2__c}"/><br/>
+                            </td>
+                            <td class="tdName" style="width: 5%"><label>Event Address2 </label></td>
+                            <td class="tdName clear" style="width: 20%">    
+                                <apex:inputField value="{!Event.Address2__c}"/><br/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="tdName" style="width: 10%"><label>City </label></td>
+                            <td class="tdName clear" style="width: 20%">
+                                <apex:inputField value="{!Event.ShipToCity__c}"/><br/>
+                            </td>
+                            <td class="tdName" style="width: 5%"><label>City </label></td>
+                            <td class="tdName clear" style="width: 20%">
+                                <apex:inputField value="{!Event.City__c}"/><br/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="tdName" style="width: 10%"><label>State </label></td>
+                            <td class="tdName clear" style="width: 20%">
+                                <apex:selectList value="{!Event.ShipToStateID__c}" size="1" multiselect="false">
+                                    <apex:selectOptions value="{!lstStates}"></apex:selectOptions>
+                                </apex:selectList><br/>
+                            </td>
+                            <td class="tdName" style="width: 5%"><label>State </label></td>
+                            <td class="tdName clear" style="width: 20%">
+                                <apex:selectList value="{!Event.StateID__c}" size="1" multiselect="false">
+                                    <apex:selectOptions value="{!lstStates}"></apex:selectOptions>
+                                </apex:selectList><br/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="tdName" style="width: 10%"><label>Zip Code</label></td>
+                            <td class="tdName clear" style="width: 20%">
+                                <apex:inputField value="{!Event.ShipToZipCode__c }"/>
+                            </td>
+                            <td class="tdName" style="width: 5%"><label>Zip Code </label></td>
+                            <td class="tdName clear" style="width: 20%">    
+                                <apex:inputField value="{!Event.ZipCode__c }"/>
+                            </td>
+                        </tr>   
+
+                        <tr>
+                            <td style="width: 5%"><label>Event Comment</label></td>
+                            <td class="tdName clear" style="width: 20%">
+                                <apex:inputtextarea style="height: 52px;" value="{!EventNotes.Notes__c}"/> 
+                            </td>
+                            <td class="tdName" style="width: 10%"></td>
+                            <td class="tdName clear" style="width: 20%"></td>
+                                                   
+                        </tr>   
+                    </table>
+                </div>
+            </div>
+        </div>
+        <apex:includeScript value="{!URLFOR($Resource.ECCConsole)}" />
+    </apex:form> 
+    <script type="text/javascript">
+        var prevOnLoad = window.onload;
+        window.onload = function() {
+            if (prevOnLoad) {
+                prevOnLoad();
+            }
+            sforce.console.fireEvent("ProfileEdited");
+        }
+    </script>
+</apex:page>

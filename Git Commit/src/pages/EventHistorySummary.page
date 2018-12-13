@@ -1,0 +1,335 @@
+<apex:page controller="EventHistorySummaryController" showheader="false" sidebar="false" standardStylesheets="false">
+<!--     <link class="user" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.alsacFO, 'alsacFO.css')}" /> -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous"/>
+    <apex:stylesheet value="{!URLFOR($Resource.FontAwesome, 'css/font-awesome.css')}" />
+    <apex:includeScript value="/support/console/29.0/integration.js" />
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
+    <style type="text/css">
+  .table tr:nth-child(odd) {
+      background-color: #fafafa;
+      border: 1px solid #fafafa;
+      border-bottom: 1px solid #f8f8f8;
+  }
+
+  .thead-blue  {
+      background: #5C82B1 !important;
+      border: 1px solid #4F75A4;
+      color: #f7f7f7;
+  }
+
+  .page-item.active .page-link{
+        background-color: #5C82B1 !important;
+        border-color: #4F75A4;
+  }
+
+      body{
+        font-size: .9em;
+      }
+
+      .fa-spinner{
+        font-size: 1.2em;
+      }
+  </style>
+    <script type="text/javascript">
+        var $j = $.noConflict();
+
+        function applyUI() {
+            $j("tr").hover(function () {
+            }, function () {
+                $j(this).removeClass("ui-state-hover");
+            }
+            );
+
+            $j('#prevButton').on('click', function () {
+              prevPageFunc();
+            });
+
+            $j('#nextButton').on('click', function () {
+              nextPageFunc();
+            });
+
+            $j('.page-item').click(function(e){
+                if ($j(this).hasClass('active'))
+                    return false;
+                $j(".page-link").each(function (i) { $j(this).attr('tabindex', -1); });
+                $j('.page-item').addClass('disabled');
+                $j(this).find( ".page-link" ).html('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
+            });
+
+            $j('[data-toggle="tooltip"]').tooltip();
+        }
+
+        $j(function () {
+            applyUI();
+        });
+    </script>
+
+    <div style="width:98%; margin-left:1%; margin-top:10px;">
+        <apex:pageMessages id="messages"></apex:pageMessages>
+        <apex:outputpanel rendered="{!events.size == 0}">
+            <div id="noInt">No Events available for selected constituent.</div>
+        </apex:outputpanel>
+
+        <apex:outputpanel rendered="{!events.size > 0}">
+            <apex:actionStatus startText="Requesting..." id="resEvents">
+                <apex:facet name="stop">
+                    <apex:form >
+                      <apex:outputpanel rendered="{!events.size > 0}">
+                        <div class="text-muted">Displaying {!startIndex+1} - {!endIndex} of {!totalRecordCount} events</div>
+                      </apex:outputpanel>
+
+
+                       <!--Renders without total revenues(tfoot)-->
+                      <apex:outputpanel rendered="{!currPage != totalPages}">
+                        <table style="width:100%" class="table table-sm table-hover results-table">
+                          <thead class="">
+                            <tr class="thead-blue">
+                              <th>Name</th>
+                              <th>Start Date<i class="fa fa-arrow-down" data-toggle="tooltip" data-placement="top" title="Descending sort" /></th>
+                              <th>Status
+                              </th>
+                              <th>Type</th>
+                              <th>Code</th>
+                              <th>Roles</th>
+                              <th>Online Revenue</th>
+                              <th>Offline Revenue</th>
+                              <th>Total Revenue</th>
+                              <th>Origin</th>
+                              <th>Edit</th>
+                            </tr>
+                          </thead> 
+                          <tbody>
+                            <apex:repeat value="{!events}" var="eventModel">
+                              <tr>
+                                <td>
+                                  <apex:outputPanel rendered="{!eventModel.isEccRecruited}">
+                                    <a href="#" onclick="openSubtabC360('{!EventsMasteringURL}Account/Land?userid={!$User.Username}&token={!nonce}&redirect={!URLENCODE('~/Recruitment/View/' + eventModel.Summary.EventID__c)}', 'View Detail', 'EventsRecruitment')">{!eventModel.Summary.EventName__c}</a>
+                                  </apex:outputPanel>
+
+                                  <apex:outputPanel rendered="{!NOT(eventModel.isEccRecruited)}">
+                                    <a href="javascript:openSubtabC360('{!URLFOR($Page.EventInfo)}&eventId={!eventModel.Summary.EventID__c}', 'Event Information', 'Event Information')">{!eventModel.Summary.EventName__c}</a>
+                                  </apex:outputPanel>
+                                      <!--<a href="javascript:openSubtabC360('{!URLFOR($Page.EventInfo)}&eventId={!eventModel.Summary.EventID__c}', 'Event Information', 'Event Information')">{!eventModel.Summary.EventName__c}</a>-->
+                                </td>
+                                <td>
+                                  <apex:outputText value="{0, date, MM/dd/yyyy}">
+                                    <apex:param value="{!eventModel.Summary.StartDate__c}" />
+                                  </apex:outputText>
+                                </td>
+                                <td>
+                                  {!eventModel.Summary.Status__c}
+                                </td>
+                                <td>
+                                  {!eventModel.Summary.EventTypeName__c}
+                                </td>
+                                <td>
+                                  {!eventModel.Summary.EventCode__c}
+                                </td>
+                                <td>
+                                  {!eventModel.Summary.Roles__c}
+                                </td>
+                                <td>
+                                  <apex:outputPanel rendered="{!NOT(ISBLANK(eventModel.EventRevenue.OnlineAmount__c))}">
+                                  <apex:outputText value="${0, number,#,##0.00}">
+                                  <apex:param value="{!eventModel.EventRevenue.OnlineAmount__c}" />
+                                  </apex:outputText>
+                                  </apex:outputPanel>
+                                </td>
+                                <td>
+                                  <apex:outputPanel rendered="{!NOT(ISBLANK(eventModel.EventRevenue.OfflineAmount__c))}">
+                                  <apex:outputText value="${0, number,#,##0.00}">
+                                  <apex:param value="{!eventModel.EventRevenue.OfflineAmount__c}" />
+                                  </apex:outputText>
+                                  </apex:outputPanel>
+                                </td>
+                                <td>
+                                  <apex:outputPanel rendered="{!NOT(ISBLANK(eventModel.EventRevenue.Amount__c))}">
+                                  <apex:outputText value="${0, number,#,##0.00}">
+                                  <apex:param value="{!eventModel.EventRevenue.Amount__c}" />
+                                  </apex:outputText>
+                                  </apex:outputPanel>
+                                </td>
+                                <td>
+                                  {!eventModel.Summary.SystemOfOrigin__c}
+                                </td>
+                                <td>
+                                  <apex:outputPanel rendered="{!eventModel.isEccRecruited}">
+                                    <a href="#" onclick="openSubtabC360('{!EventsMasteringURL}Account/Land?userid={!$User.Username}&token={!nonce}&redirect={!URLENCODE('~/Recruitment/Edit/' + eventModel.Summary.EventID__c + '?returnHost=ecc&returnUrl=' + URLENCODE($Page.EventUpdated + '?id=' + eventModel.LeadId))}', 'Edit Event', 'EventsRecruitment');"><i class='fa fa-edit' style='font-size:1.4em'></i></a>
+                                  </apex:outputPanel>
+                                </td>
+                              </tr>
+                            </apex:repeat>
+                          </tbody>
+                        </table>
+                      </apex:outputpanel>
+
+                      <!--Renders with total revenues(tfoot) on the last page-->
+                      <apex:outputpanel rendered="{!currPage == totalPages}">
+                        <table style="width:100%" class="table table-sm table-hover results-table">
+                          <thead class="">
+                            <tr class="thead-blue">
+                              <th>Name</th>
+                              <th>Start Date<i class="fa fa-arrow-down" data-toggle="tooltip" data-placement="top" title="Descending sort" /></th>
+                              <th>Status</th>
+                              <th>Type</th>
+                              <th>Code</th>
+                              <th>Online Revenue</th>
+                              <th>Offline Revenue</th>
+                              <th>Total Revenue</th>
+                              <th>Origin</th>
+                              <th>Edit</th>
+                            </tr>
+                          </thead> 
+                          <tbody>
+                            <apex:repeat value="{!events}" var="eventModel">
+                              <tr>
+                                <td>
+                                  <apex:outputPanel rendered="{!eventModel.isEccRecruited}">
+                                    <a href="#" onclick="openSubtabC360('{!EventsMasteringURL}Account/Land?userid={!$User.Username}&token={!nonce}&redirect={!URLENCODE('~/Recruitment/View/' + eventModel.Summary.EventID__c)}', 'View Detail', 'EventsRecruitment')">{!eventModel.Summary.EventName__c}</a>
+                                  </apex:outputPanel>
+
+                                  <apex:outputPanel rendered="{!NOT(eventModel.isEccRecruited)}">
+                                    <a href="javascript:openSubtabC360('{!URLFOR($Page.EventInfo)}&eventId={!eventModel.Summary.EventID__c}', 'Event Information', 'Event Information')">{!eventModel.Summary.EventName__c}</a>
+                                  </apex:outputPanel>
+                                      <!--<a href="javascript:openSubtabC360('{!URLFOR($Page.EventInfo)}&eventId={!eventModel.Summary.EventID__c}', 'Event Information', 'Event Information')">{!eventModel.Summary.EventName__c}</a>-->
+                                </td>
+                                <td>
+                                  <apex:outputText value="{0, date, MM/dd/yyyy}">
+                                    <apex:param value="{!eventModel.Summary.StartDate__c}" />
+                                  </apex:outputText>
+                                </td>
+                                <td>
+                                  {!eventModel.Summary.Status__c}
+                                </td>
+                                <td>
+                                  {!eventModel.Summary.EventTypeName__c}
+                                </td>
+                                <td>
+                                  {!eventModel.Summary.EventCode__c}
+                                </td>
+                                <td>
+                                  <apex:outputPanel rendered="{!NOT(ISBLANK(eventModel.EventRevenue.OnlineAmount__c))}">
+                                  <apex:outputText value="${0, number,#,##0.00}">
+                                  <apex:param value="{!eventModel.EventRevenue.OnlineAmount__c}" />
+                                  </apex:outputText>
+                                  </apex:outputPanel>
+                                </td>
+                                <td>
+                                  <apex:outputPanel rendered="{!NOT(ISBLANK(eventModel.EventRevenue.OfflineAmount__c))}">
+                                  <apex:outputText value="${0, number,#,##0.00}">
+                                  <apex:param value="{!eventModel.EventRevenue.OfflineAmount__c}" />
+                                  </apex:outputText>
+                                  </apex:outputPanel>
+                                </td>
+                                <td>
+                                  <apex:outputPanel rendered="{!NOT(ISBLANK(eventModel.EventRevenue.Amount__c))}">
+                                  <apex:outputText value="${0, number,#,##0.00}">
+                                  <apex:param value="{!eventModel.EventRevenue.Amount__c}" />
+                                  </apex:outputText>
+                                  </apex:outputPanel>
+                                </td>
+                                <td>
+                                  {!eventModel.Summary.SystemOfOrigin__c}
+                                </td>
+                                <td>
+                                  <apex:outputPanel rendered="{!eventModel.isEccRecruited}">
+                                    <a href="#" onclick="openSubtabC360('{!EventsMasteringURL}Account/Land?userid={!$User.Username}&token={!nonce}&redirect={!URLENCODE('~/Recruitment/Edit/' + eventModel.Summary.EventID__c + '?returnHost=ecc&returnUrl=' + URLENCODE($Page.EventUpdated + '?id=' + eventModel.LeadId))}', 'Edit Event', 'EventsRecruitment');"><i class='fa fa-edit' style='font-size:1.4em'></i></a>
+                                  </apex:outputPanel>
+                                </td>
+                              </tr>
+                            </apex:repeat>
+                          </tbody>
+                          <tfoot >
+                            <tr class="thead-blue">
+                              <td></td>
+                              <td></td>
+                              <td>
+                                {!completedEvents} (Completed)
+                              </td>
+                              <td></td>
+                              <td></td>
+                              <td>
+                                <apex:outputText value="${0, number,#,##0.00}">
+                                  <apex:param value="{!totalOnlineRevenue}" />
+                                </apex:outputText>
+                              </td>
+                              <td>
+                                <apex:outputText value="${0, number,#,##0.00}">
+                                   <apex:param value="{!totalOfflineRevenue}" />
+                                </apex:outputText>
+                              </td>
+                              <td>
+                                <apex:outputText value="${0, number,#,##0.00}">
+                                    <apex:param value="{!totalAmount}" />
+                                </apex:outputText>
+                              </td>
+                              <td></td>
+                              <td></td>
+                            </tr>
+                          </tfoot>
+                        </table>
+                      </apex:outputpanel>
+
+
+                  <apex:outputText rendered="{!totalPages > 1}">
+                  <nav aria-label="..." style="clear:both">
+                  <ul class="pagination">
+                        <apex:outputText rendered="{!currPage == 1}">
+                            <li class="page-item disabled">
+                              <a class="page-link" href="#" tabindex="-1">Previous</a>
+                            </li>
+                         </apex:outputText>
+                         <apex:outputText rendered="{!currPage > 1}">
+                             <li class="page-item">
+                              <a class="page-link" href="#" id="prevButton">
+                                  Previous
+                              </a>
+                            </li>
+                         </apex:outputText>
+                        <apex:repeat value="{!PageList}" var="page">
+                            <apex:outputText rendered="{!currPage == page}">
+                                <li class="page-item active">
+                                  <span class="page-link">
+                                    {!page}
+                                    <span class="sr-only">(current)</span>
+                                  </span>
+                                </li>
+                            </apex:outputText>
+                            <apex:outputText rendered="{!currPage != page}">
+                                <li class="page-item"><a class="page-link" href="#" onclick="loadPageFunc({!page})">{!page}</a></li>
+                            </apex:outputText>
+                        </apex:repeat>
+                        
+                          <apex:outputText rendered="{!currPage == totalPages}">
+                            <li class="page-item disabled">
+                              <a class="page-link" href="#" tabindex="-1" >Next</a>
+                            </li>
+                         </apex:outputText>
+                         <apex:outputText rendered="{!currPage < totalPages}">
+                             <li class="page-item">
+                              <a class="page-link" href="#" id="nextButton">Next</a>
+                            </li>
+                         </apex:outputText>
+                  </ul>
+                </nav>
+                </apex:outputText>
+                    <apex:actionFunction action="{!prevPage}" name="prevPageFunc" rerender="resEvents" oncomplete="applyUI();" />
+                    <apex:actionFunction action="{!nextPage}" name="nextPageFunc" rerender="resEvents" oncomplete="applyUI();" />
+                    <apex:actionFunction action="{!loadPage}" name="loadPageFunc" rerender="resEvents" oncomplete="applyUI();">
+                        <apex:param name="pageToLoad" assignTo="{!currPage}" value="" /> 
+                    </apex:actionFunction> 
+                   <!--  <apex:actionFunction action="{!clearCache}" name="clearCacheFunc"></apex:actionFunction>  -->
+<!--                     <apex:actionFunction action="{!doSort}" rerender="resEvents" name="sortPage">
+                       <apex:param id="colName" name="colName" value="" />
+                    </apex:actionFunction> -->
+                    </apex:form>
+                </apex:facet>
+            </apex:actionStatus>
+        </apex:outputpanel>
+        <apex:includeScript value="{!URLFOR($Resource.ECCConsole)}" />
+    </div>
+</apex:page>

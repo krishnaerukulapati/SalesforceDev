@@ -1,0 +1,113 @@
+<apex:page controller="FOConsIntCreateController" showheader="false" sidebar="false" standardStylesheets="false">
+    <apex:stylesheet value="{!URLFOR($Resource.SupportJs, 'chosen.css')}" />
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'jquery.mask.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'chosen.jquery.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.Bootstrap, '/bootstrap-3.0.0/dist/js/bootstrap.min.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.Bootstrap, '/bootstrap-3.0.0/dist/css/bootstrap.min.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.alsacFO, 'alsacFO.css')}" />
+
+
+    <script>
+        $j = jQuery.noConflict();
+        $j(document).ready(function() {
+            $j(".datepicker").datepicker({dateFormat: 'yy-mm-dd'});
+            $j(".chosen-select").chosen();
+        });
+
+        $j(function() {
+            $j(":text").addClass("ui-corner-all");
+            $j("button").button();
+            $j("button").css("float", "right");
+            $j("td").addClass("alsac-widget");
+        });
+
+    </script>
+    <apex:messages styleClass="ui-state-error"></apex:messages>
+    <apex:form > 
+        <div id="edit-info" class="container-fluid container-indent">
+            <div class="row">
+                <div class="col-md-5 col-sm-10 col-xs-12 ">
+                    <h4>Interactions</h4>
+                    <hr />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-5 col-sm-10 col-xs-12 form-padding">
+                    <div class="col-xs-4">
+                        <label>Contact Category: </label>
+                        <apex:inputText styleClass="form-control" value="{!i.ContactCategory}" disabled="{!IF(action == 'view', true, false)}" />
+                    </div>
+                    <div class="col-xs-4">
+                        <label>Contact Type: </label>
+                        <apex:inputText styleClass="form-control" value="{!i.ContactType}" disabled="{!IF(action == 'view', true, false)}" />
+                    </div>
+                    <div class="col-xs-4">
+                        <label>Contact Method: </label>
+                        <apex:inputText styleClass="form-control" value="{!i.TransactionSource.Technique}" disabled="{!IF(action == 'view', true, false)}" />
+                    </div>                       
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-5 col-sm-10 col-xs-12 form-padding">
+                    <div class="col-xs-6">
+                        <label>Response Category: </label>
+                        <apex:inputText styleClass="form-control" value="{!i.ResponseCategory}" disabled="{!IF(action == 'view', true, false)}" />
+                    </div>
+                    <div class="col-xs-6">
+                        <label>Response Type: </label>
+                        <apex:inputText styleClass="form-control" value="{!i.ResponseType}" disabled="{!IF(action == 'view', true, false)}" />
+                    </div>                   
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-5 col-sm-10 col-xs-12 form-padding">
+                    <div class="col-xs-6">
+                        <label>Interaction Date</label>
+                        <apex:inputText styleClass="datepicker form-control" value="{!i.ContactDate}" disabled="{!IF(action == 'view', true, false)}"/>
+                    </div>
+                    <div class="col-xs-4">
+                        <label>Warning Expiration</label>
+                        <apex:inputText styleClass="datepicker form-control" value="{!i.WarningExpirationDate}" disabled="{!IF(action == 'view', true, false)}" />
+                    </div>
+                    <div class="col-xs-2 checkbox">
+                        <div class="form-control-static"><label>Warning<apex:inputCheckbox value="{!warning}" disabled="{!IF(action == 'view', true, false)}" /></label></div>
+                    </div>                                  
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-5 col-sm-10 col-xs-12 form-padding">
+                    <div class="col-xs-12">
+                        <label>Summary:</label>
+                        <apex:inputText value="{!i.Summary}" styleClass="form-control" disabled="{!IF(action == 'view', true, false)}" />
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-5 col-sm-10 col-xs-12 form-padding">
+                    <div class="col-xs-12">
+                        <label>Comments: </label>
+                        <apex:inputTextarea value="{!i.LongComments}" rows="2" styleClass="form-control" style="min-height: 75px" disabled="{!IF(action == 'view', true, false)}" />
+                    </div>                        
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-5 col-sm-10 col-xs-12 form-padding form-submit-padding">
+                    <div class="col-sm-3 col-sm-offset-6">
+                        <apex:commandButton action="{!save}" value="Save" styleClass="btn btn-primary btn-xs btn-block" rendered="{!IF(action != 'view', true, false)}"/>                       
+                    </div>
+                    <div class="col-sm-3">
+                        <apex:commandButton action="{!$Page.FOInteraction}?id={!relId}" styleClass="btn btn-default btn-xs btn-block" value="{!IF(action == 'view', 'Back', 'Cancel')}" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </apex:form>
+    
+</apex:page>

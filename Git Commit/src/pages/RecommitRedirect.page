@@ -1,0 +1,17 @@
+<apex:page controller="RecommitRedirectController" showHeader="false" sidebar="false" standardStylesheets="false">
+<apex:includeScript value="{!URLFOR($Resource.jquery)}" />
+<script>
+	var $j = $.noConflict();
+	$j(document).ready(function() { 
+		$j.ajax({
+			url: 'https://waystohelp.stjude.org/sjP2Papi/eventAuthCodeToken.json',
+			dataType: 'jsonp',
+			jsonp: 'callbackName',
+			success: function(response){
+				var link = "https://services.stjude.org/accredit/ccdonate/account/land.aspx?eventid={!eventId}&user=hero&trConsId={!trConsId}&token=" + response.authToken;
+				window.location = link;
+			}
+		});
+	});
+</script>
+</apex:page>

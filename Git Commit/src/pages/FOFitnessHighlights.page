@@ -1,0 +1,412 @@
+<apex:page standardController="lead" extensions="FOFitnessHighlightsController" showheader="false" sidebar="false" standardStylesheets="false" action="{!reload}">
+    <apex:includeScript value="/support/console/31.0/integration.js" />
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}" />
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}" />
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    
+    <style>
+        body {
+            margin: 0px;
+        }
+        .highlights-table {
+            border-collapse: separate;
+            border-spacing: 10px 0px;
+            padding: 5px;
+        }
+
+        .highlights-header-row {
+            text-align: left;
+        }
+
+        .highlights-header {
+            background-color: #d6e8f4;
+            background: linear-gradient(to bottom, #D6E8F4 0%, #ffffff 110%);
+            border-top-right-radius: 5px;
+            border-top-left-radius: 5px;
+            padding: 5px;
+            font-family: 'Lucida Grande','Segoe UI',Helvetica,Arial,sans-serif;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: left;
+        }
+
+        .highlights-header a {
+            font-weight: bold;
+        }
+
+        .highlights-details {
+            padding-left: 5px;
+            font-family: 'Lucida Grande','Segoe UI',Helvetica,Arial,sans-serif;
+            font-size: 14px;
+            font-weight: normal;
+        }
+
+        table#c360highlight a {
+            color: #477AA2;
+        }
+
+        table#c360highlight td a {
+            color: #477AA2;
+            font-weight: normal;
+        }
+
+        table#c360highlight td label {
+            color: #333;
+            font-weight: normal;
+        }
+    </style>
+    <script>
+        $j = jQuery.noConflict();
+        if (!window.console) console = {};
+        var bbecUrl = '{!bbecURL}';
+    </script>
+    <apex:outputPanel rendered="{!c360Error}">
+        <apex:form >
+            <div class="form-message">
+                <h3>Error loading constituent.  Please try again later...</h3>
+            </div>
+        </apex:form>
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!AND(NOT(c360Error),NOT(SetConstituentId))}" layout="none">
+        <apex:form >
+            <table id="c360highlight" width="100%" class="ui-state-default highlights-table">
+                <thead>
+                    <tr class="highlights-header-row">
+                        <th class="highlights-header">Fundraiser</th>
+                        <th class="highlights-header">Event</th>
+                        <th class="highlights-header">Registration</th>
+                        <th class="highlights-header">Fundraiser Revenue</th>
+                        <th class="highlights-header"><a href="javascript:openSubtabC360('{!URLFOR($Page.FOPropertyDetail)}&id={!leadId}', 'Properties', 'viewProperties')">Properties</a></th>
+                        <th class="highlights-header">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="name highlights-details">
+                            <div class="name">
+                                <a href="javascript:openSubtabC360('/apex/FOConstituentBasicEdit?id={!leadId}', 'Basic', 'viewBasic')">
+                                    <apex:outputText value="{!LongName}" />
+                                </a> 
+                            </div>
+                            <div >
+                                <a href="javascript:openSubtabC360('/apex/FOAddressDetail?id={!leadId}', 'Address', 'viewAddress')">
+                                    <apex:outputText value="{!Address}" escape="false" />
+                                </a> 
+                            </div>
+                            <div class="phone">
+                                <a href="javascript:openSubtabC360('/apex/FOPhoneDetail?id={!leadId}', 'Phone', 'viewPhone')">
+                                    <apex:outputText value="{!Phone}" />
+                                </a> 
+                            </div>
+                            <div class="email">
+                                <a href="javascript:openSubtabC360('/apex/FOEmailDetail?id={!leadId}', 'Email', 'viewEmail')">
+                                    <apex:outputText value="{!Email}" />
+                                </a> 
+                            </div>
+                            <div class="email">
+                                <label>Region:</label> {!eventRegistrationDetails.Region__c}
+                            </div>
+                            <div class="email">
+                                <label>P2P ID:</label> {!eventRegistrationDetails.P2P_ID__c}
+                            </div>
+                            <table>
+                                <tr>
+                                <td><label>History: </label></td>
+                                <td><a href="javascript:openSubtabC360('/apex/FOTransactionDetail?id={!leadId}', 'Transactions', 'viewTransactions')">&nbsp;<apex:outputText value="{0,Number,Currency}">
+                                    <apex:param value="{!fp.LifeTimePaidAmount}"/>
+                                </apex:outputText></a></td></tr>
+                                
+                                <tr><td><a href="javascript:openSubtabC360('/apex/FORecognitionDetail?id={!leadId}', 'Recognitions', 'viewRecognitions')">View Recognitions</a></td></tr>
+                                
+                                <!--
+                                <tr>
+                                <td><label>Recognitions: </label></td>
+                                <td>
+                                    <a href="javascript:openSubtabC360('/apex/FORecognitionDetail?id={!leadId}', 'Recognitions', 'viewRecognitions')">&nbsp;
+                                        <apex:outputText value="{0, Number, Currency}">
+                                            <apex:param value="{!recognitionTotal}"/>
+                                        </apex:outputText>
+                                    </a>
+                                </td>                            
+                                </tr>
+                                -->
+                                
+                            </table>
+                            <a href="javascript:openSubtabC360('/apex/EventHistorySummary?id={!Lead.id}&type=Organizer', 'Event History', 'Event History')">Events</a> <a href="javascript:openSubtabC360('/apex/CaseHistory?id={!leadId}', 'Case History', 'caseHistory')">Cases</a> <a href="javascript:openSubtabC360('/apex/LeadHistory?id={!leadId}', 'Lead History', 'leadHistory')">Leads</a> <a href="javascript:openSubtabC360('/apex/OppHistory?id={!leadId}', 'Opportunity History', 'oppHistory')">Opportunities</a>
+                        </td>
+                        <td class="highlights-details">
+                            <table>
+                                <tr>
+                                    <td><label>Name: </label>
+                                    </td>
+                                    <td>{!eventDetails.Name__c}
+                                    </td>
+                                </tr>
+                                 <tr>
+                                    <td><label>Date: </label>
+                                    </td>
+                                    <td><apex:outputField value="{!eventDetails.EventDate__c}"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label>Type: </label>
+                                    </td>
+                                    <td>{!eventDetails.Event_Type__c}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label>Address: </label>
+                                    </td>
+                                    <td> 
+                                        <apex:outputText value="{!eventDetails.EventAddressStreet1__c},<labelr/>"  rendered="{!eventDetails.EventAddressStreet1__c != NULL}" escape="false"></apex:outputText>
+                                        <apex:outputText value="{!eventDetails.EventAddressStreet2__c},<br/>"  rendered="{!eventDetails.EventAddressStreet2__c!= NULL}" escape="false"></apex:outputText>
+                                        <apex:outputText value="{!eventDetails.EventAddressStreet3__c},<br/>"  rendered="{!eventDetails.EventAddressStreet3__c!= NULL}" escape="false"></apex:outputText>
+                                        <apex:outputText value="{!eventDetails.EventAddressCity__c}, {!eventDetails.EventAddressState__c} {!eventDetails.EventAddressZip__c}<br/>"  
+                                        rendered="{!eventDetails.EventAddressZip__c!= NULL || eventDetails.EventAddressCity__c != NULL ||  eventDetails.EventAddressState__c !=NULL}" escape="false"></apex:outputText>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td class="highlights-details">
+                            <table>
+                                 <tr>
+                                    <td><label>Level: </label>
+                                    </td>
+                                    <td>{!eventRegistrationDetails.Participation_Type_Fundrasing_Level__c}
+                                    </td>
+                                </tr>
+                                 <tr>
+                                    <td><label>Hero LY: </label>
+                                    </td>
+                                    <td>{!eventRegistrationDetails.Last_Year_s_Participation__c}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label>Team Name: </label>
+                                    </td>
+                                    <td>{!eventRegistrationDetails.Team_Name__c}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label>Team Captain: </label>
+                                    </td>
+                                    <td>{!eventRegistrationDetails.Is_Team_Captain__c}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label>Hero Registration Date: </label>
+                                    </td>
+                                    <td>{!eventRegistrationDetails.CreationDate__c}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label>CGI ID: </label>
+                                    </td>
+                                    <td> {!cgiId}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label>Contact Preference: </label>
+                                    </td>
+                                    <td> {!conPreference}
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td class="highlights-details">
+                            <table>
+                                
+                                
+                                <tr>
+                                    <td><label>Revenue: </label>
+                                    </td>
+                                    <td><apex:outputText value="{0,Number,Currency}">
+                                        <apex:param value="{!eventRegistrationDetails.Current_Event_Revenue__c}"/>
+                                    </apex:outputText>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label>LY Revenue: </label>
+                                    </td>
+                                    <td><apex:outputText value="{0,Number,Currency}">
+                                        <apex:param value="{!eventRegistrationDetails.Last_Years_Amout_Raised__c}"/>
+                                    </apex:outputText>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label>Goal: </label>
+                                    </td>
+                                    <td><apex:outputText value="{0,Number,Currency}">
+                                        <apex:param value="{!eventRegistrationDetails.RevenueGoal__c}"/>
+                                    </apex:outputText>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label>Minimum Goal: </label>
+                                    </td>
+                                    <td><apex:outputText value="{0,Number,Currency}">
+                                        <apex:param value="{!eventRegistrationDetails.MinimumGoal__c}"/>
+                                    </apex:outputText>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label>Gifts #: </label>
+                                    </td>
+                                    <td>{!eventRegistrationDetails.Current_Event_Gifts__c}
+                                    </td>
+                                </tr>
+                                 
+                            </table>
+                        </td>
+
+                        <td class="highlights-details">
+                            <apex:outputPanel rendered="{!hasWarnings}">
+                                <span title="{!warnings}">WARNING</span>
+                            </apex:outputPanel>
+                        </td>
+                        
+                        <td class="highlights-details">
+                            <table>
+                                <apex:outputPanel rendered="{!eventRegistrationDetails.eventid__c != null}">
+                                    <apex:outputPanel rendered="{!currLead.SSLead.CurrentCampaign__r.FitDay_Enabled__c == false}">
+                                        <tr>
+                                            <td>
+                                                <A HREF="javascript:openSubtabC360('{!URLFOR($Page.FOHeroesCheckIn)}}&relId={!leadId}', 'Check In', 'checkIn')">Marathon Support</A>
+                                            </td>
+                                        </tr>
+                                    </apex:outputPanel>
+                                    <apex:outputPanel rendered="{!currLead.SSLead.CurrentCampaign__r.FitDay_Enabled__c == true}">
+                                        <tr>
+                                            <td>
+                                                <a href="javascript:openSubtabC360('{!URLFOR($Page.FOFitnessEventSupport)}&id={!leadId}', 'Marathon Support', 'FitDay')">Marathon Support</a>
+                                            </td>
+                                        </tr>
+                                    </apex:outputPanel>
+                                </apex:outputPanel>
+                                <tr>
+                                    <td>
+                                    <!-- <apex:actionFunction action="{!assignOppStage}" name="assignOppStage" />
+                                    <apex:commandLink action="{!assignOppStage}" rendered="{!if(AND(RIGHT(oppRec.stageName, 8) != 'Complete',oppRec.stageName !='BAD Record') , true, false)}" >Complete {!oppRec.stageName}</apex:commandLink> -->                                  
+                                    <!-- <apex:outputLabel rendered="{!if( OR(RIGHT(oppRec.stageName, 8) == 'Complete',oppRec.stageName =='BAD Record'), true, false)}"> {!oppRec.stageName}</apex:outputLabel> -->
+                                    <apex:commandLink action="{!assignOppStage}" rendered="{!AND(oppRec != null, RIGHT(oppRec.stageName, 8) != 'Complete', oppRec.Probability != null, oppRec.Probability < 100, oppRec.Probability > 5)}" >Complete {!oppRec.stageName}</apex:commandLink>
+                                    <apex:outputLabel rendered="{!OR(oppRec == null, RIGHT(oppRec.stageName, 8) == 'Complete', oppRec.Probability == null, oppRec.Probability == 100, oppRec.Probability == 0)}">{!oppRec.stageName}</apex:outputLabel>
+                                   </td>
+                                </tr>   
+                                <tr>
+                                    <td>
+                                        <a href="javascript:openSubtabC360('{/apex/C360NewDonationStart?id={!leadId}&isDonate=true', 'General Donation', 'viewNewDonation')">General Donation</a>
+                                    </td>
+                                </tr>   
+                                <!--tr>
+                                    <td>
+                                        <a href="javascript:openSubtabC360('{!pledgeMaintURL}?consId={!consId}&userid={!$User.Username}&technique={!currLead.SSLead.Technique_Method__c}&program=ecc&token={!nonce}&returnURL={!returnURL}&showHeader=false&relId={!leadId}&flowReturn={!$Page.ECCCloseSubTab}', 'Pledges', 'viewPledge')">Manage Donations</a>
+                                    </td>
+                                </tr-->
+                                <tr>
+                                    <td>
+                                        <A HREF="http://fundraising.stjude.org/site/TR/Heroes/Heroes?px={!Lead.TR_ID__c}&pg=personal&fr_id={!xrefEventId}" target="_blank">Fundraiser Page</A>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <A HREF="javascript:openSubtabC360('/apex/FOPreferenceDetail?id={!leadId}', 'Preferences', 'viewPreferences')">Donor Preferences</A>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <A href="javascript:openSubtabC360('/apex/FOInteractions?id={!leadId}', 'Interactions', 'viewInteractions')">Interactions</A>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <A HREF="javascript:openPrimaryTab('{!URLFOR($Page.C360CaseFromlead)}}&consId={!consId}')">Create Case</A>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <A HREF="#" onClick="OpenBBEC();return false">View i360 Donor</A>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <apex:outputPanel layout="block">
+                                            <a href="javascript:openSubtabC360('{!URLFOR($Page.FOEventHistory)}&ID={!leadID}&type=Case_Constituent', 'Event History', 'eventHistory')">Event History</a>
+                                        </apex:outputPanel>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <A HREF="javascript:sforce.console.openPrimaryTab(null, '{!URLFOR($Page.FOSearch)}}', true, 'Constituent Search', null, 'constituentSearch')">Constituent Search</A>
+                                    </td>
+                                </tr>
+                                <tr><td>
+                                    <a href="{!URLFOR($Page.EventsNavigation)}" target="_top">Home Page</a>
+                                </td></tr>
+                                <!-- <tr>
+                                    <td>
+                                        <a href="#" onclick="openSubtabC360('{!mergeApplicationURL}?consId={!consId}&userid={!$User.Username}&token={!nonce}&returnURL={!returnURL}&showHeader=true&flowReturn={!$Page.ECCCloseSubTab}', 'Merge Constituent', 'mergeApplication')">Merge Constituent</a>
+                                    </td>
+                                </tr> -->
+                            </table>
+                        </td> 
+                    </tr>
+                </tbody>
+            </table>
+        </apex:form>
+        <input type="hidden" id="hdnBbecId" value="{!bbecId}"></input>
+        <apex:includeScript value="{!URLFOR($Resource.ECCConsole)}" />
+    </apex:outputPanel>
+
+    <apex:outputPanel rendered="{!AND(NOT(c360Error),SetConstituentId)}" layout="none">
+        <script type="text/javascript">
+            location.reload();
+        </script>
+    </apex:outputPanel>
+
+     <script type="text/javascript">
+    
+        function RefreshPrimaryTab() 
+        {
+            sforce.console.getFocusedPrimaryTabId(showTabId);
+        }
+            
+        var showTabId = function showTabId(result) 
+        {
+            var tabId = result.id;
+            //alert('Primary Tab IDs: primaryTabId ' + tabId );
+            //location.reload();
+            sforce.console.refreshPrimaryTabById(tabId , true, refreshSuccess);
+        };
+                   
+        var refreshSuccess = function refreshSuccess(result) 
+        {
+            //Report whether refreshing the primary tab was successful
+            if (result.success == true) 
+            {
+                //alert('Primary tab refreshed successfully');
+            } 
+            else 
+            {
+                //alert('Primary did not refresh');
+            }
+        };
+
+       
+    </script>
+    
+
+<apex:outputText >
+    <script type="text/javascript">
+    var prevOnLoad = window.onload;
+        window.onload = function() {
+            if (prevOnLoad) {
+                prevOnLoad();
+            }
+                refreshFocusTab();           
+        }
+  </script>
+</apex:outputText>
+
+</apex:page>

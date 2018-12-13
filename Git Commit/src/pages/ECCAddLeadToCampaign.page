@@ -1,0 +1,75 @@
+<apex:page docType="html-5.0" controller="ECCAddLeadToCampaignController" showheader="false" sidebar="false" standardStylesheets="false">
+    <apex:stylesheet value="{!URLFOR($Resource.SupportJs, 'chosen.css')}" />
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'chosen.jquery.min.js')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+	<script>
+        var hdnPhoneNum = '{!$Component.leadForm.hdnPhoneNum}',
+        	selPhoneNum = '#selPhoneNum',
+        	txtPhoneNum = '#txtPhoneNum';
+        $j = jQuery.noConflict();
+        if (!window.console) console = {};
+
+        $j(document).ready(function() {
+        	console.log("hdnPhoneNum: " + hdnPhoneNum);
+            $j(".chosen-select").chosen();
+        	$j(selPhoneNum).change(function () {
+        		showHidePhoneTxt();
+        	});
+        	showHidePhoneTxt();
+        });
+
+        function showHidePhoneTxt() {
+        	var sel = $j(selPhoneNum).val();
+        	console.log("sel: " + sel);
+        	console.log('document.getElementById(hdnPhoneNum).value: ' + document.getElementById(hdnPhoneNum).value);
+    		if (sel == "other") {
+    			$j(txtPhoneNum).show();
+    		}
+    		else {
+    			$j(txtPhoneNum).hide();
+    		}
+        }
+
+        function getPhoneAndSave() {
+        	var phone = $j(selPhoneNum).val();
+        	if (phone == "other") {
+        		phone = $j(txtPhoneNum).val();
+        	}
+
+        	if (!phone || phone === "") {
+        		alert("You must input a phone number");
+        	}
+        	else {
+        		document.getElementById(hdnPhoneNum).value = phone;
+        		console.log("$j(hdnPhoneNum).val(): " + $j(hdnPhoneNum).val());
+	        	saveFunc();
+        	}
+        }
+
+    </script>
+    <apex:pageMessages ></apex:pageMessages>
+    <apex:form id="leadForm">
+    	<apex:outputPanel rendered="{!!bDuplicate}" id="pnl">
+		    <apex:inputHidden value="{!phoneNum}" id="hdnPhoneNum"></apex:inputHidden>
+
+        	<table id="edit-info">
+			    <tr><td><label>Phone Number:</label></td>
+			    <td><select class="chosen-select" id="selPhoneNum">
+			    	<apex:repeat value="{!con.Profile.Phones}" var="phn" id="email">
+			    		<option value="{!phn.PhoneNumber}">{!phn.PhoneType.Code} - {!phn.PhoneNumber}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>
+	                </apex:repeat>
+	                <option value="other">Other&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>
+			    </select>
+			    <input type="text" id="txtPhoneNum"></input>
+			    </td></tr>
+		    </table>
+		    <button type="button" id="saveForm" onclick="getPhoneAndSave();">Save</button>
+	        <apex:actionFunction action="{!saveLead}" name="saveFunc" />
+	    </apex:outputPanel>
+    </apex:form>
+</apex:page>

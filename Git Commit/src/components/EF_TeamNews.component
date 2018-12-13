@@ -1,0 +1,57 @@
+<!--@ Modified by : Sil 
+    @ Modified On : 10-March-2014 
+    @ purpose     : Getting Error When clicked on More.So Modified the reference page and fixed the error
+    @ chageId     : c001
+    -----------------------------------------------------------------------------------------------
+    -->
+<apex:component controller="EdgeForceIntranetNewsFeedCompController"> 
+    
+    <apex:attribute name="newsfeedpageId" description="This is the Page Id for displaying intranet news feeds" type="String" assignTo="{!pageId}"/>
+    
+    <apex:outputPanel rendered="{!newsList != null && newsList.size > 0}">
+        <div id="ef_teambanner" class="carousel slide" data-ride="carousel">
+            <!-- Indicators -->
+            <apex:variable value="{!0}" var="indicatorCount"/>
+            <ol class="carousel-indicators">
+                <apex:repeat value="{!newsList}" var="news">
+                    <apex:variable value="{!indicatorCount+1}" var="indicatorCount"/>
+                    <li data-target="#ef_teambanner" data-slide-to="{!indicatorCount - 1}" class="{!IF(indicatorCount == 0, 'active','')}"></li>
+                </apex:repeat>
+            </ol>
+            <div class="carousel-inner">
+                <apex:variable value="{!0}" var="slideCount"/>
+                <apex:repeat value="{!newsList}" var="news">
+                    <apex:variable value="{!slideCount+1}" var="slideCount"/>
+                    <div class="item {!IF(slideCount == 1, 'active','')}">
+                                                                                                                                                                                                                                 <!-- c001 -->
+                        <apex:outputLink value="{!IF(news.content.URL__c != '',IF(contains(news.content.URL__c, 'http') || contains(news.content.URL__c, 'https'), news.content.URL__c, 'https://' + news.content.URL__c),'/apex/EF_Content?id='+news.content.Id+'&category=News&tabName='+URLENCODE(PageId)+'&name='+URLEncode(pageId))}" Target="{!IF(news.content.URL__c != '','_Blank','_self')}" rendered="{!IF(news.content.Attachments.size > 0 , true, false)}">
+                            <apex:image style="width:100%" styleClass="img-responsive" value="/servlet/servlet.FileDownload?file={!news.content.Attachments[0].Id}&otherId=" />
+                        </apex:outputLink>
+                        <div class="news-summary">
+                            <a href="{!IF(news.content.URL__c != '',IF(contains(news.content.URL__c, 'http') || contains(news.content.URL__c, 'https'), news.content.URL__c, 'https://' + news.content.URL__c),'/apex/EF_Content?id='+news.content.Id+'&category=News&tabName='+URLENCODE(PageId)+'&name='+URLEncode(pageId))}">
+                                <h5>{!news.contentVersionforDisplay.Name}</h5>
+                            </a>
+                            <p>{!news.contentVersionforDisplay.Summary__c}</p>
+                            <a class="btn-bs btn-primary" href="{!IF(news.content.URL__c != '',IF(contains(news.content.URL__c, 'http') || contains(news.content.URL__c, 'https'), news.content.URL__c, 'https://' + news.content.URL__c),'/apex/EF_Content?id='+news.content.Id+'&category=News&tabName='+URLENCODE(PageId)+'&name='+URLEncode(pageId))}" Target="{!IF(news.content.URL__c != '','_Blank','_self')}" >More</a>
+                        </div>
+                    </div><!--/.item -->
+                </apex:repeat>
+                
+            </div><!-- /.carousel-inner -->
+            <!-- Controls -->
+            <a class="left carousel-control" href="#ef_teambanner" data-slide="prev">
+                <span class="glyphicon glyphicon-chevron-left"></span>
+            </a>
+            <a class="right carousel-control" href="#ef_teambanner" data-slide="next">
+                <span class="glyphicon glyphicon-chevron-right"></span>
+            </a>
+        </div><!--/.carousel -->
+    </apex:outputPanel>
+    <!-- broken?
+    <apex:image value="{!$Resource.HomeBanner}" rendered="{!IF(banners.size > 0,false,true)}" styleclass="defaultBannerImage"/>
+    -->
+    
+    
+    
+    
+</apex:component>

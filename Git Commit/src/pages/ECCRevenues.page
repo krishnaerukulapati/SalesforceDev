@@ -1,0 +1,167 @@
+<apex:page controller="ECCRevenuesController" showheader="false" sidebar="false" standardStylesheets="false">
+ 	<apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <apex:stylesheet value="{!URLFOR($Resource.SupportJs, 'grid/css/ui.jqgrid.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'grid/js/i18n/grid.locale-en.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'grid/js/jquery.jqGrid.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'jquery.blockUI.js')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+
+	<apex:form >
+        <table id="revenueGrid" class="revenueGrid"></table>
+        <div id="pgrps"></div>
+        <div id="noRev" style="display: none;">No Revenue Details</div>
+    </apex:form>
+
+    <script type="text/javascript">
+        var totRes = 0;
+        var retrieved = 0;
+        var bufferSize = 100;
+        var revs = new Array();
+        var names = new Array();
+
+        $j = jQuery.noConflict();
+        $j.support.cors = true;
+        var grid;
+
+
+   		function getEventRevenues() {
+            Visualforce.remoting.Manager.invokeAction(
+                '{!$RemoteAction.ECCRevenuesController.getRevenueDetails}', //method
+                '{!eventId}', loadGrid);
+        }
+
+        function nameFormatter (cellvalue, options, rowObject)
+        {
+        	if (rowObject.FirstName == null || rowObject.FirstName == '')
+        		return rowObject.KeyName;
+        	else if (rowObject.KeyName == null || rowObject.KeyName == '')
+        		return rowObject.FirstName;
+        	else
+           		return rowObject.FirstName + " " + rowObject.KeyName;
+        }
+
+        function nameFormatter__c (rowObject)
+        {
+        	if (rowObject.FirstName__c == null || rowObject.FirstName__c == '')
+        		return rowObject.KeyName__c;
+        	else if (rowObject.KeyName__c == null || rowObject.KeyName__c == '')
+        		return rowObject.FirstName__c;
+        	else
+           		return rowObject.FirstName__c + " " + rowObject.KeyName__c;
+        }
+
+        function loadGrid(result, event) { 
+            //call back
+            if (result != null && result.length > 0) {
+                if (totRes == 0) 
+                	totRes = result.TotalResults;
+                for(var i = 0; i < result.length; i++) {
+                    var rev = result[i];
+                    var row = {
+	                    TransactionId:rev.TransactionId__c,
+	                    //View:'View',
+	                    EventId:rev.EventId__c,
+	                    Type:rev.Type__c,
+	                    PaymentMethod:rev.PaymentMethod__c,
+	                    TransactionAmount:rev.TransactionAmount__c,
+	                    PostDate:rev.PostDate__c,
+	                    FirstName:rev.FirstName__c,
+	                    KeyName:rev.KeyName__c,
+	                    ConstituentId:rev.ConstituentId__c
+	                }
+
+                    names[i] = nameFormatter__c(rev);
+                    revs[i + retrieved + 1] = rev;
+                    grid.jqGrid('addRowData',i + retrieved + 1,row);
+                }
+
+                names = names.sort();
+                retrieved += bufferSize;
+                if (totRes > retrieved) {
+                    getEventRevenues();
+                }
+                else {
+                    grid.trigger("reloadGrid");
+                    $j.unblockUI();
+                }
+            }
+            else {
+                $j.unblockUI();
+                $j("#gbox_revenueGrid").hide();
+                $j("#noRev").show();
+            }
+        }
+
+		grid = $j("#revenueGrid").jqGrid({
+            autowidth: true,
+            datatype: "local",
+            height: 250,
+            loadonce:true,
+            rowNum: 10,
+            rowList:[10,20,30],
+            colNames:['TransactionId','EventId', 'Name', 'Payment Type', 'Payment Method', 'Amount','Date Posted','FirstName','Last Name','ConstituentId'],
+            colModel:[
+                {name:'TransactionId',index:'TransactionId'},
+                //{name:'Edit',index:'TransactionId', width:60, sortable:false},
+                {name:'EventId',index:'EventId', hidden:true},
+                {name:'Name',index:'KeyName', formatter:nameFormatter },
+                {name:'Type',index:'Type'},
+                {name:'PaymentMethod',index:'PaymentMethod'},
+                {name:'TransactionAmount',index:'TransactionAmount', sorttype:"int", formatter:'currency'},
+                {name:'PostDate',index:'PostDate', sorttype:"int", formatter:
+                function(cellValue, options){
+        	       if(cellValue) {
+        	       		var formattedDate = new Date(cellValue);
+        	       		var d = formattedDate.getDate();
+						var m =  formattedDate.getMonth();
+						m += 1;  // JavaScript months are 0-11
+						var y = formattedDate.getFullYear();
+            			return m + "/" + d + "/" + y;
+			        } else {
+			            return '';
+			        }
+                }},      
+                {name:'FirstName',index:'FirstName', hidden:true},      
+                {name:'KeyName',index:'KeyName', hidden:true},     
+                {name:'ConstituentId',index:'ConstituentId', hidden:true}
+            ],
+
+            pager: '#pgrps',
+            caption: "Revenue Details"
+        });
+        grid.jqGrid('navGrid','#pgrps',
+            {edit:false,add:false,del:false},
+            {},
+            {},
+            {},
+            {multipleSearch:true, multipleGroup:true}
+        );
+        grid.loadComplete = function() {
+                var ids = grid.jqGrid('getDataIDs');
+                for (var i=0;i<ids.length;i++) {
+                    var id=ids[i];
+                    var rowData = grid.jqGrid('getRowData',id);
+                    $('#'+id,grid[0]).attr('title', rowData.Comments);
+                }
+        };
+
+        $j(document).ready(function() {
+	        $j(function() {
+	            $j("button").button();
+	            $j("button").css("float", "right");
+	        });
+	        $j.support.cors = true;
+
+            $j.blockUI({
+                message: "<h1>Loading...</h1>",
+                theme:     true, 
+                title:    'Revenue Details' 
+            });
+            getEventRevenues();
+        });
+        </script>
+</apex:page>

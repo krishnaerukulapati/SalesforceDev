@@ -1,0 +1,175 @@
+<apex:page docType="html-5.0" controller="C360ConstituentAddressEditController" showheader="false" sidebar="false" standardStylesheets="false">
+    <apex:stylesheet value="{!URLFOR($Resource.SupportJs, 'chosen.css')}" />
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'chosen.jquery.min.js')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=true"></script>
+    <script>
+        $j = jQuery.noConflict();
+        $j(document).ready(function() {
+            $j(".chosen-select").chosen();
+        });
+
+        $j(function() {
+            $j(":text").addClass("ui-corner-all");
+            $j("button").button();
+            $j("button").css("float", "right");
+            $j("td").addClass("alsac-widget");
+        });
+
+        <!--$( document).ready(function() { -->
+            function callzip(){
+               // alert('Test');
+                var hnlzipcode=document.getElementById('{!$Component.form.Zipcode}').value;
+                //alert(hnlzipcode);
+                var zip =hnlzipcode;
+                <!-- var zip=document.getElementById('{!$Component.form.zip}').value; -->
+                var lat;
+                var lng;
+                var geocoder = new google.maps.Geocoder();
+               // alert(geocoder);
+                geocoder.geocode({ 'address': zip ,'componentRestrictions':{'country':'US'}}, function (results, status) {
+                    if (status == google.maps.GeocoderStatus.OK) {
+                        geocoder.geocode({'latLng': results[0].geometry.location}, function(results, status) {
+                            if (status == google.maps.GeocoderStatus.OK) {
+                                if (results[1]) {
+                                    var loc = getCityState(results);
+                                }
+                                else {
+                                    alert('Unable to find address');
+                                }
+                            }
+                        });
+                    }
+                });
+            
+            function getCityState(results) {
+                var a = results[0].address_components;
+                var city, state;
+                var zippy;
+                var enteredzipcode=document.getElementById('{!$Component.form.Zipcode}').value;
+
+                for(i = 0; i <  a.length; ++i) {
+                    var t = a[i].types;
+                    if(compIsType(t, 'administrative_area_level_1'))
+                        state = a[i].long_name; //store the state
+                    else if(compIsType(t, 'locality'))
+                        city= a[i].long_name; //store the city
+                    else if(compIsType(t, 'postal_code'))
+                        zippy=a[i].long_name;
+                                
+                }
+                document.getElementById('j_id0:form:City').value = city;
+
+                var el  = $j(".stateSelect");
+                var options = el.find("option"); //get the state options
+                var stateCode = "";
+
+                el.val(""); //deselect everything
+                var stateCode = options.filter(function() {
+                  return $j(this).text() === state;
+                }).first().attr("value");
+
+                el.val(stateCode); //set the state drop down
+                el.trigger("chosen:updated"); //update the chosen item        
+            }
+            
+            function compIsType(t, s) { 
+                for(z = 0; z < t.length; ++z) {
+                    if(t[z] == s) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+    </script>
+    <apex:pageMessages ></apex:pageMessages>
+    <apex:form id="form" >
+        <table id="edit-info">
+            <tr>
+                <td><label>Street 1: </label></td>
+                <td><apex:inputText value="{!street1}" /></td>
+                <td/>
+                <td><label>Country: </label></td>
+                <td><apex:selectList styleClass="chosen-select" value="{!country}" multiselect="false" size="1">
+                        <apex:selectOption itemLabel="" itemValue=""/>
+                        <apex:selectOptions value="{!countries}"/>
+                        <apex:actionSupport event="onchange" action="{!changeCountry}" rerender="stateList" oncomplete="choosify()"/>
+                    </apex:selectList></td>
+            </tr>
+            <tr>
+                <td><label>Street 2: </label></td>
+                <td><apex:inputText value="{!street2}" /></td>
+                <td/>
+                <td><label>Preferred: </label></td>
+                <td><apex:inputCheckbox value="{!preferred}" /></td>
+            </tr>
+            <tr>
+                <td><label>Street 3: </label></td>
+                <td><apex:inputText value="{!street3}" /></td>
+                <td/>
+                <td><label>Status: </label></td>
+                <td>
+                        <apex:selectList styleClass="chosen-select" value="{!Status}" multiselect="false" size="1">
+                            <apex:selectOption itemLabel="" itemValue=""/>
+                            <apex:selectOptions value="{!statusTypes}"/>
+                        </apex:selectList></td>
+            </tr>
+            <tr>
+                <td><label>City: </label></td>
+                <td><!--<apex:inputText value="{!city}" id="City" onblur="cityval();" />-->
+                            
+                     <apex:input type="text" id="City"  value="{!City}" html-placeholder="City*" styleclass="form-control stp_cntrl cty-name"/>
+                </td>
+                <td/>
+                <td><label>Type: </label></td>
+                <td>
+                        <apex:selectList styleClass="chosen-select" value="{!addressTypeCode}" multiselect="false" size="1">
+                            <apex:selectOption itemLabel="" itemValue=""/>
+                            <apex:selectOptions value="{!addrTypes}"/>
+                        </apex:selectList></td>
+            </tr>
+            <tr>
+                <td><label>State: </label></td>
+                <td>
+                    <apex:outputPanel id="stateList"> 
+                        <apex:actionStatus startText="Requesting..." id="resStatus">
+                            <apex:facet name="stop">
+                                <apex:selectList id="stateSelect" styleClass="chosen-select stateSelect" value="{!state}" multiselect="false" size="1">
+                                                <apex:selectOption itemLabel="" itemValue=""/>
+                                                <apex:selectOptions value="{!states}" id="State"/>
+                                            </apex:selectList>
+                            </apex:facet>
+                        </apex:actionStatus>
+                    </apex:outputPanel></td>
+                <td/>
+                <td><label>Comments: </label></td>
+                <td><apex:inputTextarea value="{!comments}" /></td>
+            </tr>
+            <tr>
+                <td><label>Zip Code: </label></td>
+                
+                <!-- <td><apex:inputText value="{!zipCode}" /></td> -->
+               <td><apex:input type="text" value="{!zipCode}" html-placeholder="Zip Code*" id="Zipcode" onblur="callzip();" html-maxlength="7"/></td>
+            </tr>
+            <tr>
+                <td><label>Zip Extension: </label></td>
+                <td><apex:inputText value="{!zipExtension}" /></td>
+            </tr>
+        </table>
+        <button type="button" onclick="cancelFunc();">Cancel</button>
+        <button type="button" onclick="saveFunc();">Save</button>
+        <apex:actionFunction action="{!cancel}" name="cancelFunc"/>
+        <apex:actionFunction action="{!save}" name="saveFunc" />
+    </apex:form>
+    <script>
+        function choosify() {
+            $j(".chosen-select").chosen();
+        }
+    </script>
+</apex:page>

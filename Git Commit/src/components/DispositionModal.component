@@ -1,0 +1,166 @@
+<apex:component controller="DispositionController" allowDML="true">
+
+    <apex:stylesheet value="{!URLFOR($Resource.SupportJs, 'chosen.css')}" />
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'chosen.jquery.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryValidate)}"/>
+
+    <!-- <apex:outputPanel layout="none" rendered="true"> -->
+       <style type="text/css">
+        body {
+            margin: 0px;
+        }
+
+        .table-disposition{
+            width: 100%;
+        }
+
+        .table-disposition > tbody > tr > td {
+            padding-bottom: 5px;
+            padding-right: 5px;
+        }
+
+        .chosen-container .chosen-results {
+          overflow-y: scroll;
+          max-height: 90px;
+        }
+    </style>
+
+     <script type="text/javascript">
+
+        $j = jQuery.noConflict();
+
+        function saveChanges(){
+            var isValid = dispoValidate();
+
+            if (isValid){
+                alert('valid');
+                dispoSave();
+            }
+        }
+
+        function cancel(){
+            addDisp.dialog('close');
+            dispoCancel();
+        }
+
+        function choosify(){
+            $j(".chosen-select").chosen().change(function(){
+                return dispoValidate();
+            });
+        }
+
+
+        function validateSelectList(ctl){
+            if ($j("[id$='" + ctl.replace('_chosen', '') + "']")[0].length > 1 && $j("[id$='" + ctl.replace('_chosen', '') + "']").val() == ''){
+                 $j("[id$='" + ctl + "']").addClass("ui-state-error");
+                 return false;
+            }
+            else{
+                $j("[id$='" + ctl + "']").removeClass("ui-state-error");
+                return true;
+            }
+        }
+
+        function dispoValidate(){
+            var validParent = validateSelectList('tyList_chosen');
+            var validChild = validateSelectList('dispoSecondary_chosen');
+
+            return validParent && validChild;
+        }
+
+
+        // addDisp = $j("#addDispMod").dialog({
+        //         autoOpen: true,
+        //         height: 300,
+        //         modal: true,
+        //         position: { my: "center top", at: "center top" },
+        //     })
+
+        addDispDet = function(){
+            addDisp.dialog( "option", "title", "Disposition" );
+            addDisp.dialog( "open" );
+        }
+
+        function applyUI() {
+            addDisp = $j("#addDispMod").dialog({
+                autoOpen: false,
+                width: 475,
+                height: 285,
+                modal: true,
+                resizable: false,
+                position: { my: "center top", at: "center top" },
+
+            });
+        }
+
+        $j(document).ready(function() {
+            $j(".datepicker").datepicker();
+            choosify();
+            applyUI();
+        });
+
+        $j(function() {
+            $j("td").addClass("alsac-widget");
+            $j(".chosen-select").chosen();
+        });
+    </script>
+
+        <div id="addDispMod" title="Add Disposition" name="Modal" >
+            <apex:form id="dispoForm">
+            <apex:actionFunction action="{!resetDispo}" name="resetDispoOnLoad" />
+                <table id='tblDisposition' class='table-disposition'>
+                    <tr>
+                        <td style='width:30%'><label>Type:</label></td>
+                        <td style='width:60%'>
+                            <apex:selectList styleClass="chosen-select" value="{!dispositionType}" multiselect="false" size="1" id="tyList">
+                                <apex:selectOption itemlabel="" itemValue=""/>
+                                <apex:selectOptions value="{!dispositionTypes}"/>
+                                <apex:actionSupport event="onchange" action="{!changeDispoType}" reRender="dispoValues" status="resVal" oncomplete="choosify()"/>
+                            </apex:selectList>
+                            <!-- <span>Input error goes here</span> -->
+                        </td>
+                        <td style='width:30%;vertical-align:top'><label>Call Date: </label></td>
+                        <td style='vertical-align:top'><apex:inputText styleClass="datepicker" value="{!callDate}" /></td>
+                    </tr>
+                    <tr>
+                        <td style='width:30%'><label>Reason: </label></td>
+                        <td style='width:60%'>
+                            <apex:outputPanel id="dispoValues">
+                                <apex:actionStatus id="resVal">
+                                    <apex:facet name="start">Requesting...</apex:facet>
+                                    <apex:facet name="stop">
+                                        <apex:outputPanel layout="none">
+                                            <apex:selectList styleClass="chosen-select" value="{!dispositionValue}" multiselect="false" size="1" id="dispoSecondary">
+                                                <apex:selectOption itemLabel="" itemValue=""/>
+                                                <apex:selectOptions value="{!dispositionValues}"/>
+                                                <apex:actionSupport oncomplete="choosify()"/>
+                                            </apex:selectList>
+                                        </apex:outputPanel> 
+                                    </apex:facet>
+                                </apex:actionStatus>
+                            </apex:outputPanel>
+                        </td>
+                        <td style='width:30%'><label>Comments:</label></td>
+                        <td><apex:inputTextarea rows="3" cols="10" style="width:100%;resize:none" value="{!callComments}"/></td>
+                    </tr>
+                    <tr>
+<!--                         <td style='width:30%;vertical-align:top'><label>Call Date: </label></td>
+                        <td style='vertical-align:top'><apex:inputText styleClass="datepicker" value="{!callDate}" /></td> -->
+                    </tr>
+                    <tr>
+<!--                         <td style='width:30%'><label>Comments:</label></td>
+                        <td><apex:inputTextarea rows="2" cols="10" style="width:100%;resize:none" value="{!callComments}"/></td> -->
+                    </tr>
+                </table>
+            <div class="ui-dialog-buttonset">
+                <button onclick="saveChanges();return false;" type="button" class="button">Save</button>
+                <button onclick="cancel();" type="button" class="button">Cancel</button>
+            </div>
+            <apex:actionFunction action="{!gatherInfoForSave}" name="dispoSave" oncomplete="cancel()"/>
+            <apex:actionFunction action="{!resetDispo}" name="dispoCancel"/>
+
+            </apex:form>
+        </div>
+   <!--  </apex:outputPanel> -->
+</apex:component>

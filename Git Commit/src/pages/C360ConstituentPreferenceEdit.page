@@ -1,0 +1,105 @@
+<apex:page controller="C360ConstituentPreferenceEditController" showheader="false" sidebar="false" standardStylesheets="false">
+    <apex:stylesheet value="{!URLFOR($Resource.SupportJs, 'chosen.css')}" />
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'jquery.mask.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'chosen.jquery.min.js')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <script>
+        $j = jQuery.noConflict();
+        $j(document).ready(function() {
+            $j(".datepicker").datepicker();
+            $j(".chosen-select").chosen();
+        });
+
+        $j(function() {
+            $j(":text").addClass("ui-corner-all");
+            $j("button").button();
+            $j("button").css("float", "right");
+            $j("td").addClass("alsac-widget");
+        });
+
+    </script>
+    
+    <apex:pageMessages ></apex:pageMessages>
+    <apex:form >
+        <table id="edit-info">
+            <tr>
+                <td><label>Preference Type: </label></td>
+                <td>
+                    <apex:selectList styleClass="chosen-select" value="{!preferenceType}" multiselect="false" size="1"
+                        rendered="{!ISBLANK(contId)}">
+                        <apex:selectOption itemLabel="" itemValue=""/>
+                        <apex:selectOptions value="{!preferenceTypes}"/>
+                        <apex:actionSupport event="onchange" action="{!changePrefType}" rerender="prefList,prefValList" status="resPref,resVal" oncomplete="choosify()"/>
+                    </apex:selectList>
+                    <apex:outputText rendered="{!NOT(ISBLANK(contId))}">{!preferenceTypeDesc}</apex:outputText>
+                </td>
+            </tr>
+            <tr>
+                <td><label>Preference: </label></td>
+                <td>
+                    <apex:outputPanel id="prefList" rendered="{!ISBLANK(contId)}"> 
+                        <apex:actionStatus id="resPref">
+                            <apex:facet name="start">Requesting...</apex:facet>
+                            <apex:facet name="stop">
+                                <apex:outputPanel layout="none">
+                                    <apex:selectList styleClass="chosen-select" value="{!preference}" multiselect="false" size="1">
+                                        <apex:selectOption itemLabel="" itemValue=""/>
+                                        <apex:selectOptions value="{!preferences}"/>
+                                        <apex:actionSupport event="onchange" action="{!changePref}" rerender="prefValList" status="resVal" oncomplete="choosify()"/>
+                                    </apex:selectList>
+                                </apex:outputPanel>
+                            </apex:facet>
+                        </apex:actionStatus>
+                    </apex:outputPanel>
+                    <apex:outputText rendered="{!NOT(ISBLANK(contId))}">{!preference}</apex:outputText>
+                </td>
+            </tr>
+            <tr>
+                <td><label>Value: </label></td>
+                <td>
+                    <apex:outputPanel id="prefValList"> 
+                        <apex:actionStatus startText="Requesting..." id="resVal">
+                            <apex:facet name="stop">
+                                <apex:selectList styleClass="chosen-select" value="{!preferenceValue}" multiselect="false" size="1">
+                                    <apex:selectOption itemLabel="" itemValue=""/>
+                                    <apex:selectOptions value="{!preferenceValues}"/>
+                                </apex:selectList>
+                            </apex:facet>
+                        </apex:actionStatus>
+                    </apex:outputPanel></td>
+            </tr>
+            <tr>
+                <td><label>Start Date: </label></td>
+                <td><apex:inputText styleClass="datepicker" value="{!startDate}" /></td>
+            </tr>
+            <tr>
+                <td><label>End Date: </label></td>
+                <td><apex:inputText styleClass="datepicker" value="{!endDate}" /></td>
+            </tr>
+            <tr>
+                <td><label>Status: </label></td>
+                <td>
+                    <apex:selectList styleClass="chosen-select" value="{!Status}" multiselect="false" size="1">
+                        <apex:selectOption itemLabel="" itemValue=""/>
+                        <apex:selectOptions value="{!statusTypes}"/>
+                    </apex:selectList></td>
+            </tr>
+        </table>
+        <div class="ui-dialog-buttonset">
+            <button type="button" onclick="cancelFunc();">Cancel</button>
+            <button type="button" onclick="saveFunc();">Save</button>
+        </div>
+        <apex:actionFunction action="{!cancel}" name="cancelFunc"/>
+        <apex:actionFunction action="{!save}" name="saveFunc" />
+    </apex:form>
+    <script>
+        function choosify() {
+            $j(".chosen-select").chosen();
+        }
+    </script>
+</apex:page>

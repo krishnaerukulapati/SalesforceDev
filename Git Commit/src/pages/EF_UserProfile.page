@@ -1,0 +1,169 @@
+<apex:page docType="html-5.0" showHeader="false" sidebar="false" standardStylesheets="true" applyHtmlTag="false" applyBodyTag="false" controller="EdgeForceIntranetDashboardController">
+    <script type="text/javascript" src="{!$Resource.IntranetDesign}/js/jquery-ui.min.js"></script>
+    <script src="{!URLFOR($Resource.tagIt, 'js/tag-it.js')}" type="text/javascript" charset="utf-8"></script>
+    <apex:stylesheet value="{!URLFOR($Resource.tagIt, 'css/jquery.tagit.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui_EF, 'css/jquery-ui.css')}"/>
+    
+    <apex:composition template="EF_Template">
+        <apex:define name="body">
+
+            <apex:outputpanel >
+                <apex:actionstatus id="status">
+                    <apex:facet name="start">
+                        <div class="waitingSearchDiv" id="el_loading" style="background-color: #fbfbfb;height: 100%;opacity:0.65;width:100%;"> 
+                            <div class="waitingHolder" style="top: 350px; width: 100px;">
+                                <img class="waitingImage" src="/img/loading.gif" title="{!$Label.Please_Wait}..." />
+                                <span class="waitingDescription">{!$Label.Please_Wait}...</span>
+                            </div>
+                        </div>
+                    </apex:facet>
+                </apex:actionstatus> 
+            </apex:outputpanel>
+
+            <div class="row ef-content user-profile">
+                <div class="col-sm-12">
+                    <h4>User's Profile</h4>
+                    <div class="section-content">
+                        <apex:pageMessages id="error"/>
+                        <apex:form id="frm">
+                            <apex:actionFunction name="refresh" reRender="tagPanel" oncomplete="getListOfTags();updateInfo();" status="status"/>
+                            <apex:actionFunction name="updateInfo" reRender="tagPanel" action="{!updateUserInformation}" status="status"/>
+                            <div class="form-horizontal" role="form">
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label" for="username">Username</label>
+                                    <div class="col-sm-4">
+                                        <apex:inputText value="{!userInformation.UserName}" id="username" styleClass="form-control" disabled="true" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label" for="firstname">First Name:</label>
+                                    <div class="col-sm-3">
+                                        <apex:inputText value="{!userInformation.FirstName}" styleClass="form-control" id="firstname" disabled="true"/>
+                                    </div>
+                                </div><!--/.form-group -->
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label" for="lastname">Last Name:</label>
+                                    <div class="col-sm-3">
+                                        <apex:inputText value="{!userInformation.LastName}" styleClass="form-control" id="lastname" disabled="true"/>
+                                    </div>
+                                </div><!--/.form-group -->
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label" for="email">Email:</label>
+                                    <div class="col-sm-4">
+                                        <apex:inputText value="{!userInformation.Email}" styleClass="form-control" id="email" disabled="true"/>
+                                    </div>
+                                </div><!--/.form-group -->
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label" for="timezone">Time Zone:</label>
+                                    <div class="col-sm-5">
+                                        <apex:inputField value="{!userInformation.TimeZoneSidKey}" styleClass="form-control" id="timezone" />
+                                    </div>
+                                </div><!--/.form-group -->
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label" for="locale">Locale: <img src="/img/alohaSkin/help_orange.png" title="{!$Label.HelpText_Locale}" /></label>
+                                    <div class="col-sm-4">
+                                        <apex:inputField value="{!userInformation.LocaleSidKey}" styleClass="form-control" id="locale" />
+                                    </div>
+                                </div><!--/.form-group -->
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label" for="language">Language:</label>
+                                    <div class="col-sm-3">
+                                        <apex:inputField value="{!userInformation.LanguageLocaleKey}" styleClass="form-control" id="language" />
+                                    </div>
+                                </div><!--/.form-group -->
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label" for="phone">Phone:</label>
+                                    <div class="col-sm-2">
+                                        <apex:inputField value="{!userInformation.Phone}" styleClass="form-control" id="phone" />
+                                    </div>
+                                </div><!--/.form-group -->
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label" for="businessfunction">User Business Function:</label>
+                                    <div class="col-sm-3">
+                                        <apex:inputField value="{!userInformation.User_Business_Function__c}" styleClass="form-control" id="businessfunction" />
+                                    </div><!--/.col-sm-3 -->
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label" for="location">Location:</label>
+                                    <div class="col-sm-6">
+                                        <apex:inputField value="{!userInformation.Location__c}" styleClass="form-control" id="location" />
+                                    </div>
+                                </div><!--/.form-group -->
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label" for="filterbylocation">Filter by Location:</label>
+                                    <apex:inputField value="{!userInformation.Filter_by_Location__c}" id="filterbylocation" />
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label">Interest Topics:</label>
+                                    <apex:outputPanel id="tagPanel">
+                                        <ul id="myTags">
+                                            <!-- Existing list items will be pre-added to the tags -->
+                                            <apex:repeat value="{!lstUserTag}" var="tag">
+                                                <li><apex:outputText value="{!tag.Tags__r.Tag__c}"/></li>
+                                            </apex:repeat>
+                                        </ul>
+                                    </apex:outputPanel>
+                                </div><!--/.form-group -->
+                                <hr />
+                                <div class="buttons col-sm-2">
+                                    <input type="button" class="btn-bs btn-primary pull-right" value="Update" onClick="addUserTags();" />
+                                </div>
+                                <br class="clear" />
+                            </div><!--/.form -->
+                        </apex:form>
+                    </div><!--/.user-profile -->
+                </div><!--/.col-sm-12 -->
+            </div><!--/.row user-profile-->
+
+            <script type="text/javascript">
+                var listOfTags;
+                
+                $(document).ready(function() {
+                    getListOfTags();
+                });
+                
+                //Function to fetch list of tags
+                function getListOfTags(){
+                    Visualforce.remoting.Manager.invokeAction(
+                        '{!$RemoteAction.EdgeForceIntranetDashboardController.fetchListOfTags}',
+                        function(result, event){
+                            if(event.status){
+                                listOfTags = new Array();
+                                
+                                for(var i=0; i<result.length; i++){
+                                    listOfTags.push(result[i].Tag__c); 
+                                }
+                                $("#myTags").tagit({
+                                    autocomplete: {
+                                        source : listOfTags
+                                    }
+                                });
+                            }
+                        }
+                    );
+                }
+                
+                //Function to add article tags for user
+                function addUserTags(){
+                    var tagString = $('#myTags li').map(function(i,n) {
+                        return $(n).find('.tagit-label').text();
+                    }).get().join(',');
+                    
+                    var tagArray = tagString.split(',');
+                    
+                    Visualforce.remoting.Manager.invokeAction(
+                        '{!$RemoteAction.EdgeForceIntranetDashboardController.addTags}',
+                        tagString, function(result, event){
+                            if(event.status){
+                                refresh();
+                            }else{
+                                alert(event.message+''+event.where);
+                            }
+                        }
+                    );
+                }
+            </script>
+
+        </apex:define>
+    </apex:composition>
+</apex:page>

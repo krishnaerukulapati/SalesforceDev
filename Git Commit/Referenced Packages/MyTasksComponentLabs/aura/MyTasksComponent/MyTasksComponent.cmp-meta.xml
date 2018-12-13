@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AuraDefinitionBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>33.0</apiVersion>
+    <description>This is a Lightning Component for My Tasks to display My top 10 tasks in a component. 
+This component is created as part of the Salesforce Lab competition by Kashi Ahmed. 
+http://www.kashifahmed.com</description>
+</AuraDefinitionBundle>

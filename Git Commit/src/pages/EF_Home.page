@@ -1,0 +1,44 @@
+<!-- 
+// (c) 2014 Appirio, Inc.
+//
+// <Summary of the requirements that we have received in the task/story>
+//
+// <Created Date>   <Created By>    Original (Ref. <Task No.>)
+// 24th Sept, 2014   Sumit Tanwar   Added Executive Blog section (Ref. T-321629)
+-->
+<apex:page docType="html-5.0" showHeader="false" sidebar="false" standardStylesheets="true" applyHtmlTag="false" applyBodyTag="false" title="EdgeForce Home" controller="EdgeForceIntranetHomeController">
+  <title>ALSAC Edgeforce</title>
+  <apex:composition template="EF_Template">
+       <apex:define name="body">
+            <div class="carousel hidden-sm hidden-xs">
+                <c:EF_Banner BannerPageId="{!pageName}"/>
+            </div>
+
+            <div class="hidden-sm hidden-xs help" data-container="body" data-toggle="popover" data-placement="bottom" data-trigger="manual" data-content="Add your own links for quick access to frequented pages, sites, or searches">
+                <c:EF_QuickLinks LinkPageId="{!pageName}"/>
+            </div><!--/.hidden-sm-hidden-xs -->
+
+            <div class="row section-wrapper ef-content">
+                <div class="col-sm-3">
+                    <h4 data-container="body" data-toggle="popover" data-placement="top" class="help" data-trigger="manual" data-content="Add events to your calendar and access event info from here!">{!$Label.Events}</h4>
+                    <div class="section-content pad-less"><c:EF_Event /></div>
+                    <h4 data-container="body" data-toggle="popover" data-placement="top" class="help" data-trigger="manual" data-content="View or follow trending communities">{!$Label.Top_Communities}</h4>
+                    <div class="section-content"><c:EF_TopCommunities /></div>
+                </div><!--/.ef-sm-3 -->
+                <div class="col-sm-5">
+                    <h4 class="help hidden-sm hidden-xs">{!$Label.Leadership_Corner}</h4>
+                    <div class="section-content pad-less"><c:EF_LeadershipCorner LCpageId="{!pageName}" /></div>
+                    <h4 class="help hidden-sm hidden-xs">{!$Label.Blog}</h4>
+                    <div class="section-content pad-less"><c:EF_LeadershipBlog LCpageId="{!pageName}" /></div>
+                </div><!--/.ef-sm-5 -->
+                <div class="col-sm-4">
+                    <h4>{!$Label.Chatter}</h4>
+                    <div class="section-content chatter"><c:EF_Chatter /></div>
+                    <a class="btn-bs btn-sm btn-primary read-more visible-xs" href="/apex/EF_ChatterFull">View full Chatter feed</a>
+                </div><!--/.ef-sm-4 -->
+            </div><!--/.row -->
+       </apex:define>
+
+   </apex:composition>
+   
+</apex:page>

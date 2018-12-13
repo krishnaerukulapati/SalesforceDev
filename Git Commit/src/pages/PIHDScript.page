@@ -1,0 +1,4 @@
+<apex:page standardController="Lead" tabStyle="Lead">
+<flow:interview name="PIHD_Call_Script"/>
+<apex:param name="LeadId" value="{Lead.Id}" />
+</apex:page>

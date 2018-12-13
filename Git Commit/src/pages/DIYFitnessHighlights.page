@@ -1,0 +1,379 @@
+<apex:page standardController="lead" extensions="DIYFitnessHighlightsController" showheader="false" sidebar="false" standardStylesheets="false">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous"/>
+    <apex:stylesheet value="{!URLFOR($Resource.FontAwesome, 'css/font-awesome.css')}" />
+        <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+     <apex:includeScript value="{!URLFOR($Resource.jquery182min)}"/> 
+    <apex:includeScript value="/support/console/36.0/integration.js"/>
+
+    <apex:includeScript value="{!URLFOR($Resource.ECCConsole)}" />
+    <apex:includeScript value="{!URLFOR($Resource.DetailTabAutoRefresh)}"  />
+     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
+
+
+
+     <style type="text/css">
+        body {
+            margin: 0px;
+            font-size: 14px;
+
+        }
+        .highlights-table {
+            border-collapse: separate;
+            border-spacing: 10px 0px;
+            padding: 5px;
+            border:none;
+        }
+
+        .highlights-table > thead > tr > th,
+        .highlights-table > tbody > tr > th,
+        .highlights-table > tfoot > tr > th,
+        .highlights-table > thead > tr > td,
+        .highlights-table > tbody > tr > td,
+        .highlights-table > tfoot > tr > td {
+          padding: 8px;
+          line-height: 1.42857143;
+          vertical-align: top;
+
+        }
+        .highlights-header-row {
+            text-align: left;
+        }
+
+        .highlights-header {
+            background-color: #d6e8f4;
+            background: linear-gradient(to bottom, #D6E8F4 0%, #ffffff 110%);
+            border-top-right-radius: 5px;
+            border-top-left-radius: 5px;
+            padding: 5px;
+          
+            font-weight: bold;
+            text-align: left;
+            width: 450px;
+        }
+
+        .highlights-header a {
+            font-weight: bold;
+        }
+
+        .highlights-details {
+            padding-left: 5px;
+            font-weight: normal;
+        }
+
+        table#c360highlight a {
+            color: #477AA2;
+        }
+
+        table#c360highlight td a {
+            color: #477AA2;
+            font-weight: normal;
+        }
+
+        table#c360highlight td label {
+            color: #333;
+            font-weight: normal;
+        }
+
+        .text-success{
+            color: #3c763d !important;
+        }
+
+        .vip-output{
+            margin-left: 20px;
+        }
+    </style>
+                <script type="text/javascript">
+                $j = jQuery.noConflict(); 
+                if (!window.console) console = {};
+
+                var tabLabel, tabId;
+                function openSubTabWithNewURL(result) {
+                    //alert(result.success);
+                    openSubtabC360(result.consoleUrl, tabLabel, tabId);
+                }
+
+                function genConsoleURL(urlToLoad, tabLabelIn, tabIdIn) {
+                    tabLabel = tabLabelIn;
+                    tabId = tabIdIn;
+                    sforce.console.generateConsoleUrl(urlToLoad, openSubTabWithNewURL);
+                }
+
+                $j(document).ready(function() {
+                    reLoadPage();
+
+
+                });
+            </script>
+
+        <apex:form >
+        <div class="container-fluid">
+            <apex:actionFunction action="{!reload}" rerender="pageRender" name="reLoadPage"/>
+            <apex:outputPanel id="pageRender">
+
+                <apex:pageMessages id="messages"></apex:pageMessages>
+                <apex:outputPanel rendered="{!NOT(hasError)}">
+<!--                 <apex:outputPanel rendered="{!!viewModel.IsVIP}">
+                    <style> #c360highlight tbody {background: #6699FF;}</style>
+                </apex:outputPanel> -->
+                    <table id="c360highlight" class="ui-state-default highlights-table" style="width:100%">
+                        <thead>
+                            <tr class="highlights-header-row">
+                                <th class="highlights-header">
+                                    <a href="javascript:openSubtabC360('/apex/C360RelationshipDetail?id={!viewModel.Lead.Id}', 'Relationships', 'relationships')">Organizer</a>
+                                </th>
+                               <th class="highlights-header">
+                                    <apex:outputPanel rendered="{!viewModel.Opportunity == null}">
+                                        <a href="javascript:openSubtabC360('{!URLFOR($Page.C360Search)}&leadChangeCoord={!viewModel.Lead.Id}', 'Change Coordinator', 'changeCoord')">Coordinator</a>
+                                    </apex:outputPanel>
+                                    <apex:outputPanel rendered="{!viewModel.Opportunity != null}">
+                                            Coordinator
+                                    </apex:outputPanel>
+                                </th>
+                                <th class="highlights-header event-info" style="display:none">
+                                    Event
+                                </th>
+                                 <th class="highlights-header">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="highlights-details">
+                                <td class="name">
+                                    <apex:outputPanel rendered="{!AND(viewModel.Lead.ConstituentID__c != null, !viewModel.IsOrganizerLoaded)}">
+               <div class="row mx-auto" style="color:#333; width:100%">
+                <h5>Loading..</h5><i class="fa fa-spinner fa-pulse fa-2x fa-fw"></i>
+                <span class="sr-only">Loading...</span>
+                </div>
+                                    </apex:outputPanel>
+                                    <apex:outputPanel rendered="{!AND(viewModel.Lead.ConstituentID__c != null, viewModel.IsOrganizerLoaded)}">
+                                            <script type="text/javascript">
+                                                $j = jQuery.noConflict();
+                                                if (!window.console) console = {};
+                                                var bbecUrl = '{!bbecURL}';
+
+                                                if ($j('#eventStatus').html().trim() == 'Active')
+                                                {
+                                                    $j('#eventStatus').addClass('text-success');
+                                                }
+                                            </script>
+                                            <div class="name">
+                                               <a href="javascript:openSubtabC360('/apex/C360ConstituentBasicEdit?id={!viewModel.Lead.Id}', 'Organizer Basic', 'viewBasic')">
+                                                    <apex:outputPanel layout="none">
+                                                        {!viewModel.OrganizerName} 
+                                                        <apex:outputPanel rendered="{!viewModel.IsOrganizerVIP}">
+                                                            <span class="vip-output text-danger"><i class="fa fa-exclamation-circle"></i>VIP</span>
+                                                        </apex:outputPanel>
+                                                    </apex:outputPanel>
+
+                                                </a>
+                                                <apex:outputPanel rendered="{!If (viewModel.Opportunity != null && viewModel.EventHighLights != null, true,false)}">
+                                                    <script type="text/javascript">
+                                                        $j = jQuery.noConflict();
+                                                        $j(".event-info").show();
+                                                    </script>
+                                                </apex:outputPanel>
+                                            </div>
+                                            <div >
+                                                <a href="javascript:openSubtabC360('/apex/C360AddressDetail?id={!viewModel.Lead.Id}', 'Organizer Address', 'viewOrganizerAddress')">
+                                                    <apex:outputText value="{!OrganizerAddress}" escape="false" />
+                                                </a>
+                                            </div>
+                                            <div class="phone">
+                                                <a href="javascript:openSubtabC360('/apex/C360PhoneDetail?id={!viewModel.Lead.Id}', 'Organizer Phone', 'viewOrganizerPhone')">
+                                                    <apex:outputText value="{!viewModel.OrganizerPhone}" />
+                                                </a>
+                                            </div>
+                                            <div class="email">
+                                                <a href="javascript:openSubtabC360('/apex/C360EmailDetail?id={!viewModel.Lead.Id}', 'Organizer Email', 'viewOrganizerEmail')">
+                                                    <apex:outputText value="{!viewModel.OrganizerEmail}" />
+                                                </a>
+                                            </div>
+                                            <apex:outputPanel rendered="{!viewModel.Lead.Partnership_Name__c != null}">
+                                                <div class="partner">
+                                                    Partnership:&nbsp;<apex:outputText value="{!viewModel.Lead.Partnership_Name__c}" />
+                                                </div>
+                                            </apex:outputPanel>
+                                                <A href="javascript:openSubtabC360('/apex/EventHistorySummary?id={!viewModel.Lead.id}&type=Organizer', 'Event History', 'Event History')">Events</A> <a href="javascript:openSubtabC360('/apex/CaseHistory?id={!viewModel.Lead.Id}', 'Case History', 'caseHistory')">Cases</a> <a href="javascript:openSubtabC360('/apex/LeadHistory?id={!viewModel.Lead.Id}', 'Lead History', 'leadHistory')">Leads</a> <a href="javascript:openSubtabC360('/apex/OppHistory?id={!viewModel.Lead.Id}', 'Opportunity History', 'oppHistory')">Opportunities</a>
+                                     </apex:outputPanel>
+                                </td>
+                                <td>
+                                    <apex:outputPanel rendered="{!AND(viewModel.Lead.CoordinatorID__c != null, !viewModel.IsCoordinatorLoaded)}">
+               <div class="row mx-auto" style="color:#333; width:100%">
+                <h5>Loading..</h5><i class="fa fa-spinner fa-pulse fa-2x fa-fw"></i>
+                <span class="sr-only">Loading...</span>
+                </div>
+                                    </apex:outputPanel>
+                                    <apex:outputPanel rendered="{!AND(viewModel.Lead.CoordinatorID__c != null, viewModel.IsCoordinatorLoaded)}">
+                                        <div class="name">
+                                            <apex:outputPanel >
+                                                {!viewModel.CoordinatorName}
+                                                <apex:outputPanel rendered="{!viewModel.IsCoordinatorVIP}">
+                                                    <span class="vip-output text-danger"><i class="fa fa-exclamation-circle"></i>VIP</span>
+                                                </apex:outputPanel>
+                                            </apex:outputPanel>
+                                        </div>
+                                        
+                                        <div class="email">
+                                            <a href="javascript:openSubtabC360('/apex/C360AddressDetail?id={!viewModel.Lead.Id}&leadType=COORDINATOR', 'Coordinator Address', 'viewCoordinatorAddress')">
+                                                <apex:outputText value="{!CoodinatorAddress}" escape="false" />
+                                            </a>
+                                        </div>
+                                      
+                                        <!--<div class="email">                                             
+                                           <a href="javascript:openSubtabC360('/apex/C360AddressDetail?id={!viewModel.Lead.Id}&leadType=COORDINATOR', 'Coordinator Address', 'viewCoordinatorAddress')">
+                                                <apex:outputText value="{!MailingAddress}" escape="false" />
+                                            </a>
+                                        </div>-->                                        
+                                        <div class="phone">
+                                            <a href="javascript:openSubtabC360('/apex/C360PhoneDetail?id={!viewModel.Lead.Id}&leadType=COORDINATOR', 'Coordinator Phone', 'viewCoordinatorPhone')">
+                                            <apex:outputText value="{!viewModel.CoordinatorPhone}" />
+                                            </a>
+                                        </div>
+                                        <div class="email">
+                                            <a href="javascript:openSubtabC360('/apex/C360EmailDetail?id={!viewModel.Lead.Id}&leadType=COORDINATOR', 'Coordinator Email', 'viewCoordinatorEmail')">
+                                                <apex:outputText value="{!viewModel.CoordinatorEmail}" />
+                                            </a>
+                                        </div>
+                                        
+                                        <a href="javascript:openSubtabC360('/apex/EventHistorySummary?id={!viewModel.Lead.id}&leadRelType=Coordinator', 'Event History', 'Event History')">Events</a> <a href="javascript:openSubtabC360('/apex/CaseHistory?id={!viewModel.Lead.Id}&leadRelType=COORDINATOR', 'Case History', 'caseHistory')">Cases</a> <a href="javascript:openSubtabC360('/apex/LeadHistory?id={!viewModel.Lead.Id}&leadRelType=COORDINATOR', 'Lead History', 'leadHistory')">Leads</a> <a href="javascript:openSubtabC360('/apex/OppHistory?id={!viewModel.Lead.Id}&leadRelType=COORDINATOR', 'Opportunity History', 'oppHistory')">Opportunities</a>
+          
+                                    </apex:outputPanel>
+
+                                </td>
+                                
+                                <td class="event-info" style="display:none">
+                                    <table style="padding:5px">
+                                        <tr>
+                                            <td>Campaign:</td>
+                                            <td><apex:outputText value="{!viewModel.CampaignName}"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Name:</td>
+                                            <td><apex:outputText value="{!viewModel.EventHighLights.EventName__c}"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Date:</td>
+                                            <td><apex:outputText value="{!viewModel.EventDate}"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Fiscal Year:</td>
+                                            <td>
+                                                <apex:outputText value="{!TEXT(viewModel.EventHighLights.FiscalYear__c)}" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Expected Participants:</td>
+                                            <td>
+                                                <apex:outputText value="{!TEXT(viewModel.EventHighLights.ExpectedParticipants__c)}" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Event Status:</td>
+                                            <td id="eventStatus"><apex:outputText value="{!viewModel.EventHighLights.Status__c}"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Opp Stage:</td>
+                                            <td><apex:outputText value="{!viewModel.Opportunity.Stagename}"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Raised:</td>
+                                            <td>
+                                                 <a href="javascript:openSubtabC360('/apex/ECCRevenues?eventId={!viewModel.EventHighLights.EventID__c}', 'Revenue Details', 'viewRevenues')">
+                                                    <apex:outputText value="{!TotalRevenue}"/>
+                                                 </a>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                               <apex:outputPanel layout="none"  rendered="{!viewModel.HasRevNotes}"><span class="glyphicon glyphicon-info-sign" style="color: #FFC300"></span></apex:outputPanel>
+                                                Donated:
+                                            </td>
+                                            <td>
+                                                <a href="javascript:openSubtabC360('/apex/C360TransactionDetail?id={!viewModel.Lead.Id}', 'Transactions', 'viewTransactions')">
+                                                    $<apex:outputText value="{0, number,#,##0.00}">
+                                                        <apex:param value="{!viewModel.FinancialProfile.LifeTimePaidAmount}"/>
+                                                    </apex:outputText>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width:140px;">Contact Preference:</td>
+                                            <td><apex:outputfield value="{!viewModel.EventHighLights.ContactType__c}"/></td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            
+<!--                                 <td>
+                                    <table>
+                                        <tr>
+                                            <td><b>Preferred Contact: </b>
+                                            </td>
+                                            <td><apex:outputfield value="{!viewModel.EventHighLights.ContactType__c}"/></td>
+                                        </tr>
+                                    </table>
+                                </td> -->
+                                <td>
+                                    <apex:outputPanel rendered="{!viewModel.Opportunity != null}">
+                                        <div>
+                                            <apex:actionFunction action="{!assignOppStage}" name="assignOppStage" />
+                                            <apex:commandLink action="{!assignOppStage}" rendered="{!AND(viewModel.Opportunity != null, RIGHT(viewModel.Opportunity.stageName, 8) != 'Complete', viewModel.Opportunity.Probability != null, viewModel.Opportunity.Probability < 100, viewModel.Opportunity.Probability > 5)}" >Complete {!viewModel.Opportunity.stageName}</apex:commandLink>
+                                            <apex:outputPanel rendered="{!OR(viewModel.Opportunity == null, RIGHT(viewModel.Opportunity.stageName, 8) == 'Complete', viewModel.Opportunity.Probability == null, viewModel.Opportunity.Probability == 100, viewModel.Opportunity.Probability == 0)}"><label>{!viewModel.Opportunity.stageName}</label></apex:outputPanel>
+                                           </div>
+                                    </apex:outputPanel>
+
+                                         <div>
+                                         <apex:outputPanel layout="none" rendered="{!AND(viewModel.IsOrganizerLoaded, viewModel.CoordinatorIdToLoad != null)}">
+                                            <a href="#" onclick="javascript:openSubtabC360('{!challengeRecruitURL}Account/Land?userid={!$User.Username}&token={!nonce}&redirect={!URLENCODE('~/Recruitment/Create?orgId=' + viewModel.Organizer.ConstituentID + '&allowOrg=false&coordIsParticipant=' + viewModel.IsCoordParticipant + '&autoSendKit=' + viewModel.IsAutoSendKit + '&coordId=' + viewModel.Coordinator.ConstituentID + '&eventTypeId=' + viewModel.Lead.CurrentCampaign__r.EventTypeID__c + '&partnership=' + viewModel.Lead.Partnership_Name__c + '&returnHost=ecc&returnUrl=' + URLENCODE($Page.EventRecruited + '?id=' + viewModel.Lead.Id))}', 'Recruit Event', 'EventsRecruitment')">Recruit Event</a>
+                                         </apex:outputPanel>
+                                        <apex:outputPanel layout="none" rendered="{!AND(viewModel.IsOrganizerLoaded, viewModel.CoordinatorIdToLoad == null)}">
+                                            <span data-toggle="tooltip" data-placement="bottom" title="Coordinator is required">Recruit Event</span>
+
+                                            <script type="text/javascript">
+                                                $j('[data-toggle="tooltip"]').tooltip();
+                                            </script>
+                                         </apex:outputPanel>
+                                        </div>
+                                        <apex:outputPanel layout="none" rendered="{!viewModel.EventHighLights != null}">
+                                            <div>
+                                                    <A href="javascript:openSubtabC360('{!URLFOR($Page.OIMOrderList)}&eventId={!viewModel.EventHighLights.EventID__c}&id={!viewModel.Lead.Id}', 'Orders', 'Orders')" >Orders</A>
+                                                </div>
+                                        </apex:outputPanel>
+                                        <div>
+                                                <A href="javascript:openSubtabC360('/apex/C360RelationshipDetail?id={!viewModel.Lead.Id}', 'Relationships', 'relationships')" >Relationships</A>
+                                            </div>
+                                        <div>
+                                                <a href="javascript:openSubtabC360('/apex/C360Interactions?id={!viewModel.Lead.Id}', 'Interactions', 'viewInteractions')">Interactions</a>
+                                            </div>
+                                        <div>
+                                                <A HREF="javascript:openPrimaryTab('{!URLFOR($Page.C360CaseFromlead)}}&consId={!viewModel.Lead.ConstituentID__c}&relId={!viewModel.Lead.Id}')">Create Case</A>
+                                            </div>
+                                        <div>
+                                                <A href="javascript:openSubtabC360('{!URLFOR($Page.C360Search)}&isRecruitmentCampaign=true&campAddReferral={!viewModel.Lead.CurrentCampaign__c}', 'Add Lead', 'addLead')">Add Lead</A>
+                                            </div>
+                                        <div>
+                                                <apex:outputPanel layout="none" rendered="{!NOT(ISBLANK(viewModel.TrEventid))}">
+                                                    <A HREF="{!viewModel.TrChallengeLink}" target="_blank">Fundraiser Page</A>
+                                                </apex:outputPanel>
+                                                <apex:outputPanel layout="none" rendered="{!ISBLANK(viewModel.TrEventid)}">Fundraiser Page Unavailable</apex:outputPanel>
+                                            </div>
+                                        <div>
+                                            <a href="javascript:openSubtabC360('{!URLFOR($Page.EventSearch)}', 'Event Search', 'Event Search')">Event Search</a>
+                                            </div>
+
+                                        <div>
+                                            <A HREF="#" onClick="OpenBBEC();return false">View Donor Mgmnt.</A> 
+                                            </div>
+                                    
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </apex:outputPanel>
+            </apex:outputPanel>
+            </div>
+        </apex:form>
+        <input type="hidden" id="hdnBbecId" value="{!viewModel.Lead.ConstituentID__c}"></input> 
+
+</apex:page>

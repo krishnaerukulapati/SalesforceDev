@@ -1,0 +1,72 @@
+<apex:page docType="html-5.0" showHeader="false" sidebar="false" standardStylesheets="false" applyHtmlTag="false" applyBodyTag="false"  controller="EdgeForceIntranetHomeController" id="EF_Template">
+
+<!--[if IEMobile 7 ]> <html dir="ltr" lang="en-US"class="no-js iem7"> <![endif]-->
+<!--[if lt IE 7 ]> <html dir="ltr" lang="en-US" class="no-js ie6 oldie"> <![endif]-->
+<!--[if IE 7 ]>    <html dir="ltr" lang="en-US" class="no-js ie7 oldie"> <![endif]-->
+<!--[if IE 8 ]>    <html dir="ltr" lang="en-US" class="no-js ie8 oldie"> <![endif]-->
+<!--[if (gte IE 9)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html dir="ltr" lang="en-US" class="no-js"><!--<![endif]-->
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"></meta>
+    <title>Welcome to Appirios Social Intranet</title>
+    <link rel="shortcut icon" href="{!$Resource.Intranetfavicon}" type="shortcut/ico" />
+
+    <!-- For testing / dev 
+    <link rel="stylesheet" type="text/css" href="https://googledrive.com/host/0BynHhZiscRM6ZXo4ZktiNHpScGs/css/main.css"></link> 
+    -->
+    
+    <!-- For production -->
+    <apex:stylesheet value="{!URLFOR($Resource.EF_Boilerplate, 'dist/css/main.css')}"/>
+   
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <apex:includeScript value="{!URLFOR($Resource.EF_Boilerplate, 'dist/js/html5shiv-3.7.0.js')}"/>
+        <apex:includeScript value="{!URLFOR($Resource.EF_Boilerplate, 'dist/js/respond-1.3.0.min.js')}"/>
+    <![endif]-->
+
+</head>
+
+<body id="home">
+
+    <!-- Warn deprecated browsers -->
+    <!--[if lt IE 7]>
+        <p class="chromeframe">You are using an outdated browser. <a href="http://browsehappy.com/">Upgrade your browser today</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.</p>
+    <![endif]-->
+
+
+    <div id="wrap" class="container-fluid margin ef_boilerplate">
+        <div class="row">
+            <div class="col-sm-12">
+                <c:EF_Header />
+                <c:EF_TopNav />
+            </div><!--/.col-sm-12 -->
+        </div><!--/.row -->
+
+        <!-- Page content area -->
+        <apex:insert name="body"/>
+
+    </div><!--/#wrap .container-fluid  -->
+
+
+    <div id="footer">
+        <div class="container-fluid margin">
+            <div class="row">
+                <div class="col-sm-12">
+                    <c:EF_Footer />
+                </div><!--/.col-sm-12 -->
+            </div><!--/.row -->
+        </div><!--/.container-fluid margin -->
+    </div><!--/#footer .container-fluid margin -->
+
+
+    <!-- Javascript Resources -->
+    <apex:includeScript value="{!$Resource.jquery182min}"/>
+    <!--<apex:includeScript value="{!URLFOR($Resource.EF_Boilerplate, 'dist/js/jquery-2.0.3.min.js')}"/>-->
+    <apex:includeScript value="{!URLFOR($Resource.EF_Boilerplate, 'dist/js/bootstrap-3.0.3.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.IntranetDesign, 'dist/js/script.js')}"/>
+
+</body>
+</html>
+</apex:page>

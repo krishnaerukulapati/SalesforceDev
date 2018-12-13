@@ -1,0 +1,301 @@
+<apex:page standardController="lead" extensions="FitnessHighlightsController" showheader="false" sidebar="false" standardStylesheets="false" >
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous"/>
+    <apex:stylesheet value="{!URLFOR($Resource.FontAwesome, 'css/font-awesome.css')}" />
+        <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+
+     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+     <apex:includeScript value="{!URLFOR($Resource.jquery182min)}"/> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
+
+    <apex:includeScript value="/support/console/36.0/integration.js"/>
+
+    <apex:includeScript value="{!URLFOR($Resource.ECCConsole)}" />
+    <apex:includeScript value="{!URLFOR($Resource.DetailTabAutoRefresh)}"  />
+     <style type="text/css">
+        body {
+            margin: 0px;
+
+            font-size: 14px;
+        }
+        .highlights-table {
+            border-collapse: separate;
+            border-spacing: 10px 0px;
+            padding: 5px;
+            border:none;
+        }
+
+        .highlights-table > thead > tr > th,
+        .highlights-table > tbody > tr > th,
+        .highlights-table > tfoot > tr > th,
+        .highlights-table > thead > tr > td,
+        .highlights-table > tbody > tr > td,
+        .highlights-table > tfoot > tr > td {
+          padding: 8px;
+          line-height: 1.42857143;
+          vertical-align: top;
+
+        }
+        .highlights-header-row {
+            text-align: left;
+        }
+
+        .highlights-header {
+            background-color: #d6e8f4;
+            background: linear-gradient(to bottom, #D6E8F4 0%, #ffffff 110%);
+            border-top-right-radius: 5px;
+            border-top-left-radius: 5px;
+            padding: 5px;
+          
+            font-weight: bold;
+            text-align: left;
+            width: 450px;
+        }
+
+        .highlights-header a {
+            font-weight: bold;
+        }
+
+        .highlights-details {
+            padding-left: 5px;
+
+            font-size: 14px;
+            font-weight: normal;
+        }
+
+        table#c360highlight a {
+            color: #477AA2;
+        }
+
+        table#c360highlight td a {
+            color: #477AA2;
+            font-weight: normal;
+        }
+
+        table#c360highlight td 
+         {
+            color: #333;
+            font-weight: normal;
+        }
+
+        .text-success{
+            color: #3c763d !important;
+        }
+
+        .vip-output{
+            margin-left: 20px;
+        }
+    </style>
+
+        <script type="text/javascript">
+                $j = jQuery.noConflict(); 
+                if (!window.console) console = {};
+                var bbecUrl = '{!viewModel.bbecURL}';
+    
+                var tabLabel, tabId;
+                function openSubTabWithNewURL(result) {
+                    openSubtabC360(result.consoleUrl, tabLabel, tabId);
+                }
+    
+                function genConsoleURL(urlToLoad, tabLabelIn, tabIdIn) {
+                    tabLabel = tabLabelIn;
+                    tabId = tabIdIn;
+                    sforce.console.generateConsoleUrl(urlToLoad, openSubTabWithNewURL);
+                }
+    
+            $j(document).ready(function() {
+                reLoadPage();
+            });
+        </script>
+    <apex:form >
+            <div class="container-fluid">
+        <apex:actionFunction action="{!reload}" reRender="pageRender" name="reLoadPage"/>
+        <apex:outputPanel id="pageRender">
+
+        <table id="c360highlight" width="100%" class="ui-state-default highlights-table">
+            <thead>
+                <tr  class="highlights-header-row">
+                    <th class="highlights-header">Fundraiser</th>
+                    <th class="highlights-header">Event</th>
+                    <th class="highlights-header">Registration</th>
+                    <th class="highlights-header">Fundraiser Revenue</th>
+                    <th class="highlights-header">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr  class="highlights-details">
+                <td class="name">
+                    <apex:outputPanel rendered="{!AND(viewModel.Lead.ConstituentID__c != null, !viewModel.IsOrganizerLoaded)}">
+                 <div class="row mx-auto" style="color:#333; width:100%">
+                <h5>Loading..</h5><i class="fa fa-spinner fa-pulse fa-2x fa-fw"></i>
+                <span class="sr-only">Loading...</span>
+                </div>
+                    </apex:outputPanel>
+                    <apex:outputPanel rendered="{!AND(viewModel.Lead.ConstituentID__c != null, viewModel.IsOrganizerLoaded)}">
+                        <div class="name">
+                            <a href="javascript:openSubtabC360('/apex/C360ConstituentBasicEdit?id={!viewModel.Lead.Id}', 'Basic', 'viewBasic')">
+                                <apex:outputText value="{!viewModel.OrganizerName}"/>
+                            </a> 
+                        </div>
+                        <div >
+                            <a href="javascript:openSubtabC360('/apex/C360AddressDetail?id={!viewModel.Lead.Id}', 'Address', 'viewAddress')">
+                                <apex:outputText value="{!OrganizerAddress}" escape="false" />
+                            </a> 
+                        </div>
+                        <div class="phone">
+                            <a href="javascript:openSubtabC360('/apex/C360PhoneDetail?id={!viewModel.Lead.Id}', 'Phone', 'viewPhone')">
+                                <apex:outputText value="{!viewModel.OrganizerPhone}" />
+                            </a> 
+                        </div>
+                        <div class="email">
+                            <a href="javascript:openSubtabC360('/apex/C360EmailDetail?id={!viewModel.Lead.Id}', 'Email', 'viewEmail')">
+                                <apex:outputText value="{!viewModel.OrganizerEmail}" />
+                            </a> 
+                        </div>
+                        <div class="email">
+                            Region: {!viewModel.eventRegistrationDetails.Region__c}
+                        </div>
+                        <div class="email">
+                           P2P ID: {!viewModel.eventRegistrationDetails.P2P_ID__c}
+                        </div>
+                        <table>
+                            <tr>
+                                <td>
+                                    <apex:outputPanel layout="none" rendered="{!viewModel.HasRevNotes}">
+                                        <span class="glyphicon glyphicon-info-sign" style="color: #FFC300"></span>
+                                    </apex:outputPanel>History: 
+                                </td>
+                                <td>
+                                    <a href="javascript:openSubtabC360('/apex/C360TransactionDetail?id={!viewModel.Lead.Id}', 'Transactions', 'viewTransactions')">$
+                                        <apex:outputText value="{0, number,#,##0.00}"><apex:param value="{!viewModel.FinancialProfile.LifeTimePaidAmount}"/></apex:outputText>
+                                    </a>
+                                </td>
+                            </tr>
+                        </table>
+                        <a href="javascript:openSubtabC360('/apex/EventHistorySummary?id={!viewModel.Lead.id}&type=Organizer', 'Event History', 'Event History')">       Events</a> 
+                        <a href="javascript:openSubtabC360('/apex/CaseHistory?id={!viewModel.Lead.id}', 'Case History', 'caseHistory')">Cases</a>  
+                        <a href="javascript:openSubtabC360('/apex/LeadHistory?id={!viewModel.Lead.id}', 'Lead History', 'leadHistory')">Leads</a>
+                        <a href="javascript:openSubtabC360('/apex/OppHistory?id={!viewModel.Lead.id}', 'Opportunity History', 'oppHistory')">Opportunities</a>
+                    </apex:outputPanel>
+                </td>
+                <td>
+                    <table>
+                        <tr>
+                            <td>Name: </td>
+                            <td>{!viewModel.eventDetails.Name__c}</td>
+                        </tr>
+                        <tr>
+                            <td>Date: </td>
+                            <td>{!viewModel.eventDetails.EventDate__c}</td>
+                        </tr>
+                        <tr>
+                            <td>Type: </td>
+                            <td>{!viewModel.eventDetails.Event_Type__c}</td>
+                        </tr>
+                        <tr>
+                            <td>Address: </td>
+                            <td>
+                                <apex:outputText value="{!viewModel.eventDetails.EventAddressStreet1__c},<br/>"  rendered="{!viewModel.eventDetails.EventAddressStreet1__c != NULL}" escape="false"></apex:outputText>
+                                <apex:outputText value="{!viewModel.eventDetails.EventAddressStreet2__c},<br/>"  rendered="{!viewModel.eventDetails.EventAddressStreet2__c!= NULL}" escape="false"></apex:outputText>
+                                <apex:outputText value="{!viewModel.eventDetails.EventAddressStreet3__c},<br/>"  rendered="{!viewModel.eventDetails.EventAddressStreet3__c!= NULL}" escape="false"></apex:outputText>
+                                <apex:outputText value="{!viewModel.eventDetails.EventAddressCity__c}, {!viewModel.eventDetails.EventAddressState__c} {!viewModel.eventDetails.EventAddressZip__c}<br/>"  
+                                rendered="{!viewModel.eventDetails.EventAddressZip__c!= NULL || viewModel.eventDetails.EventAddressCity__c != NULL ||  viewModel.eventDetails.EventAddressState__c !=NULL}" escape="false"></apex:outputText>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+                <td>
+                    <table>
+                        <tr>
+                            <td>Level: </td>
+                            <td>{!viewModel.eventRegistrationDetails.Participation_Type_Fundrasing_Level__c}</td>
+                        </tr>
+                        <tr>
+                            <td>Hero LY: </td>
+                            <td>{!viewModel.eventRegistrationDetails.Last_Year_s_Participation__c}</td>
+                        </tr>
+                        <tr>
+                            <td>Team Name: </td>
+                            <td>{!viewModel.eventRegistrationDetails.Team_Name__c}</td>
+                        </tr>
+                        <tr>
+                            <td>Team Captain: </td>
+                            <td>{!viewModel.eventRegistrationDetails.Is_Team_Captain__c}</td>
+                        </tr>
+                        <tr>
+                            <td>CGI ID: </td>
+                            <td>{!viewModel.cgiId}</td>
+                        </tr>
+                        <tr>
+                            <td>Contact Preference: </td>
+                            <td>{!viewModel.conPreference}</td>
+                        </tr>
+                    </table>
+                </td>
+                <td>
+                    <table>
+                        <tr>
+                            <td>Revenue: </td>
+                            <td>${!viewModel.eventRegistrationDetails.Current_Event_Revenue__c}</td>
+                        </tr>
+                        <tr>
+                            <td>LY Revenue: </td>
+                            <td>${!viewModel.eventRegistrationDetails.Last_Years_Amout_Raised__c}</td>
+                        </tr>
+                        <tr>
+                            <td>Goal: </td>
+                            <td>${!viewModel.eventRegistrationDetails.RevenueGoal__c}</td>
+                        </tr>
+                        <tr>
+                            <td>Minimum Goal: </td>
+                            <td>${!viewModel.eventRegistrationDetails.MinimumGoal__c}</td>
+                        </tr>
+                        <tr>
+                            <td>Gifts #: </td>
+                            <td>{!viewModel.eventRegistrationDetails.Current_Event_Gifts__c}</td>
+                        </tr>
+                    </table>
+                </td>
+                <td>
+                    <apex:outputPanel rendered="{!viewModel.Opportunity != null}">
+                        <div>
+                            <apex:commandLink action="{!assignOppStage}" rendered="{!AND(viewModel.Opportunity != null, RIGHT(viewModel.Opportunity.stageName, 8) != 'Complete', viewModel.Opportunity.Probability != null, viewModel.Opportunity.Probability < 100, viewModel.Opportunity.Probability > 5)}" >Complete {!viewModel.Opportunity.stageName}
+                            </apex:commandLink>
+                            <apex:outputLabel rendered="{!OR(viewModel.Opportunity == null, RIGHT(viewModel.Opportunity.stageName, 8) == 'Complete', viewModel.Opportunity.Probability == null, viewModel.Opportunity.Probability == 100, viewModel.Opportunity.Probability == 0)}" value="">{!viewModel.Opportunity.stageName}
+                            </apex:outputLabel>
+                        </div>
+                    </apex:outputPanel>
+                    <apex:outputPanel rendered="{!AND(viewModel.Lead.ConstituentID__c != null, viewModel.IsOrganizerLoaded)}">
+                        <div>
+                            <a href="javascript:openSubtabC360('{!pledgeMaintURL}?consId={!viewModel.Lead.ConstituentID__c}&userid={!$User.Username}&technique={!viewModel.currLead.SSLead.Technique_Method__c}&program=ecc&sourceCode={!viewModel.Lead.TransSourceCode__c}&AgentId={!viewModel.AgentId}&CallerId={!viewModel.CallObject}&calluniqueid={!viewModel.CallObject}&token={!nonce}&returnURL={!returnURL}&showHeader=false&relId={!viewModel.Lead.id}&flowReturn={!$Page.ECCCloseSubTab}', 'Pledges', 'viewPledge')">Manage Donations</a>
+                        </div>
+                    </apex:outputPanel>
+                        <div>
+                            <apex:outputPanel layout="none" rendered="{!NOT(ISBLANK(viewModel.xrefEventId))}">
+                                <a href="{!viewModel.trHeroesLink}" target="_blank">Fundraiser Page</a>
+                            </apex:outputPanel>                       
+                            <apex:outputPanel layout="none" rendered="{!ISBLANK(viewModel.xrefEventId)}">Fundraiser Page Unavailable</apex:outputPanel>  
+                        </div> 
+                        <div>
+                            <a href="javascript:openPrimaryTab('{!URLFOR($Page.C360CaseFromlead)}}&consId={!viewModel.Lead.ConstituentID__c}')">Donor Preferences</a>                   
+                        </div>
+                        <div>
+                            <a href="javascript:openSubtabC360('/apex/C360Interactions?id={!viewModel.Lead.id}', 'Interactions', 'viewInteractions')">Interactions</a>
+                        </div>
+                        <div>
+                            <a href="javascript:openPrimaryTab('{!URLFOR($Page.C360CaseFromlead)}}&consId={!viewModel.Lead.ConstituentID__c}&cas11={!'Phone (Outbound)'}')">Create Case</a>
+                        </div>
+                        <div>
+                            <a href="#" onClick="OpenBBEC()">View Donor Mgmnt.</a>                     
+                        </div>
+                    
+                </td>
+                </tr>
+            </tbody>
+
+        </table>
+        </apex:outputPanel>
+    </div>
+    </apex:form> 
+        <input type="hidden" id="hdnBbecId" value="{!viewModel.Lead.ConstituentID__c}"></input> 
+</apex:page>

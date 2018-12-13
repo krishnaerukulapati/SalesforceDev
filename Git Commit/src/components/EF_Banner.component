@@ -1,0 +1,133 @@
+<!--@ Modified by : Sil 
+    @ Modified On : 10-March-2014 
+    @ purpose     : Fixed Error Banner URL redirection[only when there is url in backend]
+    @ chageId     : c001
+    -----------------------------------------------------------------------------------------------
+    -->
+<apex:component controller="EdgeForceIntranetBannerController">
+<apex:attribute name="BannerPageId" description="This is the Page Id for displaying intranet banner" type="String" assignTo="{!currentPageName}"/>
+
+
+
+<apex:outputpanel rendered = "{!banners!=Null && banners.size>0}" >
+    <div id="ef_banner" class="carousel slide" data-ride="carousel">
+    
+        <!-- Indicators -->
+        <ol class="carousel-indicators">
+            <li data-target="#ef_banner" data-slide-to="0" class="active"></li>
+            <li data-target="#ef_banner" data-slide-to="1"></li>
+            <li data-target="#ef_banner" data-slide-to="2"></li>
+            
+        </ol>
+    
+        <div class="carousel-inner">
+            <apex:variable value="{!0}" var="slideCount"/>
+            <apex:repeat value="{!banners}" var="banner" id="bannerId">
+                <apex:variable value="{!slideCount+1}" var="slideCount"/>
+                <div class="item {!IF(slideCount == 1, 'active','')}">
+                     <!-- c001 -->
+                     <apex:outputLink value="{!IF(contains(banner.content.URL__c, 'http') || contains(banner.content.URL__c, 'https'), banner.content.URL__c, 'https://' + banner.content.URL__c)}" target="{!banner.content.Target__c}">           
+                        <apex:image value="/servlet/servlet.FileDownload?file={!banner.content.Attachments[0].Id}&otherId=" alt="alternate text" rendered="{!banner.content.URL__c != null && banner.content.URL__c != ''}"/>
+                     </apex:outputLink>
+                     <apex:image value="/servlet/servlet.FileDownload?file={!banner.content.Attachments[0].Id}&otherId=" alt="alternate text" rendered="{!banner.content.URL__c == null || banner.content.URL__c == ''}"/>
+                    
+                    <div class="carousel-caption">
+                        <apex:outputLink value="{!IF(contains(banner.content.URL__c, 'http') || contains(banner.content.URL__c, 'https'), banner.content.URL__c, 'https://' + banner.content.URL__c)}" target="{!banner.content.Target__c}" rendered="{!IF(AND(banner.contentVersionforDisplay.Language__c != Null,banner.contentVersionforDisplay.Button_Label__c = NULL , banner.content.Attachments.size > 0),true,false)}">
+                            <div class="{!IF(banner.contentVersionforDisplay.Position__c == 'Left','textLeft',IF(banner.contentVersionforDisplay.Position__c == 'Right','textRight',IF(banner.contentVersionforDisplay.Position__c == 'Center','textCenter','text')))}">
+                                <p id="{!IF(banner.contentVersionforDisplay.Position__c == 'Left','bannerHeaderLeft',IF(banner.contentVersionforDisplay.Position__c == 'Right','bannerHeaderRight',IF(banner.contentVersionforDisplay.Position__c == 'Center','bannerHeaderCenter','bannerHeader')))}" style="{!IF(NOT(ISNULL(banner.contentVersionforDisplay.Header_Color__c)),'color:'+banner.contentVersionforDisplay.Header_Color__c,'')}">{!banner.contentVersionforDisplay.Header__c}</p>
+                                <p id="{!IF(banner.contentVersionforDisplay.Position__c == 'Left','bannerSummaryLeft',IF(banner.contentVersionforDisplay.Position__c == 'Right','bannerSummaryRight',IF(banner.contentVersionforDisplay.Position__c == 'Center','bannerSummaryCenter','bannerSummary')))}" style="{!IF(NOT(ISNULL(banner.contentVersionforDisplay.Summary_Color__c)),'color:'+banner.contentVersionforDisplay.Summary_Color__c,'')}">{!banner.contentVersionforDisplay.Summary__c}</p>
+                            </div>
+                        </apex:outputLink>
+                    </div><!--/.carousel-caption -->
+                    <apex:outputPanel rendered="{!IF(AND(banner.contentVersionforDisplay.Button_Label__c != NULL, banner.content.Attachments.size > 0),true,false)}" layout="block">
+                        <img src="/servlet/servlet.FileDownload?file={!banner.content.Attachments[0].Id}&otherId=" alt="alternate text"/>
+                        <div class="carousel-caption">
+                            <div class="{!IF(banner.contentVersionforDisplay.Position__c == 'Left','textLeft',IF(banner.contentVersionforDisplay.Position__c == 'Right','textRight',IF(banner.contentVersionforDisplay.Position__c == 'Center','textCenter','text')))}">
+                                <p id="{!IF(banner.contentVersionforDisplay.Position__c == 'Left','bannerHeaderLeft',IF(banner.contentVersionforDisplay.Position__c == 'Right','bannerHeaderRight',IF(banner.contentVersionforDisplay.Position__c == 'Center','bannerHeaderCenter','bannerHeader')))}" style="{!IF(NOT(ISNULL(banner.contentVersionforDisplay.Header_Color__c)),'color:'+banner.contentVersionforDisplay.Header_Color__c,'')}">{!banner.contentVersionforDisplay.Header__c}</p>
+                                <p id="{!IF(banner.contentVersionforDisplay.Position__c == 'Left','bannerSummaryLeft',IF(banner.contentVersionforDisplay.Position__c == 'Right','bannerSummaryRight',IF(banner.contentVersionforDisplay.Position__c == 'Center','bannerSummaryCenter','bannerSummary')))}" style="{!IF(NOT(ISNULL(banner.contentVersionforDisplay.Summary_Color__c)),'color:'+banner.contentVersionforDisplay.Summary_Color__c,'')}">{!banner.contentVersionforDisplay.Summary__c}</p>
+                                <p align="{!IF(banner.contentVersionforDisplay.Button_Location__c == 'Left','Left',IF(banner.contentVersionforDisplay.Button_Location__c == 'Right','Right','Center'))}">
+                                    <a href="{!IF(contains(banner.content.URL__c, 'http') || contains(banner.content.URL__c, 'https'), banner.content.URL__c, 'https://' + banner.content.URL__c)}" target="{!banner.content.Target__c}" Id="bannerLabel">{!banner.contentVersionforDisplay.Button_Label__c}</a>
+                                </p>
+                            </div>
+                        </div><!--/.carousel-caption -->
+                    </apex:outputPanel>
+                </div><!--/.item -->
+            </apex:repeat>
+        </div><!-- /.carousel-inner -->
+    
+        <!-- Controls -->
+        <a class="left carousel-control" href="#ef_banner" data-slide="prev">
+            <span class="glyphicon glyphicon-chevron-left"></span>
+        </a>
+        <a class="right carousel-control" href="#ef_banner" data-slide="next">
+            <span class="glyphicon glyphicon-chevron-right"></span>
+        </a>
+    
+    </div><!--/.carousel -->
+</apex:outputpanel>
+
+    <!-- Expected markup
+    <div class="carousel-inner">
+        <div class="item active">
+            <img src="https://c.cs16.content.force.com/servlet/servlet.FileDownload?file=00Pf0000000YBr9EAG&otherId=" />
+            <div class="carousel-caption"></div>
+        </div>
+        <div class="item">
+            <img src="https://c.cs16.content.force.com/servlet/servlet.FileDownload?file=00Pf0000000YBpwEAG&otherId=" />
+            <div class="carousel-caption"></div>
+        </div>
+    </div>
+    -->
+
+    <!-- Original markup
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $('.flexslider').flexslider({
+                animation: "slide",
+                slideshowSpeed: '{!banner_Roating_Speed}',
+                controlNav: false
+            });
+        });
+    </script>
+    <div class="flexslider">
+        <ul class="slides bannerSlides">
+            <apex:repeat value="{!banners}" var="banner" id="bannerId">
+                <li style="font-size: 18px;color: black;">
+                    <apex:outputLink value="{!IF(contains(banner.content.URL__c, 'http') || contains(banner.content.URL__c, 'https'), banner.content.URL__c, 'https://' + banner.content.URL__c)}" target="{!banner.content.Target__c}"  style="font-size: 18px;color: black; text-decoration: none;"  rendered="{!IF(AND(banner.contentVersionforDisplay.Language__c != Null,banner.contentVersionforDisplay.Button_Label__c = NULL , banner.content.Attachments.size > 0),true,false)}">
+                        <div class="image">
+                            <img src="/servlet/servlet.FileDownload?file={!banner.content.Attachments[0].Id}&otherId=" alt="alternate text"/>
+                            <div class="{!IF(banner.contentVersionforDisplay.Position__c == 'Left','textLeft',IF(banner.contentVersionforDisplay.Position__c == 'Right','textRight',IF(banner.contentVersionforDisplay.Position__c == 'Center','textCenter','text')))}">    
+                                <p id="{!IF(banner.contentVersionforDisplay.Position__c == 'Left','bannerHeaderLeft',IF(banner.contentVersionforDisplay.Position__c == 'Right','bannerHeaderRight',IF(banner.contentVersionforDisplay.Position__c == 'Center','bannerHeaderCenter','bannerHeader')))}" style="{!IF(NOT(ISNULL(banner.contentVersionforDisplay.Header_Color__c)),'color:'+banner.contentVersionforDisplay.Header_Color__c,'')}">{!banner.contentVersionforDisplay.Header__c}</p>
+                                <p id="{!IF(banner.contentVersionforDisplay.Position__c == 'Left','bannerSummaryLeft',IF(banner.contentVersionforDisplay.Position__c == 'Right','bannerSummaryRight',IF(banner.contentVersionforDisplay.Position__c == 'Center','bannerSummaryCenter','bannerSummary')))}" style="{!IF(NOT(ISNULL(banner.contentVersionforDisplay.Summary_Color__c)),'color:'+banner.contentVersionforDisplay.Summary_Color__c,'')}">{!banner.contentVersionforDisplay.Summary__c}</p>
+                            </div>
+                        </div>
+                    </apex:outputLink> 
+                    <apex:outputPanel style="font-size: 18px;line-height: 25px;color: black;"  rendered="{!IF(AND(banner.contentVersionforDisplay.Button_Label__c != NULL, banner.content.Attachments.size > 0),true,false)}" layout="block">
+                        <div class="image">
+                            <img src="/servlet/servlet.FileDownload?file={!banner.content.Attachments[0].Id}&otherId=" alt="alternate text"/>
+                            <div class="{!IF(banner.contentVersionforDisplay.Position__c == 'Left','textLeft',IF(banner.contentVersionforDisplay.Position__c == 'Right','textRight',IF(banner.contentVersionforDisplay.Position__c == 'Center','textCenter','text')))}">
+                                <p id="{!IF(banner.contentVersionforDisplay.Position__c == 'Left','bannerHeaderLeft',IF(banner.contentVersionforDisplay.Position__c == 'Right','bannerHeaderRight',IF(banner.contentVersionforDisplay.Position__c == 'Center','bannerHeaderCenter','bannerHeader')))}" style="{!IF(NOT(ISNULL(banner.contentVersionforDisplay.Header_Color__c)),'color:'+banner.contentVersionforDisplay.Header_Color__c,'')}">{!banner.contentVersionforDisplay.Header__c}</p>
+                                <p id="{!IF(banner.contentVersionforDisplay.Position__c == 'Left','bannerSummaryLeft',IF(banner.contentVersionforDisplay.Position__c == 'Right','bannerSummaryRight',IF(banner.contentVersionforDisplay.Position__c == 'Center','bannerSummaryCenter','bannerSummary')))}" style="{!IF(NOT(ISNULL(banner.contentVersionforDisplay.Summary_Color__c)),'color:'+banner.contentVersionforDisplay.Summary_Color__c,'')}">{!banner.contentVersionforDisplay.Summary__c}</p>
+                                <p align="{!IF(banner.contentVersionforDisplay.Button_Location__c == 'Left','Left',IF(banner.contentVersionforDisplay.Button_Location__c == 'Right','Right','Center'))}">
+                                    <a href="{!IF(contains(banner.content.URL__c, 'http') || contains(banner.content.URL__c, 'https'), banner.content.URL__c, 'https://' + banner.content.URL__c)}" target="{!banner.content.Target__c}" Id="bannerLabel">{!banner.contentVersionforDisplay.Button_Label__c}</a>
+                                </p>
+                            </div>  
+                        </div>
+                    </apex:outputPanel>              
+                </li>
+            </apex:repeat>
+        </ul>
+    </div>
+    <apex:image value="{!$Resource.HomeBanner}" style="display:block;" rendered="{!IF(banners.size > 0,false,true)}" styleclass="defaultBannerImage"/>
+    -->
+
+<script>
+$(document).ready(function () {
+    $('.carousel-inner .item:first').addClass('active');
+});
+</script>
+
+<div class="default-banner">
+    <apex:image value="{!$Resource.HomeBanner}" rendered="{!IF(banners.size > 0,false,true)}" styleclass="img-responsive"/>
+</div> 
+</apex:component>

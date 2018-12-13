@@ -1,0 +1,74 @@
+<apex:component controller="EdgeForceIntranetResourcesCompController">
+
+    <apex:form >
+        <apex:actionfunction name="processContent" action="{!processContent}" reRender="modalPanel" oncomplete=" $('#_contentModal').modal('show');">
+            <apex:param value="" name="resourceIdParam" assignTo="{!resourceIdInController}"/>
+        </apex:actionfunction>
+    </apex:form>
+
+    <!-- new way -->
+    <div class="panel-group nav-panel" id="accordion">
+        <apex:repeat value="{!libraries}" var="lib">
+            <div class="panel panel-default">
+                <a class="panel-heading" data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+                    <span class="glyphicon glyphicon-plus"></span>
+                    <span class="glyphicon glyphicon-minus"></span>
+                    <span class="panel-title">{!lib}</span>
+                </a><!--/.panel-heading -->
+                <div id="collapseOne" class="panel-collapse collapse in">
+                    <div class="panel-body">
+                        <ul class="side-nav">
+                            <apex:repeat value="{!libraries[lib]}" var="resource">
+                                <li>
+                                    <a id="docLink{!resource.Id}" href="#" onclick="processContent('{!resource.Id}')">{!resource.Title}</a>
+                                </li>
+                            </apex:repeat>
+                        </ul><!--/.side-nav -->
+                    </div><!--/.panel-body -->
+                </div><!--/.collapseOne -->
+            </div><!--/.panel -->
+        </apex:repeat>
+        <apex:outputPanel rendered="{!!contentFlag }" >
+            There is no cotent for display        
+        </apex:outputpanel>
+    </div><!--/.panel-group -->
+
+    <!-- old way
+    <apex:repeat value="{!libraries}" var="lib">
+        <div class="dropdownMenu collapsed">
+            <a href="javascript:;"><span>{!lib}</span></a>
+            <ul class="side-nav">
+                <apex:repeat value="{!libraries[lib]}" var="resource">
+                    <li>
+                        <a id="docLink{!resource.Id}" href="#" onclick="processContent('{!resource.Id}')">{!resource.Title}</a>
+                    </li>
+                </apex:repeat>
+            </ul>
+        </div>
+    </apex:repeat>
+    -->
+
+    <apex:outputPanel id="modalPanel">
+        <div class="modal fade" id="_contentModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="background-color:transparent;">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div id="_modalHeader" class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title" id="_ModalLabel">{!versionDataforUI.Title}</h4>
+                        <a type="button" style="float:right" class="btn btn-primary" href="/sfc/servlet.shepherd/version/download/{!versionDataforUI.Id}">Download</a>
+                        <p><span class="badge">Tags</span>&nbsp;{!versionDataforUI.TagCsv}</p>
+                    </div><!--/.modal-content -->
+                    <div id="_modalBody" class="modal-body">
+                        <embed style="height:500px;" src="/_swf/188001/sfc/flex/DocViewer.swf" flashvars="shepherd_prefix=/sfc/servlet.shepherd&v={!versionDataforUI.Id}&mode=bubble" width="100%" height="100%" align="middle" id="renditionSmall" quality="high" bgcolor="#ffffff" name="renditionSmall" allowscriptaccess="sameDomain" allowfullscreen="true" pluginspage="http://www.adobe.com/go/getflashplayer" wmode="opaque" type="application/x-shockwave-flash"/>
+                        <!-- <img src="/sfc/servlet.shepherd/version/renditionDownload?rendition=THUMB720BY480&versionId={!versionDataforUI.Id}&operationContext=CHATTER"/> -->
+                    </div>
+                    <div class="modal-footer">
+                        <!--<chatter:feed entityId="{!versionDataforUI.Id}"> </chatter:feed>-->
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                    </div><!--/.modal-footer -->
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+    </apex:outputPanel>
+
+</apex:component>

@@ -1,0 +1,4 @@
+<apex:page showHeader="false" sidebar="false" readonly="true" docType="html-5.0"
+            title="Nashville Heroes Report">
+        <skuid:page page="FO_Heroes_Opp_Rev_by_Stage" />
+    </apex:page>

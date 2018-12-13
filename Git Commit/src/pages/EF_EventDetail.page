@@ -1,0 +1,112 @@
+<apex:page docType="html-5.0" showHeader="false" sidebar="false" standardStylesheets="true" applyHtmlTag="false" applyBodyTag="false" controller="EdgeForceEventDetailsController">
+    <apex:composition template="EF_Template">
+        <apex:define name="body">
+
+            <apex:form >
+                <div class="row ef-content">
+                    <div class="col-sm-12">
+                        <h1>{!$Label.Event_Detail}</h1>
+                    </div><!--/.col-sm-12 -->
+                </div><!--/.row -->
+
+                <div class="row ef-content event-detail">
+                    <div class="col-sm-12" id="pb">
+                        <div class="section-content top">
+                        <apex:outputPanel id="pb">
+
+                            <apex:outputPanel >
+                                <div class="form-horizontal"> 
+                                    <div class="form-group">
+                                        <label class="col-sm-2 control-label">Subject</label>
+                                        <div class="col-sm-10">
+                                            <p class="control-input"><apex:outputField value="{!event.subject}" /></p>
+                                        </div>
+                                    </div><!--/.form-group -->
+
+                                    <div class="form-group">
+                                        <label class="col-sm-2 control-label">All Day Event</label>
+                                        <div class="col-sm-10">
+                                            <p class="control-input"><apex:outputField value="{!event.IsAllDayEvent}" /></p>
+                                        </div>
+                                    </div><!--/.form-group -->
+
+                                    <div class="form-group">
+                                        <label class="col-sm-2 control-label">Start Date</label>
+                                        <div class="col-sm-10">
+                                            <p class="control-input"><apex:outputField value="{!event.StartDateTime}" /></p>
+                                        </div>
+                                    </div><!--/.form-group -->
+
+                                    <div class="form-group">
+                                        <label class="col-sm-2 control-label">End Date</label>
+                                        <div class="col-sm-10">
+                                            <p class="control-input"><apex:outputField value="{!event.EndDateTime}" /></p>
+                                        </div>
+                                    </div><!--/.form-group -->
+
+                                    <div class="form-group">
+                                        <label class="col-sm-2 control-label">Location</label>
+                                        <div class="col-sm-10">
+                                            <p class="control-input"><apex:outputField value="{!event.Location}" /></p>
+                                        </div>
+                                    </div><!--/.form-group -->
+
+                                    <div class="form-group">
+                                        <label class="col-sm-2 control-label">Owner</label>
+                                        <div class="col-sm-10">
+                                            <p class="control-input"><apex:outputField value="{!event.OwnerId}" /></p>
+                                        </div>
+                                    </div><!--/.form-group -->
+
+                                    <div class="form-group">
+                                        <label class="col-sm-2 control-label">Description</label>
+                                        <div class="col-sm-10">
+                                            <p class="control-input"><apex:outputField value="{!event.Description}" /></p>
+                                        </div>
+                                    </div><!--/.form-group -->
+
+                                </div><!--/.form-horizontal -->
+                            </apex:outputPanel>
+
+                            <apex:outputPanel title="Recurring Events" rendered="{!hasParent}">
+
+                                <apex:repeat value="{!recEvent.RecurringEvents}" var="recEvent">
+                                    <apex:outputPanel rendered="{!If(recEvent.Id != event.RecurrenceActivityId, true, false)}">
+                                        <p class="control-input"><apex:outputField value="{!recEvent.StartDateTime}" /></p>
+                                        &nbsp;-&nbsp;
+                                        <p class="control-input"><apex:outputField value="{!recEvent.EndDateTime}" /></p>
+                                        <br/>
+                                    </apex:outputPanel>
+                                </apex:repeat>
+                            </apex:outputPanel>
+
+                        </apex:outputPanel>
+                        <apex:outputPanel styleClass="pull-right" rendered="{!OR($Profile.Name = 'Intranet System Administrator', $Profile.Name = 'Intranet Content Admin', $Profile.Name = 'System Administrator')}" >
+                            <apex:commandButton action="{!edit}" value="Edit" rerender="frm" status="status" styleClass="btn-bs btn-primary"/>
+                        </apex:outputPanel>
+                        <br class="clear" />
+                        </div><!--/.section-content -->
+                    </div><!--/.col-sm-12 -->
+                </div><!--/.row -->
+            </apex:form> 
+
+            <script>
+                    $(document).ready(function(){
+                            function getURLParameter(name) {
+                                    return decodeURI((RegExp(name + '=' + '(.+?)(&|$)').exec(location.search)||[,null])[1]);
+                            }
+                            var pageName = getURLParameter("tabName").replace(/\+/g, " ");
+                            $("#menuDiv ul:first > li > a").each(function(){
+                                    if ($(this).text().toLowerCase() == pageName.toLowerCase()){
+                                            $(this).parent().addClass("active");
+                                    }else{
+                                            $(this).parent().removeClass("active");
+                                    }
+                            });
+                            $(".homePage .card h2").css('background-position','0 0');
+                    });
+            </script>
+
+        </apex:define>
+    </apex:composition>
+</apex:page>

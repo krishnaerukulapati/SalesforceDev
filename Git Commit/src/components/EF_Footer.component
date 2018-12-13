@@ -1,0 +1,43 @@
+<apex:component >
+    <div class="footer-nav-wrapper pull-left">
+        <select class="nav form-control">
+            <option value="" selected="selected">Select</option>
+            <option value="/apex/EF_Home">Home</option>
+            <option value="/apex/EF_Team">Team</option>
+            <option value="/apex/EF_NewsPage">News</option>
+            <option value="/apex/EF_HelpDesk">Help Desk</option>
+        </select>
+        <div class="copyright"><span>&copy; 2014 ALSAC</span> &nbsp;&middot;&nbsp; All rights reserved</div>
+        <ul class="footer-nav">
+            <li><a href="/apex/EF_Home">Home</a></li>
+            <li><a href="/apex/EF_Team">Team</a></li>
+            <li><a href="/apex/EF_NewsPage">News</a></li>
+            <li><a href="/apex/EF_HelpDesk">Help Desk</a></li>
+        </ul>
+        <br class="clear" />
+    </div><!--/.footer-nav-wrapper -->
+    <div class="social-wrapper pull-right">
+        <ul class="social">
+            <!--<li><a href="#"><i class="icon-32 email"></i></a></li>-->
+            <li><a href="#"><i class="icon-32 facebook"></i></a></li>
+            <li><a href="#"><i class="icon-32 gplus"></i></a></li>
+            <li><a href="#"><i class="icon-32 linkedin"></i></a></li>
+            <!--<li><a href="#"><i class="icon-32 pinterest"></i></a></li>-->
+            <!--<li><a href="#"><i class="icon-32 rss"></i></a></li>-->
+            <li><a href="#"><i class="icon-32 twitter"></i></a></li>
+            <li><a href="#"><i class="icon-32 youtube"></i></a></li>
+            <li id="back-top">
+                <a href="#top"><span class="glyphicon glyphicon-arrow-up"></span><span class="text">Top</span></a>
+            </li>
+        </ul>
+        
+        <br class="clear" />
+    </div>
+    
+    <script>
+        $("select.nav").change(function() {
+          window.location = $(this).find("option:selected").val();
+        });
+    </script>
+    
+</apex:component>

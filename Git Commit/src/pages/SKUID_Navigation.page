@@ -1,0 +1,4 @@
+<apex:page showHeader="false" sidebar="false" readonly="true" docType="html-5.0"
+            title="Events App Launch">
+        <skuid:page page="Navigation" />
+    </apex:page>

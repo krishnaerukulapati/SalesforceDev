@@ -1,0 +1,84 @@
+<apex:page controller="C360DetailRelController" showheader="false" sidebar="false" standardStylesheets="false">
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <script>
+        var $j = $.noConflict();
+        
+        function applyUI() {
+            $j( ".accordionDis" ).accordion({ disabled: true, icons: {activeHeader: "ui-icon-home"}, heightStyle: "content"});
+            $j("button").button();
+            $j("button").css("float", "right");
+            $j( "#prevPageButt" ).button({ disabled: {!firstPage} ,icons: { primary: "ui-icon-circle-arrow-w"}});
+            $j( "#nextPageButt" ).button({ disabled: {!lastPage}, icons: { primary: "ui-icon-circle-arrow-e"} });
+        }
+
+        $j(function() {
+            applyUI();
+        });
+    </script>
+    <apex:outputPanel rendered="{!!isUUIDSet}">
+        No constituent selected.    
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!isUUIDSet}">
+        <apex:form >
+            <div class="form-element">
+                <label>Duplicates: </label>
+                <apex:selectList value="{!consId}" size="1">
+                    <apex:selectOptions value="{!items}"/>
+                    <apex:actionSupport event="onchange" action="{!changeCons}"/>
+                </apex:selectList>
+                
+                <apex:outputPanel layout="none" rendered="{!consType == 'HOUSEHOLD'}">
+                    <button onclick="addIndividual();" type="button" id="addInd">Add Individual</button>
+                    <apex:actionFunction action="{!NewRelationship}" name="addIndividual"></apex:actionFunction>
+                </apex:outputPanel>
+
+                <div class="ui-dialog-buttonset">
+                    <button onclick="nextPageFunc();" type="button" id="nextPageButt">Next Page</button>
+                    <button onclick="prevPageFunc();" type="button" id="prevPageButt">Previous Page</button>
+                    <apex:actionFunction action="{!prevPage}" name="prevPageFunc"></apex:actionFunction>
+                    <apex:actionFunction action="{!nextPage}" name="nextPageFunc"></apex:actionFunction>
+                    <!--<apex:outputPanel layout="none" rendered="{!NOT(consType = 'INDIVIDUAL')}">
+                        <button type="button" onclick="newRelFunc();" sytle="font-size: 12px;">Add Relationship</button>
+                        <apex:actionFunction action="{!NewRelationship}" name="newRelFunc"></apex:actionFunction>    
+                    </apex:outputPanel>-->
+                </div>
+            </div>
+            
+            <span class="info">Page # {!currPage} of {!totalPages}</span>
+            <span class="info"></span>
+            <table width="100%">
+                <tr class="ui-widget-header">
+                    <th>Household/Organization</th><!--
+                    <th>Related Type</th>-->
+                    <th>Individual</th>
+                </tr>
+                <apex:repeat value="{!rels}" var="rel" id="rel">
+                    <tr>
+                        <td><apex:commandLink action="{!SelectConstituent}" value="{!IF(con.Type_x.Code = 'Individual', con.RelatedHousehold.Name, con.Name)}" rendered="{!ci.objectType = 'Case'}">
+                                <apex:param value="{!IF(con.Type_x.Code = 'Individual', con.RelatedHousehold.ConstituentID, con.ConstituentID)}" name="SelectRelConsID"/>
+                                <apex:param value="{!IF(con.Type_x.Code = 'Individual', con.RelatedHousehold.Name, con.Name)}" name="SelectName"/>
+                                <apex:param value="{!IF(con.Type_x.Code = 'Individual', con.RelatedHousehold.ConstituentID, con.ConstituentID)}" name="SelectConsId"/>
+                            </apex:commandLink><apex:outputPanel rendered="{!ci.objectType != 'Case'}">{!IF(con.Type_x.Code = 'Individual', con.RelatedHousehold.Name, con.Name)}</apex:outputPanel></td><!--
+                        <td><apex:commandLink action="{!SelectConstituent}" value="{!rel.RelatedConstituent.Type_x.Code}">
+                                <apex:param value="{!rel.RelatedConstituent.UUID}" name="SelectUUID"/>
+                                <apex:param value="{!IF(rel.RelatedConstituent.Type_x.Code = 'Individual', rel.RelatedConstituent.LongName, rel.RelatedConstituent.Name)}" name="SelectName"/>
+                                <apex:param value="{!rel.RelatedConstituent.Type_x.Code}" name="SelectConType"/>
+                            </apex:commandLink></td>-->
+                        <td><apex:commandLink action="{!SelectConstituent}" value="{!IF(rel.RelatedConstituent.Type_x.Code = 'Individual', rel.RelatedConstituent.LongName, rel.RelatedConstituent.Name)}"
+                            rendered="{!ci.objectType = 'Case'}">
+                                <apex:param value="{!rel.RelatedConstituent.UUID}" name="SelectUUID"/>
+                                <apex:param value="{!IF(rel.RelatedConstituent.Type_x.Code = 'Individual', rel.RelatedConstituent.LongName, rel.RelatedConstituent.Name)}" name="SelectName"/>
+                                <apex:param value="{!rel.RelatedConstituent.Type_x.Code}" name="SelectConType"/>
+                                <apex:param value="{!rel.RelatedConstituent.ConstituentID}" name="SelectConsId"/>
+                            </apex:commandLink><apex:outputPanel rendered="{!ci.objectType != 'Case'}">{!IF(rel.RelatedConstituent.Type_x.Code = 'Individual', rel.RelatedConstituent.LongName, rel.RelatedConstituent.Name)}</apex:outputPanel></td>
+                    </tr>
+                </apex:repeat>
+            </table>
+        </apex:form>
+    </apex:outputPanel>
+</apex:page>

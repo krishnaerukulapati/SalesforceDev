@@ -1,0 +1,327 @@
+<apex:page controller="FOInteractionsMobileController" showheader="false" sidebar="false" standardStylesheets="false">
+<apex:includeScript value="/support/console/29.0/integration.js"/>
+<apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+<apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+<apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+<apex:stylesheet value="{!URLFOR($Resource.SupportJs, 'grid/css/ui.jqgrid.css')}"/>
+<apex:includeScript value="{!URLFOR($Resource.SupportJs, 'grid/js/i18n/grid.locale-en.js')}"/>
+<apex:includeScript value="{!URLFOR($Resource.SupportJs, 'grid/js/jquery.jqGrid.min.js')}"/>
+<apex:includeScript value="{!URLFOR($Resource.SupportJs, 'jquery.blockUI.js')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+<apex:stylesheet value="{!URLFOR($Resource.alsacFO, 'alsacFO.css')}" />
+
+<script>
+    $j = jQuery.noConflict();
+    $j(function() {
+        $j("button").button();
+        $j("button").css("float", "right");
+    });
+    $j.support.cors = true;
+</script>
+<apex:form >
+<div class="form-element" style="padding-bottom: 20px;">
+    <button type="button" id="btnNewInteraction" onclick="window.location.assign('{!$Page.FOInteractionDetail}?id={!relId}&consId={!consId}')">New Interaction</button>
+    <label>Duplicates: </label><apex:selectList value="{!consId}" size="1">
+    <apex:selectOptions value="{!items}"/>
+    <apex:actionSupport event="onchange" action="{!changeCons}"/>
+</apex:selectList>
+</div>
+<table id="intGrid" class="intGrid"></table>
+<div id="pgrps"></div>
+<div id="noInt" style="display: none;">No Interactions</div>
+</apex:form>
+<div id="sourceCodeModal" title="Source - #SOURCECODE#" style="font-size: 11px;">
+    <span id="srcLoading">Loading...</span>
+    <table class="results-table" id="srcData">
+        <tr><td>Source Code</td><td><span id="srcCode"/></td></tr>
+        <tr><td>Description</td><td><span id="srcDescr"/></td></tr>
+        <tr><td>Event Code</td><td><span id="srcEvent"/></td></tr>
+        <tr><td>Event Name</td><td><span id="srcEventName"/></td></tr>
+        <tr><td>Program Code</td><td><span id="srcProgram"/></td></tr>
+        <tr><td>Cost Center</td><td><span id="srcCredit"/></td></tr>
+    </table>
+</div>
+<script type="text/javascript">
+    var totRes = 0;
+    var retrieved = 0;
+    var bufferSize = 100;
+    var ints = new Array();
+
+    $j = jQuery.noConflict();
+    var grid;
+    grid = $j("#intGrid").jqGrid({
+        edittext: "Edit",
+        cancelText: "Cancel",
+        autowidth: true,
+        datatype: "local",
+        height: "auto",
+        rowNum: 15,
+        sortName: "ContactDate",
+        sortOrder: "desc",
+        altRows: true,
+        hidegrid: false,
+        rowList:[15,20,30,50],
+        colNames:['Int No','Edit', 'View', 'Contact Date', 'Contact Category', 'Contact Type', 'Technique','Response Date','Source Code','Staff','Summary','CCD','RCD','TD','CTD','RTD', 'ID'],
+        colModel:[
+        {name:'id',index:'id', width:60, sorttype:"int", hidden: true},
+        {name:'Edit',index:'id', sortable:false, formatter:editFormatter},
+        {name:'View',index:'id', sortable:false, formatter:viewFormatter},
+        {name:'ContactDate',index:'ContactDate', sorttype:"date"},
+        {name:'ContactCategory',index:'ContactCategory', width:100, hidden: true,
+        cellattr: function (rowId, val, rawObject, cm, rdata) {
+            return 'title="' + rawObject.ContactCategory + ' (' + rawObject.ContactCategoryDesc + ')"';
+        }},
+        {name:'ContactType',index:'ContactType', width:100, hidden: true,
+        cellattr: function (rowId, val, rawObject, cm, rdata) {
+            return 'title="' + rawObject.ContactType + ' (' + rawObject.ContactTypeDesc + ')"';
+        }},
+        {name:'Technique',index:'Technique', width:100, hidden: true,
+        cellattr: function (rowId, val, rawObject, cm, rdata) {
+            return 'title="' + rawObject.Technique + ' (' + rawObject.TechniqueDesc + ')"';
+        }},
+/*      {name:'ResponseCategory',index:'ResponseCategory', width:140, 
+        cellattr: function (rowId, val, rawObject, cm, rdata) {
+            return 'title="' + rawObject.ResponseCategory + ' (' + rawObject.ResponseCategoryDesc + ')"';
+        }},      
+        {name:'ResponseType',index:'ResponseType', width:120, 
+        cellattr: function (rowId, val, rawObject, cm, rdata) {
+            return 'title="' + rawObject.ResponseType + ' (' + rawObject.ResponseTypeDesc + ')"';
+        }},      
+*/      {name:'ResponseDate',index:'ResponseDate', width:120, sorttype:"date", hidden: true},     
+        {name:'SourceCode',index:'SourceCode', width:100, hidden:true},      
+        {name:'Staff',index:'Staff', width:80, hidden: true},     
+        {name:'Summary',index:'Summary', width:200, sortable:false, hidden:true,
+        cellattr:function (rowId, val, rawObject, cm, rdata) {
+            return 'title="' + rawObject.Summary + '"';
+        }},
+        {name:'ContactCategoryDesc',index:'ContactCategoryDesc', width:1, hidden:true},
+        {name:'ResponseCategoryDesc',index:'ResponseCategoryDesc', width:1, hidden:true},
+        {name:'TechniqueDesc',index:'TechniqueDesc', width:1, hidden:true},
+        {name:'ContactTypeDesc',index:'ContactTypeDesc', width:1, hidden:true},
+        {name:'ResponseTypeDesc',index:'ResponseTypeDesc', width:1, hidden:true},
+        {name:'InteractionID',index:'InteractionID', width:1, hidden:true}
+        ],
+        pager: '#pgrps',
+        caption: "Interactions"
+    });
+    grid.jqGrid('navGrid','#pgrps',
+        {edit:false,add:false,del:false, refresh: false, search: false},
+        {},
+        {},
+        {},
+        {multipleSearch:true, multipleGroup:true}
+        );
+    grid.loadComplete = function() {
+        var ids = grid.jqGrid('getDataIDs');
+        for (var i=0;i<ids.length;i++) {
+            var id=ids[i];
+            var rowData = grid.jqGrid('getRowData',id);
+            $('#'+id,grid[0]).attr('title', rowData.Summary);
+        }
+    };
+
+    $j(document).ready(function() {
+        $j.blockUI({
+            message: "<h1>Loading...</h1>",
+            theme:     true, 
+            title:    'Interactions' 
+        });
+        getInteractions();
+    });
+
+    function getInteractions() {
+        Visualforce.remoting.Manager.invokeAction(
+                '{!$RemoteAction.FOInteractionsMobileController.getInteractionPage}', //method
+                '{!consId}', retrieved + 1, retrieved + bufferSize, //parms
+                loadGrid);
+    }
+
+    function loadGrid(result, event) { 
+            //call back
+            if (result != null && result.Interactions != null) {
+                if (totRes == 0) totRes = result.TotalResults;
+                for(var i = 0; i < result.Interactions.length; i++) {
+                    var interact = result.Interactions[i];
+                    var row = {                       
+                        id:i,
+                        Edit:'Edit',
+                        View:'View',
+                        ContactDate:interact.ContactDate,
+                        ContactSeq:interact.ContactSeq,
+                        Page_x:interact.Page_x,                        
+                        ContactCategory:interact.ContactCategory,
+                        ContactType:interact.ContactType,
+                        Technique:(interact.TransactionSource) ? interact.TransactionSource.Technique : null,
+                        ContactDate:interact.ContactDate,
+                        Summary:interact.Summary,
+                        Comments:interact.LongComments,
+                        ResponseType:interact.ResponseType,
+                        ResponseCategory:interact.ResponseCategory,
+                        ResponseDate:interact.ResponseDate,
+                        SourceCode:(interact.TransactionSource) ? interact.TransactionSource.Code : null,
+                        Staff:interact.Staff,
+                        ContactCategoryDesc:interact.ContactCategoryDesc,
+                        ResponseCategoryDesc:interact.ResponseCategoryDesc,
+                        ContactTypeDesc:interact.ContactTypeDesc,
+                        ResponseTypeDesc:interact.ResponseTypeDesc,
+                        TechniqueDesc:interact.TechniqueDesc,
+                        InteractionID:interact.InteractionID
+                    }
+                    if (row.SourceCode !== undefined && row.SourceCode !== null) {
+                        row.SourceCode = "<a href='javascript:getSourceDetail(\"" + row.SourceCode + "\")'>" + row.SourceCode + "</a>";
+                    }
+                    
+                    ints[i + retrieved + 1] = interact;
+                    grid.jqGrid('addRowData',i + retrieved + 1,row);
+                }
+
+                retrieved += bufferSize;
+                if (totRes > retrieved) {
+                    getInteractions();
+                }
+                else {
+                    grid.trigger("reloadGrid");
+                    $j.unblockUI();
+                }
+            }
+            else {
+                $j.unblockUI();
+                $j("#gbox_intGrid").hide();
+                $j("#noInt").show();
+            }
+        }
+
+
+        function editFormatter (cellvalue, options, rowObject)
+        {
+           // do something here
+           interact = ints[options.rowId];
+           //alert(String(interact.LongComments));
+            //if(interact.LongComments != undefined && String(interact.LongComments).indexOf("'")){
+            //    interact.LongComments = interact.LongComments.toString().replace(/'/g, "''");
+           // }
+           if (interact.ContactCategory != 'FO') {
+               return "";
+           }
+           else {
+            return "<a href=\"{!$Page.FOInteractionDetail}?id={!relId}&consId={!consId}&" +
+            "action=edit&" +
+            "page=" + encodeURIComponent(cleanse(interact.Page_x)) + "&" +
+            "contDate=" + encodeURIComponent(cleanse(interact.ContactDate)) + "&" +
+            "contSeq=" + encodeURIComponent(cleanse(interact.ContactSeq)) + "&" +
+            "contPage=" + encodeURIComponent(cleanse(interact.Page_x)) + "&" +
+            "contCat=" + encodeURIComponent(cleanse(interact.ContactCategory)) + "&" +
+            "contType=" + encodeURIComponent(cleanse(interact.ContactType)) + "&" +
+            "respType=" + encodeURIComponent(cleanse(interact.ResponseType)) + "&" +
+            "respCat=" + encodeURIComponent(cleanse(interact.ResponseCategory)) + "&" +
+            "warn=" + encodeURIComponent(cleanse(interact.Warning)) + "&" +
+            "warnExp=" + encodeURIComponent(cleanse(interact.WarningExpirationDate)) + "&" +
+            "tech=" + encodeURIComponent(cleanse((interact.TransactionSource) ? interact.TransactionSource.Technique : "")) + "&" +
+            "sourceCode=" + encodeURIComponent(cleanse((interact.TransactionSource) ? interact.TransactionSource.Code : "")) + "&" +
+            "summary=" + encodeURIComponent(cleanse(interact.Summary)) + "&" +
+            "comments=" + encodeURIComponent(cleanse(interact.LongComments)) + "&" +
+            "interactionId=" + encodeURIComponent(cleanse(interact.InteractionID)) + "\">" +
+            cellvalue + "</a>";
+        }
+    }
+
+    function viewFormatter (cellvalue, options, rowObject)
+    {
+        // do something here
+        interact = ints[options.rowId];
+        //alert(String(interact.LongComments));
+        //if(interact.LongComments != undefined && String(interact.LongComments).indexOf("'")){
+        //    interact.LongComments = interact.LongComments.toString().replace(/'/g, "''");
+        // }
+        return "<a href=\"{!$Page.FOInteractionDetail}?id={!relId}&consId={!consId}&" +
+        "action=view&" +
+        "contDate=" + encodeURIComponent(cleanse(interact.ContactDate)) + "&" +
+        "contSeq=" + encodeURIComponent(cleanse(interact.ContactSeq)) + "&" +
+        "contPage=" + encodeURIComponent(cleanse(interact.Page_x)) + "&" +
+        "contCat=" + encodeURIComponent(cleanse(interact.ContactCategory)) + "&" +
+        "contType=" + encodeURIComponent(cleanse(interact.ContactType)) + "&" +
+        "respType=" + encodeURIComponent(cleanse(interact.ResponseType)) + "&" +
+        "respCat=" + encodeURIComponent(cleanse(interact.ResponseCategory)) + "&" +
+        "warn=" + encodeURIComponent(cleanse(interact.Warning)) + "&" +
+        "warnExp=" + encodeURIComponent(cleanse(interact.WarningExpirationDate)) + "&" +
+        "tech=" + encodeURIComponent(cleanse((interact.TransactionSource) ? interact.TransactionSource.Technique : "")) + "&" +
+        "summary=" + encodeURIComponent(cleanse(interact.Summary)) + "&" +
+        "comments=" + encodeURIComponent(cleanse(interact.LongComments)) + "\">" +
+        cellvalue + "</a>";
+        }    
+
+       function cleanse(str) {
+        var ret = '';
+        if (str !== undefined) {
+            ret = str;
+        }
+        return ret;
+    }
+
+
+
+    sourceDialog = $j("#sourceCodeModal").dialog({
+        autoOpen: false,
+        height: 300,
+        modal: true
+    })
+
+    getSourceDetail = function(source) {
+        sourceDialog.dialog( "option", "title", "Source - " + source);
+        sourceDialog.dialog( "open" );
+        $j("#srcLoading").show();
+        $j("#srcData").hide();
+        $j.ajax({
+            url: "{!SourceURL}/Sources('" + source + "')" +
+            "?$select=SourceId,DESCRIPTION,EventId,EVENT/DESCRIPTION,PROGRAM,CreditAccountId,CREDIT_ACCOUNT/DESCRIPTION," +
+            "&$expand=EVENT,CREDIT_ACCOUNT",
+            dataType: 'JSON',
+            success: function (result) {
+                var data;
+                if ((typeof result === 'object') && (('d' in result) && ('results' in result.d))) {
+                    data = result.d.results;
+                } else {
+                    data = result.d || result;
+                }
+                var options = {};
+                options.source = source;
+                options.data = data;
+                sourceGotten(options);
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                console.log(xhr.status + " - " + xhr.responseText + thrownError);
+                var options = {};
+                if (options.errorCallBack !== undefined && options.errorCallBack != null) {
+                    options.error = xhr;
+                    options.error.thrownError = thrownError;
+                    options.errorCallBack(options);
+                }
+            }
+        });
+    }
+
+    sourceGotten = function(options) {
+        $j("#srcCode").html(options.data.SourceId);
+        $j("#srcDescr").html(options.data.DESCRIPTION);
+        $j("#srcEvent").html(options.data.EventId);
+        if (options.data.EVENT !== undefined && options.data.EVENT !== null) {
+            $j("#srcEventName").html(options.data.EVENT.DESCRIPTION);
+        }
+        else {
+            $j("#srcEventName").html("");
+        }
+        $j("#srcProgram").html(options.data.PROGRAM);
+        $j("#srcCredit").html(options.data.CreditAccountId);
+
+        if (options.data.CREDIT_ACCOUNT !== undefined && options.data.CREDIT_ACCOUNT !== null) {
+            $j("#srcCreditDescr").html(options.data.CREDIT_ACCOUNT.DESCRIPTION);
+        }
+        else {
+            $j("#srcCreditDescr").html("");
+        }
+        $j("#srcData").show();
+        $j("#srcLoading").hide();
+    }
+</script>
+</apex:page>

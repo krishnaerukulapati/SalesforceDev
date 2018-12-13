@@ -1,0 +1,532 @@
+<apex:page standardController="campaign" extensions="C360ConstituentSearchController" showHeader="false" sidebar="false" standardStylesheets="false">
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <!-- <apex:stylesheet value="{!URLFOR($Resource.SupportJs, 'jqueryMobile/jquery.mobile.icons-1.4.5.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.SupportJs, 'jqueryMobile/jquery.mobile.structure-1.4.5.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.SupportJs, 'jqueryMobile/themes/alsac.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'jqueryMobile/jquery.mobile-1.4.5.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'bootTable/bootstrap-table.min.js')}"/>   
+    
+    
+    
+    <script>
+        var $j = $.noConflict();
+        $j(document).ready(function () {
+             $j("[isConsole]").val(sforce.console.isInConsole()) 
+            ;
+        });
+
+        function applySorterTran(id) {
+            // simple reflow widget (table with 1 header row)
+
+            /*$j(document.getElementById(id)).tablesorter({
+                theme: 'blue',
+                widgets: ['zebra', 'reflow'],
+                widgetOptions : {
+                    // class name added to make it responsive (class name within media query)
+                    reflow_className    : 'ui-table-reflow',
+                    // header attribute containing modified header name
+                    reflow_headerAttrib : 'data-name',
+                    // data attribute added to each tbody cell
+                    // it contains the header cell text, visible upon reflow
+                    reflow_dataAttrib   : 'data-title'
+                }
+            });*/ 
+        } 
+    </script>-->
+
+    <apex:form >
+        <apex:pageBlock mode="maindetail">
+            <apex:pageBlockSection columns="2">
+                <apex:pageBlockSectionItem >
+        <div data-role="collapsible">
+            <h4>Address</h4>
+            <table data-role="table" id="table-column-toggle" class="ui-responsive table-stroke">
+                <tr>
+                    <td><label>Parent Campaign: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Campaign Name: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Advertised Start Date/Time: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Advertised End Date/Time: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Market Timezone Offset: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>   
+                    <tr>
+                    <td><label>Description: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>ITS Event Support Analyst: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>ITS Event Support Analyst Email: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Night of Event Revenue: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Transaction Processing Requested: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Test Campaign: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>   
+                    <tr>
+                    <td><label>Lead Staff: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>SF User Email: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Campaign Chair: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Active Start Date for Event: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Active End Date for Event: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Status: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>   
+                    <tr>
+                    <td><label>Active: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+            </table>
+        </div>
+        </apex:pageBlockSectionItem>
+        <apex:pageBlockSectionItem >
+        <div data-role="collapsible">
+            <h4>Sourcing Information</h4>
+            <table data-role="table" id="table-column-toggle" class="ui-responsive table-stroke">
+                <tr>
+                    <td><label>Event Name: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Region: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Regional Office: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Cost Center: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Sourcing Rule: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>   
+                    <tr>
+                    <td><label>Event Code: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Program: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>New Event?: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Prior Year Event: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Number of Years in Existence: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Net Check Event?: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>   
+                    <tr>
+                    <td><label>Event Type Code: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+            </table>    
+        </div>
+        </apex:pageBlockSectionItem>
+        </apex:pageBlockSection>
+        </apex:pageBlock>
+        <div data-role="collapsible">
+            <h4>Program Components</h4>
+            <table data-role="table" id="table-column-toggle" class="ui-responsive table-stroke">
+                 <tr>
+                    <td><label>Event Theme: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Program Activities: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Has Alcohol?: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Need Letitia Frye?: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Event Auctioneer: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>   
+                    <tr>
+                    <td><label>Board-VIP-Celebrity Involvement?: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>C-Suite Attending: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+             </table>    
+        </div>
+        <div data-role="collapsible">
+            <h4>Registration Information</h4>
+            <table data-role="table" id="table-column-toggle" class="ui-responsive table-stroke">
+                <tr>
+                    <td><label>Registered Limit: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Registered Status: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Registration Start Date/Time: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Registration End Date/Time: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Registration Closed Message: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>   
+                    <tr>
+                    <td><label>Available at Door Message: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Registered Full Text: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Ad Pages Limit: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+            </table>
+        </div>
+        <div data-role="collapsible">
+            <h4>Online Information</h4>
+            <table data-role="table" id="table-column-toggle" class="ui-responsive table-stroke">
+                <tr>
+                    <td><label>Create an online registration site?: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Event Website: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>  
+             </table>
+        </div>
+
+        <div data-role="collapsible">
+            <h4>Donation Levels</h4>
+             <table data-role="table" id="table-column-toggle" class="ui-responsive table-stroke">
+                <tr>
+                    <td><label>Donation Level 1 Amount: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Donation Level 2 Amount: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>  
+                 <tr>
+                    <td><label>Donation Level 3 Amount: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                <tr>
+                    <td><label>Donation Level 4 Amount: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Donation Level 5 Amount: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>  
+              </table>
+        </div>
+
+        <div data-role="collapsible">
+            <h4>Venue Information</h4>
+            <table data-role="table" id="table-column-toggle" class="ui-responsive table-stroke">
+                <tr>
+                    <td><label>Venue Name: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Venue Street Address: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>City: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>State: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Country: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>   
+                    <tr>
+                    <td><label>Venue Contact: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+            </table>    
+        </div>
+        
+        <div data-role="collapsible">
+            <h4>Event Info</h4>
+            <table data-role="table" id="table-column-toggle" class="ui-responsive table-stroke">
+                <tr>
+                    <td><label>Event Information: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                </tr>
+                <tr>
+                    <td><label>Next Steps: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                </tr>
+                <tr>
+                    <td><label>Attire: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                </tr>
+            </table>    
+        </div>
+
+        <div data-role="collapsible">
+            <h4>Event Images</h4>
+            <table data-role="table" id="table-column-toggle" class="ui-responsive table-stroke">
+                <tr>
+                    <td><label>Guest App Icon Image URL: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Guest App Header Image URL: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Online Registration Image URL: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Primary Sponsor Logo URL: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Sponsor #2: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>   
+                    <tr>
+                    <td><label>Sponsor #3: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Sponsor #4: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Auction Kiosk Image URL: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+            </table>    
+        </div>
+        
+        <div data-role="collapsible">
+            <h4>Planning &#47; Budget &#38; Expense</h4>
+            <table data-role="table" id="table-column-toggle" class="ui-responsive table-stroke">
+                <tr>
+                    <td><label>Expected Revenue: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                </tr>
+                <tr>
+                    <td><label>Budgeted Cost: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                </tr>
+                <tr>
+                    <td><label>Actual Cost: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                </tr>
+            </table>    
+        </div>
+        
+        <div data-role="collapsible">
+            <h4>Post Event Information</h4>
+            <table data-role="table" id="table-column-toggle" class="ui-responsive table-stroke">
+               <tr>
+                    <td><label>Notable Media/Editorial Coverage: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                </tr>
+                <tr>
+                    <td><label>Key Connection/Mission Moment: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                </tr>
+                <tr>
+                    <td><label>Financial Growth?: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                </tr>
+                <tr>
+                    <td><label>Thank You Email?: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                </tr>
+            </table>    
+        </div>
+        
+        <div data-role="collapsible">
+            <h4>System Information</h4>
+            <table data-role="table" id="table-column-toggle" class="ui-responsive table-stroke">
+               <tr>
+                    <td><label>Processed Transaction: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                </tr>
+                <tr>
+                    <td><label>Payment Processing Version: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                </tr>
+                <tr>
+                    <td><label>Campaign Owner: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                </tr>
+                <tr>
+                    <td><label>Campaign Member Type: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                </tr>
+                <tr>
+                    <td><label>Campaign Record Type: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                </tr>   
+             </table>    
+        </div>
+        
+        <div data-role="collapsible">
+            <h4>Event Wizard Tab Configuration</h4>
+            <table data-role="table" id="table-column-toggle" class="ui-responsive table-stroke">
+                 <tr>
+                    <td><label>Hide Attendance?: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Hide Attributes?: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Hide Chatter?: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Hide Details?: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Hide Form?: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>   
+                    <tr>
+                    <td><label>Hide Groups?: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Hide Meals?: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Hide Members?: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Hide Seating?: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Hide Sessions?: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>    
+                   <tr>
+                    <td><label>Hide Tasks?: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Hide Tickets?: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>
+                 <tr>
+                    <td><label>Hide Venues?: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                 </tr>   
+                              
+            </table>    
+        </div>
+        
+        <div data-role="collapsible">
+            <h4>Fields to remove was dated fields are resolved</h4>
+            <table data-role="table" id="table-column-toggle" class="ui-responsive table-stroke">
+                <tr>
+                    <td><label>Starting Bidder Number: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                </tr>
+                <tr>
+                    <td><label>Event Start Date/Time: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                </tr>
+                <tr>
+                    <td><label>Event End Date/Time: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                </tr>
+                <tr>
+                    <td><label>Start Date: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                </tr>
+                <tr>
+                    <td><label>End Date: </label></td>
+                    <!-- <td><apex:inputText value="{!firstName}" /></td> -->
+                </tr>
+           </table>    
+        </div>
+        
+    </apex:form>
+    <!-- <script>
+        function navigate(url) {
+            if (typeof sforce.one == 'undefined') window.open(url, "_self");
+            else sforce.one.navigateToURL(url); //sforce.one.back()
+            //window.history.back();
+        }
+    </script>  -->
+</apex:page>

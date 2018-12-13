@@ -1,0 +1,31 @@
+<apex:page docType="html-5.0" showHeader="false" sidebar="false" standardStylesheets="true" applyHtmlTag="false" applyBodyTag="false" controller="EdgeForceIntranetHomeController">
+
+    <apex:composition template="EF_Template">
+
+        <apex:define name="body">
+
+            <div class="carousel">
+                <c:EF_Banner BannerPageId="{!pageName}"/>
+            </div>
+            
+            <div class="hidden-sm hidden-xs">
+                <c:EF_QuickLinks LinkPageId="{!pageName}"/>
+            </div>
+            
+            <div class="row section-wrapper">
+                <div class="col-sm-12">
+                    <h4>{!$Label.Events}</h4>
+                    <div class="section-content pad-less"><c:EF_Event /></div>
+                    <h4>{!$Label.Top_Communities}</h4>
+                    <div class="section-content"><c:EF_TopCommunities /></div>
+                    <h4>{!$Label.Leadership_Corner}</h4>
+                    <div class="section-content pad-less"><c:EF_LeadershipCorner LCpageId="{!pageName}" /></div>
+                    <h4>{!$Label.Chatter}</h4>
+                    <div class="section-content chatter"><c:EF_Chatter /></div>
+                </div>
+            </div><!--/.row -->
+
+        </apex:define>
+
+    </apex:composition>
+</apex:page>

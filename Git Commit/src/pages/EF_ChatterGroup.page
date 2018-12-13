@@ -1,0 +1,100 @@
+<apex:page docType="html-5.0" showHeader="false" sidebar="false" standardStylesheets="true" applyHtmlTag="false" applyBodyTag="false" controller="EdgeForceChatterGroupController">
+        <apex:composition template="EF_Template">
+                <apex:define name="body">
+
+                        <div class="row ef-content chatter-group">
+                                <div class="col-sm-4">
+                                        <a href="/apex/EF_ViewUserProfile?Id={!$User.Id}" class="user-header">
+                                                <img src="{!userGroup.fullPhotoUrl}" class="user-photo" />
+                                                <div class="user-name">{!userGroup.Name}</div>
+                                                <br class="clear" />
+                                        </a>
+                                        <div class="section-content">
+                                                <p class="group-description">{!userGroup.Description}</p>
+                                        </div><!--/.section-content -->
+
+                                        <h4>Members</h4>
+                                        <div class="section-content members">
+                                                <ul class="user-list">
+                                                        <apex:repeat value="{!userList}" var="gUser">
+                                                                <li><a href="/apex/EF_ViewUserProfile?Id={!gUser.id}" target="_blank"><apex:image value="{!gUser.smallPhotoUrl}" /></a></li>
+                                                        </apex:repeat>
+                                                        <br class="clear" />
+                                                </ul>
+                                                <a data-toggle="modal" href="#myModal" class="view-more">Show All({!memberCount})</a>
+                                        </div><!--/.section-content -->
+                                        
+
+                                        <h4>Group Files</h4>
+                                        <div class="section-content files pad-less">
+                                                <apex:outputPanel rendered="{!noFiles}"><p class="no-files">No files have been posted to this group</p></apex:outputPanel>
+                                                <ul class="group-files">
+                                                        <apex:repeat value="{!groupFiles}" var="gFile">
+                                                                <li><a href="/{!gFile.ContentDocumentId}" target="_blank">{!gFile.ContentDocument.LatestPublishedVersion.Title}</a></li>
+                                                        </apex:repeat>
+                                                </ul>
+                                        </div><!--/.section-content -->
+                                        
+                                        <apex:form >
+                                                <apex:actionFunction name="showAll" action="{!showAllUsers}" reRender="usersPanel"/>
+                                        </apex:form>
+                                </div><!--/.col-sm-4 -->
+
+                                <div class="col-sm-8">
+                                        <div class="modal fade" id="myModal">
+                                                <apex:form >
+                                                        <div class="modal-dialog" role="dialog">
+                                                                <div class="modal-content">
+                                                                        <div class="modal-header">
+                                                                                <h4 class="modal-title">Members <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button></h4>
+                                                                        </div>
+                                                                        <apex:actionFunction name="searcUser" action="{!searchUser}" reRender="usersPanel"/>
+                                                                        <div class="modal-body">
+                                                                                <apex:inputText value="{!searchText}"  styleClass=" form-control" onkeyup="searcUser();"/>
+                                                                                <apex:outputPanel id="usersPanel">
+                                                                                        <ul class="user-list">
+                                                                                                <apex:repeat value="{!userList}" var="gUser">
+                                                                                                        <li>
+                                                                                                                <a href="/apex/EF_ViewUserProfile?Id={!gUser.id}" target="_blank">
+                                                                                                                        <apex:image value="{!gUser.smallPhotoUrl}"/>
+                                                                                                                        <span class="name">{!gUser.firstName} {!gUser.lastName}</span>
+                                                                                                                </a>
+                                                                                                        </li>
+                                                                                                </apex:repeat>
+                                                                                        </ul>
+                                                                                </apex:outputPanel>
+                                                                        </div><!--/.modal-body -->
+                                                                        <div class="modal-footer">
+                                                                                <button type="button" class="btn-bs btn-primary" data-dismiss="modal">Done</button>
+                                                                        </div><!--/.modal-footer -->
+                                                                </div><!--/.modal-content -->
+                                                        </div>
+                                                </apex:form>
+                                        </div> <!-- /modal -->
+
+                                        <h4>Chatter Feed</h4>
+                                        <div class="section-content chatter">
+                                                <chatter:feed entityId="{!$CurrentPage.parameters.g}"/>
+                                        </div><!--/.section-content -->
+                                </div><!--/.col-sm-8 -->
+                        </div><!--/.row -->
+
+
+
+                        <script>
+                                $(".modal-body").scroll(function(){ 
+                                        if(isScrollBottom()){ 
+                                                showAll();
+                                        }
+                                });
+                                function isScrollBottom() { 
+                                        var documentHeight = 208; 
+                                        var scrollPosition = $(".modal-body").height()+ $(".modal-body").scrollTop() ; 
+                                        //alert(scrollPosition );
+                                        return (documentHeight == scrollPosition); 
+                                }
+                        </script>
+
+                </apex:define>
+        </apex:composition>
+</apex:page>

@@ -1,0 +1,146 @@
+<apex:page controller="CallDispositionCreateController" showHeader="true" sidebar="true" standardStylesheets="false">
+	
+	<apex:stylesheet value="{!URLFOR($Resource.SupportJs, 'chosen.css')}" />
+    <apex:includeScript value="/support/console/41.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'jquery.mask.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'chosen.jquery.min.js')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+
+    <link class="user" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+
+    <style type="text/css">
+    	.form-create{
+    		width: 100%;
+    	}
+
+    	.table-disposition{
+            width: 90%;
+        }
+
+        .table-disposition > tbody > tr > td {
+            padding-top: 5px;
+            padding-bottom: 5px;
+            padding-right: 5px;
+        }
+    </style>
+
+    <script type="text/javascript">
+        $j = jQuery.noConflict();
+
+        function saveChanges(){
+            var isValid = dispoValidate();
+
+            if (isValid){
+                saveFunc();
+            }
+        }
+
+        function choosify(){
+            $j(".chosen-select").chosen().change(function(){
+                return dispoValidate();
+            });
+        }
+
+        function dispoValidate(){
+            var validParent = validateSelectList('tyList_chosen');
+            return validParent;
+        }
+
+        function validateSelectList(ctl){
+            if ($j("[id$='" + ctl.replace('_chosen', '') + "']")[0].length > 1 && $j("[id$='" + ctl.replace('_chosen', '') + "']").val() == ''){
+                 $j("[id$='" + ctl + "']").addClass("ui-state-error");
+                 return false;
+            }
+            else{
+                $j("[id$='" + ctl + "']").removeClass("ui-state-error");
+                return true;
+            }
+        }
+
+        $j(document).ready(function() {
+            $j(".datepicker").datepicker();
+            $j(".chosen-select").chosen();
+            choosify();
+
+        });
+
+        $j(function() {
+            $j(":text").addClass("ui-corner-all");
+            $j("button").button();
+            $j("button").css("float", "left");
+            $j("td").addClass("alsac-widget");
+        });
+    </script>
+    
+    <apex:pageMessages ></apex:pageMessages>
+    <div style="width:33%;float:left">
+    	<apex:form styleClass="form-create">
+	    		<table id="tblDisposition" class='table-disposition'>
+	    			<tr>
+	    	            <td><label>Type:</label></td>
+	    	            <td>
+	    	                <apex:selectList required="true" styleClass="chosen-select" value="{!dispositionType}" multiselect="false" size="1" id="tyList" >
+	    	                    <apex:selectOption itemlabel="" itemValue=""/>
+	    	                    <apex:selectOptions value="{!dispositionTypes}"/>
+	    	                    <apex:actionSupport event="onchange" action="{!changeDispoType}" reRender="dispoValues" status="resVal" oncomplete="choosify()"/>
+	    	                </apex:selectList>
+	    	                <!-- <span>Input error goes here</span> -->
+	    	            </td>
+	    	        </tr>
+	    	        <tr>
+	    	            <td><label>Reason: </label></td>
+	    	            <td>
+	    	                <apex:outputPanel id="dispoValues">
+	    	                    <apex:actionStatus id="resVal">
+	    	                        <apex:facet name="start">Requesting...</apex:facet>
+	    	                        <apex:facet name="stop">
+	    	                            <apex:outputPanel layout="none">
+	    	                                <apex:selectList styleClass="chosen-select" value="{!dispositionValue}" multiselect="false" size="1">
+	    	                                    <apex:selectOption itemLabel="" itemValue=""/>
+	    	                                    <apex:selectOptions value="{!dispositionValues}"/>
+	    	                                    <apex:actionSupport oncomplete="choosify()"/>
+	    	                                </apex:selectList>
+	    	                            </apex:outputPanel> 
+	    	                        </apex:facet>
+	    	                    </apex:actionStatus>
+	    	                </apex:outputPanel>
+	    	            </td>
+	    	        </tr>
+	    	        <tr>
+	    	            <td><label>Comments:</label></td>
+	    	            <td><apex:inputTextarea rows="3" cols="10" style="width:100%;resize:none" value="{!callComments}"/></td>
+	    	        </tr>
+	    		</table>
+	
+    		<div class="ui-dialog-buttonset">
+    	        <button type="button" onclick="saveChanges();">Save</button>
+    	        <button type="button" onclick="closeTab();">Cancel</button>
+    	    </div>
+    	        <apex:actionFunction action="{!gatherInfoForSave}" name="saveFunc" oncomplete="closeTab()"/>
+    	</apex:form>
+    </div>
+
+<!--     <div style="width:66%;float:right">
+    	<apex:include pageName="CallDisposition" />
+    </div> -->
+
+    <script>
+        function choosify() {
+            $j(".chosen-select").chosen();
+        }
+
+        function closeTab(){
+            sforce.console.getEnclosingTabId(closeSubTab);
+        }
+
+        var closeSubTab = function closeSubTab(result) {
+            var tabId = result.id;
+            sforce.console.closeTab(tabId);
+        }
+
+    </script>
+</apex:page>

@@ -1,0 +1,7 @@
+<apex:component >
+
+<div id="chatterPanel">
+    <chatter:newsfeed > </chatter:newsfeed> 
+</div>
+
+</apex:component>

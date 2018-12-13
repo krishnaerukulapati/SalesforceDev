@@ -1,0 +1,70 @@
+<apex:page controller="HeroesCheckInController" showheader="false" sidebar="false" standardStylesheets="false">
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <script>
+        var $j = $.noConflict();
+
+        function applyUI() {
+            $j( ".accordionDis" ).accordion({ disabled: true, icons: {activeHeader: "ui-icon-home"}, heightStyle: "content"});
+            $j("button").button();
+            $j("button").css("float", "right");
+            //$j("button").css("clear", "both");
+            $j("tr.hover").hover(function() {
+                $j(this).addClass("ui-state-hover");
+            },function() {
+                $j(this).removeClass("ui-state-hover");
+            }
+            );
+        }
+
+        $j(function() {
+            applyUI();
+        });
+    </script>
+
+    <apex:pageMessages id="messages"></apex:pageMessages>
+      <apex:form >
+        <table width="100%">
+          <tr>
+            <td><label>Checked In:</label>&nbsp;&nbsp;<apex:inputCheckbox value="{!led.CheckedIn__c}"></apex:inputCheckbox></td>
+            <td>&nbsp;</td>
+            <td><label>Amount Paid:</label>&nbsp;&nbsp;<apex:inputField value="{!led.CheckInPaymentAmount__c}"></apex:inputField></td>
+            <td>&nbsp;</td>
+            <td><label>Notes:</label>&nbsp;&nbsp;<apex:inputTextarea value="{!led.CheckInNotes__c}"></apex:inputTextarea></td>
+            <td>&nbsp;</td>
+            <td><label>Singlet Ordered:</label>&nbsp;&nbsp;{!so.SingletOrdered__C}</td>
+            <td>&nbsp;</td>
+            <td><label>Needs Recommit:</label>&nbsp;&nbsp;<apex:outputPanel rendered="{!needsRecommit}"><a href="javascript:openSubtabC360('{!URLFOR($Page.C360NewDonationStart)}&id={!led.Id}', 'Recommit', 'recommit')">Yes</a></apex:outputPanel><apex:outputPanel rendered="{!!needsRecommit}">No</apex:outputPanel></td>
+            <td>&nbsp;</td>
+            <td><label>Personal Incentive Link:</label>&nbsp;&nbsp;<apex:outputPanel rendered="{!showIncentiveLink}"><a target="_blank" href="{!incentiveURL}">Available</a></apex:outputPanel><apex:outputPanel rendered="{!!showIncentiveLink}">Unavailable</apex:outputPanel></td>
+            <td>&nbsp;</td>
+            <td align="right"><button type="button" onclick="checkIn();">Update</button></td>
+            <apex:actionFunction action="{!checkIn}" name="checkIn"/>
+          </tr>
+        </table>
+        <apex:outputpanel rendered="{!iis.size == 0}">
+          <div id="noInt">No incentives available for selected constituent.</div>
+        </apex:outputpanel>
+        <apex:outputpanel rendered="{!iis.size != 0}">
+          <table width="100%">
+            <tr class="ui-widget-header">
+                <th width="100px">Category</th>
+                <th width="300px">Property</th>
+                <th>Value</th>
+            </tr>
+            <apex:repeat value="{!iis}" var="ii">
+              <tr class="hover">
+                <td>{!ii.Category__c}</td>
+                <td>{!ii.Property__c}</td>
+                <td>{!ii.Value__c}</td>
+              </tr>
+            </apex:repeat>
+          </table>
+        </apex:outputpanel>
+      </apex:form>
+    <apex:includeScript value="{!URLFOR($Resource.ECCConsole)}" />
+</apex:page>

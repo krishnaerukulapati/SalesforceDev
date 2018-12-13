@@ -1,0 +1,51 @@
+<apex:page standardStyleSheets="false" showHeader="false" sidebar="false" >
+    <apex:composition template="EF_Template">
+        <apex:define name="body">
+
+            <div class="row ef-content employee-directory">
+                <div class="col-sm-12">
+                    <div class="header-bg-wrapper">
+                        <div class="header-bg"></div>
+                    </div>
+                    <h4>Employee Directory</h4>
+                    <div class="section-content">
+                        <div class="btn-group pull-left" id="_buttonGroup">
+                            <button id="_peopleSearchButton" type="button" onclick="processFileSearch('people')" class="btn-bs btn-secondary"><span class="glyphicon glyphicon-user"></span> People</button>
+                            <button type="button" id="_chatterSearchButton" onclick="processFileSearch('chatterFile')" class="btn-bs btn-secondary"><span class="glyphicon glyphicon-file"></span> Files</button>
+                        </div>
+
+                        <div id="_peopleSearchDiv">
+                            <c:EF_PeopleSearch /> 
+                        </div>
+                        <div id="_chatterFileSearchDiv">
+                            <c:EF_ChatterFileSearch />
+                        </div>
+
+                    </div><!--/.section-content -->
+                </div><!--/.col-sm-12 -->
+            </div><!--/.row -->
+
+        </apex:define>
+    </apex:composition>
+
+    <script>
+        $( document ).ready(function() {
+            $('#_chatterFileSearchDiv').hide();
+            $('#_peopleSearchButton').addClass('active');
+        });
+        function processFileSearch(searchType){
+            if(searchType == 'chatterFile'){
+                $('#_chatterSearchButton').addClass('active');
+                $('#_peopleSearchButton').removeClass('active');
+                $('#_peopleSearchDiv').hide();
+                $('#_chatterFileSearchDiv').show();
+            }else if(searchType == 'people'){
+                $('#_peopleSearchButton').addClass('active');
+                $('#_chatterSearchButton').removeClass('active');
+                $('#_chatterFileSearchDiv').hide();
+                $('#_peopleSearchDiv').show();
+            }
+        }
+    </script>
+
+</apex:page>

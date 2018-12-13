@@ -1,0 +1,415 @@
+<apex:page docType="html-5.0" controller="FOSearchMobileController" standardStylesheets="false" sidebar="false" showHeader="false">
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <!--<apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.alsacFO, 'alsacFO.css')}" />-->
+    <apex:stylesheet value="{!URLFOR($Resource.Bootstrap, '/bootstrap-3.0.0/dist/css/bootstrap.min.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.Bootstrap, '/bootstrap-3.0.0/dist/css/bootstrap-theme.min.css')}" />
+
+    <style type="text/css">
+        .top5 { margin-top:5px; }
+        .top10 { margin-top:10px; }
+        .top15 { margin-top:15px; }
+        .top20 { margin-top:20px; }
+        .bottom5 { margin-bottom:5px; }
+        .bottom10 { margin-bottom:10px; }
+        .bottom15 { margin-bottom:15px; }
+        .bottom20 { margin-bottom:20px; }
+    </style>
+
+    
+    <script>
+        var $j = $.noConflict();
+        $j(document).ready(function() {
+            $j('#edit-info input').keypress(function (e) {
+              if (e.which == 13) {
+                hideAndSearch();
+              }
+            });
+        });
+
+        function hideAndSearch() {
+            $j( "#edit-info" ).accordion( "option", "active", false );
+            $j( "#cons-info" ).accordion( "option", "active", false );
+            submitSearch();
+            $j( ".accordion" ).accordion({
+                collapsible: true,
+                heightStyle: "content"
+            });
+            return false;
+        }
+
+        function hideAndSelect() {
+            $j( ".accordion" ).accordion({
+                collapsible: true,
+                heightStyle: "content"
+            });
+            $j( "#edit-info" ).accordion( "option", "active", false );
+            $j( "#search-results" ).accordion( "option", "active", false );
+            return false;
+        }
+
+        function applyUI() {
+            $j( ".accordion" ).accordion({
+                collapsible: true,
+                heightStyle: "content"
+            });
+            $j( ".accordionDis" ).accordion({ icons: {activeHeader: "ui-icon-person"}, heightStyle: "content"});
+            $j("button").button();
+            $j("button").css("float", "right");
+            if (isFirstPage !== null) {
+                $j( "#prevPageButt" ).button({ disabled: isFirstPage(), icons: { primary: "ui-icon-circle-arrow-w"}});
+                $j( "#nextPageButt" ).button({ disabled: isLastPage(), icons: { primary: "ui-icon-circle-arrow-e"} });
+            }
+            $j(".search").button({ icons: { primary: "ui-icon-search"}});
+            $j(".clearFields").button({ icons: { primary: "ui-icon-circle-close"}});
+            $j(".accordionDis tr").hover(function() {
+                    $j(this).addClass("ui-state-hover");
+                },function() {
+                    $j(this).removeClass("ui-state-hover");
+                }
+            );
+
+            $j(".systemName").each(function() {
+                var tempString = $j(this).text();
+                //tempString = tempString.toLowerCase();
+                if(tempString == "Luminate")
+                    tempString = "P2P";
+                
+                $j(this).text(tempString);
+            });
+        }
+
+        function clearSearch() {
+            document.getElementById('{!$Component.mainForm}').reset();
+        }
+
+        function showName(selector) {
+            selector = selector.replace(/:/g, "\\:");
+            if ($j("input[id^=" + selector + "]:checked").val() == "INDIVIDUAL") {
+                $j(".tdName").hide();
+                $j(".tdFirstName").show();
+                $j(".tdLastName").show();
+            }
+            else {
+                $j(".tdName").show();
+                $j(".tdFirstName").hide();
+                $j(".tdLastName").hide();
+            }
+        }
+
+        $j(function() {
+            $j( ".accordion" ).accordion({
+                collapsible: true,
+                heightStyle: "content"
+            });
+            $j( "#radio" ).buttonset();
+            $j(":text").addClass("ui-corner-all");
+            //$j(".tdName").hide();
+            applyUI();
+        });
+
+        var isFirstPage = null;
+        var isLastPage = null;
+
+    </script>
+
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    </head>
+
+    <apex:pageMessages id="messages"></apex:pageMessages>
+    <apex:form id="mainForm"> 
+        <div>
+            <div class="accordion" id="edit-info">
+                <h3>Search</h3>
+                <div>
+                    <label><u>Basic Information</u></label>
+                    <div class="row top10 bottom10">
+                        <div class="col-xs-12 col-sm-4">
+                            <apex:outputLabel value="Name" for="name"/>
+                            <apex:input id="name" value="{!name}" tabindex="1" styleClass="form-control"/>
+                        </div>
+                        <div class="col-xs-12 col-sm-4">
+                            <apex:outputLabel value="Phone" for="phone"/>
+                            <apex:input id="phone" value="{!phone}" type="tel" tabindex="2" styleClass="form-control"/>
+                        </div>
+                        <div class="col-xs-12 col-sm-4">
+                            <apex:outputLabel value="Email" for="email"/>
+                            <apex:input id="email" value="{!email}" type="email" tabindex="3" styleClass="form-control"/>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <button onclick="hideAndSearch();" type="button" class="search">Search</button>
+                            <button onclick="clearSearch();" type="button" class="clearFields">Clear</button>
+                        </div>
+                    </div>                   
+                    <label><u>System ID</u></label>
+                    <div class="row top10 bottom20">
+                        <div class="col-xs-12 col-sm-4">
+                            <apex:outputLabel value="Donor ID" for="donorId"/>
+                            <apex:input id="donorId" value="{!donorId}" type="text" tabindex="4" styleClass="form-control"/>
+                        </div>
+                        <div class="col-xs-12 col-sm-4">
+                            <apex:outputLabel value="Pledge ID" for="pledgeId"/>
+                            <apex:input id="pledgeId" value="{!pledgeId}" type="text" tabindex="5" styleClass="form-control"/>
+                        </div>
+                        <div class="col-xs-12 col-sm-4">
+                            <apex:outputLabel value="P2P ID" for="p2pId"/>
+                            <apex:input id="p2pId" value="{!p2pId}" type="text" tabindex="6" styleClass="form-control"/>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <button onclick="hideAndSearch();" type="button" class="search">Search</button>
+                            <button onclick="clearSearch();" type="button" class="clearFields">Clear</button>
+                        </div>
+                    </div> 
+                    <label><u>Address</u></label>
+                    <div class="row top10">
+                        <div class="col-xs-12">
+                            <apex:outputLabel value="Street 1" for="address1"/>
+                            <apex:input id="address1" value="{!address1}" type="text" tabindex="7" styleClass="form-control"/>
+                        </div>
+                    </div>
+                    <div class="row top10">
+                        <div class="col-xs-12">
+                            <apex:outputLabel value="Street 2" for="address2"/>
+                            <apex:input id="address2" value="{!address2}" type="text" tabindex="8" styleClass="form-control"/>
+                        </div>
+                    </div>
+                    <div class="row top10 bottom20">
+                        <div class="col-xs-12 col-sm-6">
+                            <apex:outputLabel value="City" for="city"/>
+                            <apex:input id="city" value="{!city}" type="text" tabindex="9" styleClass="form-control"/>
+                        </div>
+                        <div class="col-xs-12 col-sm-3">
+                            <apex:outputLabel value="State" for="state"/>
+                            <apex:input id="state" value="{!state}" type="text" tabindex="10" styleClass="form-control"/>
+                        </div>
+                        <div class="col-xs-12 col-sm-3">
+                            <apex:outputLabel value="Zip Code" for="zip"/>
+                            <apex:input id="zip" value="{!zip}" type="text" tabindex="11" styleClass="form-control"/>
+                        </div>
+                    </div>
+                    <button onclick="hideAndSearch();" type="button" class="search">Search</button>
+                    <button onclick="clearSearch();" type="button" class="clearFields">Clear</button>
+                    <apex:actionFunction action="{!search}" name="submitSearch" rerender="results,messages,consInfo" status="resStatus" oncomplete="applyUI();"/>              
+                </div>            
+            </div>      
+        </div>
+    </apex:form>
+    <apex:outputPanel id="results"> 
+        <apex:actionStatus startText="Requesting..." id="resStatus">
+            <apex:facet name="stop">
+                <apex:form > 
+                    <apex:outputPanel rendered="{!resultsFound}">
+                        <div class="accordion" id="search-results">
+                            <h3>Results</h3>
+                            <div>
+                                <script>
+                                    isFirstPage = function() { return {!firstPage};};
+                                    isLastPage = function() { return {!lastPage};};
+                                </script>
+                                <div class="row bottom5">                                   
+                                    <div class="col-xs-12">
+                                        <apex:outputLabel value="Sort: " for="sortOrder"/>
+                                        <apex:selectList id="sortOrder" value="{!sortOrder}" size="1">
+                                            <apex:selectOption itemValue="NAME_ASC" itemLabel="Name ASC"/>
+                                            <apex:selectOption itemValue="NAME_DESC" itemLabel="Name DESC"/>
+                                            <apex:selectOption itemValue="CITY_DESC" itemLabel="City ASC"/>
+                                            <apex:selectOption itemValue="CITY_DESC" itemLabel="City DESC"/>
+                                            <apex:selectOption itemValue="STATE_DESC" itemLabel="State ASC"/>
+                                            <apex:selectOption itemValue="STATE_DESC" itemLabel="State DESC"/>
+                                            <apex:selectOption itemValue="ZIP_DESC" itemLabel="Zip ASC"/>
+                                            <apex:selectOption itemValue="ZIP_DESC" itemLabel="Zip DESC"/>
+                                            <apex:actionSupport event="onchange" action="{!changeSort}"/>
+                                        </apex:selectList>                                                                        
+                                    </div>     
+                                </div>                                                                                                                 
+                                <div class="results-table">
+                                    <div class="row ui-widget-header">
+                                        <div class="text-center hidden-xs col-sm-3">Donor IDs</div>
+                                        <div class="text-center col-xs-1 col-sm-1">Type</div>
+                                        <div class="text-center hidden-xs col-sm-3">Name</div>
+                                        <div class="text-center hidden-xs col-sm-2">Address</div>
+                                        <div class="text-left col-xs-8 hidden-sm hidden-md hidden-lg">Name and Address</div>
+                                        <div class="text-left col-xs-2 col-sm-1">Primary</div>                  
+                                        <div class="text-center hidden-xs col-sm-2">Household</div>
+                                    </div>
+                                    <apex:actionFunction action="{!ViewDetail}" name="selectCons" rerender="consInfo,messages" status="selStatus" oncomplete="hideAndSelect();">
+                                        <apex:param value="" name="SelectUUID"/>
+                                        <apex:param value="" name="SelectConsId"/>
+                                        <apex:param value="" name="SelectName"/>
+                                        <apex:param value="" name="SelectConType"/>
+                                    </apex:actionFunction>
+                                    <apex:repeat value="{!sr}" var="con" rendered="{!resultsFound}">                                      
+                                        <div class="row bottom10 top10" onclick="selectCons('{!con.UUID}', '{!con.ConstituentID}', '{!con.Name}', '{!con.ConstituentType}');">
+                                            <div class="hidden-xs col-sm-3">
+                                                <apex:repeat value="{!con.SystemXRefs.SystemXRef}" var="sxr" rendered="{!NOT(ISNULL(con.SystemXRefs))}">
+                                                    <div class="row systems-table">
+                                                        <div class="col-xs-4">
+                                                            <apex:outputText value="{!sxr.Sys.Name}" styleClass="systemName"/>
+                                                        </div>
+                                                        <div class="col-xs-8">
+                                                            <apex:outputText value="{!sxr.XRefKey}"/>
+                                                        </div>
+                                                    </div>
+                                                </apex:repeat>
+                                            </div>
+                                            <div class="col-xs-1">
+                                                <apex:outputText value="{!LEFT(con.ConstituentType,1)}"/>
+                                            </div>
+                                            <div class="hidden-xs col-sm-3">
+                                                <apex:outputText value="{!con.Name}"/>
+                                            </div>
+                                            <div class="hidden-xs col-sm-2">
+                                                <div class="row">
+                                                    <div class="col-xs-12">
+                                                        <apex:outputText value="{!con.Street1}"/>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-xs-12">
+                                                        <apex:outputText value="{!con.Street2}"/>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-xs-12">
+                                                        <apex:outputText value="{!con.City}"/>&nbsp;&nbsp;
+                                                        <apex:outputText value="{!con.StateCode}"/>&nbsp;&nbsp;
+                                                        <apex:outputText value="{!con.ZipCode}"/>
+                                                    </div>
+                                                </div>                                               
+                                            </div>
+                                            <div class="col-xs-8 hidden-sm hidden-md hidden-lg">                                                
+                                                <div class="row">
+                                                    <div class="col-xs-12">
+                                                        <apex:outputText value="{!con.Name}"/>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-xs-12">
+                                                        <apex:outputText value="{!con.Street1}"/>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-xs-12">
+                                                        <apex:outputText value="{!con.Street2}"/>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-xs-12">
+                                                        <apex:outputText value="{!con.City}"/>&nbsp;&nbsp;
+                                                        <apex:outputText value="{!con.StateCode}"/>&nbsp;&nbsp;
+                                                        <apex:outputText value="{!con.ZipCode}"/>
+                                                    </div>
+                                                </div>
+                                                <apex:repeat value="{!con.SystemXRefs.SystemXRef}" var="sxr" rendered="{!NOT(ISNULL(con.SystemXRefs))}">
+                                                    <div class="row">
+                                                        <div class="col-xs-12">
+                                                            <apex:outputText value="{!sxr.Sys.Name}: " styleClass="systemName" rendered="{!sxr.Sys.Name == 'TA'}"/><apex:outputText value="{!sxr.XRefKey}" rendered="{!sxr.Sys.Name == 'TA'}"/>
+                                                        </div>
+                                                    </div>
+                                                </apex:repeat>
+                                            </div>
+                                            <div class="col-xs-2 col-sm-1">
+                                                    <apex:inputCheckbox value="{!con.Preferred}" disabled="true"></apex:inputCheckbox>
+                                            </div>
+                                            <div class="hidden-xs col-xs-2">
+                                                <apex:outputPanel rendered="{!NOT(ISNULL(con.RelatedHousehold))}">
+                                                    <apex:outputPanel rendered="{!AND(ISBLANK(leadChangeCoord), ISBLANK(campAddReferral))}">
+                                                        <apex:outputText value="{!con.RelatedHousehold.Name}"/>
+                                                    </apex:outputPanel>
+                                                    <apex:outputPanel rendered="{!NOT(AND(ISBLANK(leadChangeCoord), ISBLANK(campAddReferral)))}">
+                                                        {!con.RelatedHousehold.Name}
+                                                    </apex:outputPanel>
+                                                </apex:outputPanel>
+                                            </div>  
+                                        </div>                                      
+                                    </apex:repeat>
+                                </div>
+                                <div class="row bottom10">
+                                    <div class="col-xs-12 text-right">
+                                        <apex:outputLabel value="Page: " for="pageNum"/>
+                                        <apex:outputText id="pageNum" value="{!currPage} of {!totalPages}"/>
+                                    </div>
+                                </div>
+                                <div class="row bottom10">
+                                    <div class="col-xs-6">
+                                        <button onclick="nextPageFunc();" type="button" id="nextPageButt" class="btn-block">Next</button>
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <button onclick="prevPageFunc();" type="button" id="prevPageButt" class="btn-block">Back</button>
+                                    </div>
+                                </div>                                      
+                            </div>
+                        </div>
+                    </apex:outputPanel>
+                    <apex:outputPanel rendered="{!!resultsFound}">
+                        No Results
+                    </apex:outputPanel>
+                    <apex:actionFunction action="{!prevPage}" name="prevPageFunc" rerender="resStatus" oncomplete="applyUI();"/>
+                    <apex:actionFunction action="{!nextPage}" name="nextPageFunc" rerender="resStatus" oncomplete="applyUI();"/>
+                </apex:form>
+            </apex:facet>
+        </apex:actionStatus>
+    </apex:outputPanel>
+    <apex:outputPanel id="consInfo"> 
+        <apex:actionStatus startText="Requesting..." id="selStatus">
+            <apex:facet name="stop">
+                <apex:form > 
+                    <apex:outputPanel rendered="{!consSelected}">
+                        <div class="accordion" id="cons-info">
+                            <h3>Constituent Details</h3>
+                            <div>
+                                <label><u>{!LongName}</u></label>
+                                    <div class="row top10">
+                                        <apex:outputPanel layout="none" rendered="{!hasTaAccount}">
+                                            <div class="row top5 bottom5">
+                                                <div class="col-xs-12">
+                                                    <a href="javascript:sforce.one.navigateToURL('/apex/FOInteractionDetail?id={!cid}&SF1=true')"><button class="btn btn-default btn-block btn-lg btn-primary" type="button">Add Interaction</button></a>           
+                                                </div>
+                                            </div>
+                                        </apex:outputPanel>
+                                        <apex:outputPanel layout="none" rendered="{!!hasTaAccount}">
+                                            <div class="row top5 bottom5">
+                                                <div class="col-xs-12 text-center">
+                                                    <button class="btn btn-default btn-block btn-lg btn-primary" type="button" disabled="true">Interactions Unavailable</button>         
+                                                </div>
+                                            </div>
+                                        </apex:outputPanel>
+                                        <div class="row top5 bottom5">
+                                            <div class="col-xs-12">
+                                                <a href="javascript:sforce.one.navigateToURL('/apex/FOConstituentBasicEdit?id={!cid}&SF1=true')"><button class="btn btn-default btn-block btn-lg" type="button">Edit/Add Basic Information</button></a>
+                                            </div>
+                                        </div>
+                                        <div class="row top5 bottom5">
+                                            <div class="col-xs-12">
+                                                <a href="javascript:sforce.one.navigateToURL('/apex/FOPhoneDetail?id={!cid}&SF1=true')"><button class="btn btn-default btn-block btn-lg" type="button">Edit/Add Phone Numbers</button></a>
+                                            </div>
+                                        </div>
+                                        <div class="row top5 bottom5">
+                                            <div class="col-xs-12">
+                                                <a href="javascript:sforce.one.navigateToURL('/apex/FOEmailDetail?id={!cid}&SF1=true')"><button class="btn btn-default btn-block btn-lg" type="button">Edit/Add Email Addresses</button></a>
+                                            </div>
+                                        </div>
+                                    <div class="row top5 bottom5">
+                                        <div class="col-xs-12">
+                                            <a href="javascript:sforce.one.navigateToURL('/apex/FOAddressDetail?id={!cid}&SF1=true')"><button class="btn btn-default btn-block btn-lg" type="button">Edit/Add Addresses</button></a>
+                                        </div>
+                                    </div>                                    
+                                </div>
+                            </div>
+                        </div>
+                    </apex:outputPanel>
+                </apex:form>
+            </apex:facet>
+        </apex:actionStatus>
+    </apex:outputPanel>
+</apex:page>

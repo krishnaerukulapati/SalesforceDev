@@ -1,0 +1,329 @@
+<apex:page docType="html-5.0" controller="C360SearchController" showheader="false" sidebar="false" standardStylesheets="false">
+    <apex:stylesheet value="{!URLFOR($Resource.SupportJs, 'chosen.css')}" />
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'chosen.jquery.min.js')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <script>
+        var $j = $.noConflict();
+        $j(document).ready(function() {
+            $j('.advanced').hide();
+            $j('.adSrch').click(function() {
+                $j('.advanced').toggle();
+            });
+            $j('.pbHeader').click(function() {
+                $j('.edit-info').toggle();
+            });
+            $j('#edit-info input').keypress(function (e) {
+              if (e.which == 13) {
+                hideAndSearch();
+              }
+            });
+        });
+
+        function hideAndSearch() {
+            $j( "#edit-info" ).accordion( "option", "active", false );
+            submitSearch();
+            return false;
+        }
+
+        function applyUI() {
+            $j( ".accordionDis" ).accordion({ disabled: true, icons: {activeHeader: "ui-icon-person"}, heightStyle: "content"});
+            $j("button").button();
+            $j("button").css("float", "right");
+            if (isFirstPage !== null) {
+                $j( "#prevPageButt" ).button({ disabled: isFirstPage(), icons: { primary: "ui-icon-circle-arrow-w"}});
+                $j( "#nextPageButt" ).button({ disabled: isLastPage(), icons: { primary: "ui-icon-circle-arrow-e"} });
+            }
+            $j(".search").button({ icons: { primary: "ui-icon-search"}});
+            $j(".accordionDis tr").hover(function() {
+                    $j(this).addClass("ui-state-hover");
+                },function() {
+                    $j(this).removeClass("ui-state-hover");
+                }
+            );
+            $j( "#advanced" ).accordion( "option", "active", false );
+
+        }
+
+        function clearSearch() {
+            $j(".clear input").val("");
+        }
+
+        function showName(selector) {
+            selector = selector.replace(/:/g, "\\:");
+            if ($j("input[id^=" + selector + "]:checked").val() == "INDIVIDUAL") {
+                $j(".tdName").hide();
+                $j(".tdFirstName").show();
+                $j(".tdLastName").show();
+            }
+            else {
+                $j(".tdName").show();
+                $j(".tdFirstName").hide();
+                $j(".tdLastName").hide();
+            }
+        }
+
+        $j(function() {
+            $j( ".accordion" ).accordion({
+                collapsible: true,
+                heightStyle: "content"
+            });
+            $j( "#radio" ).buttonset();
+            $j(":text").addClass("ui-corner-all");
+            //$j(".tdName").hide();
+            applyUI();
+        });
+
+        var isFirstPage = null;
+        var isLastPage = null;
+
+        // CONMG-1910
+        var donorClicked = false;
+
+    </script>
+    <apex:pageMessages id="messages"></apex:pageMessages>
+    <apex:form > 
+        <div>
+            <div class="accordion" id="edit-info">
+                <h3>Search</h3>
+                <div>
+                    <table width="100%">
+                    <apex:outputPanel rendered="{!NOT(ISBLANK(campAddReferral))}">
+                        <tr>
+                            <td style="width: 10%"><label>Search Type:</label></td>
+                            <td>           
+                                <div id="radio">
+                                    <apex:selectRadio value="{!searchScope}" id="rdo">
+                                        <!-- <apex:selectOption itemLabel="Coordinator" itemValue="INDIVIDUAL" rendered="{!!bisRecruitmentCampaign}"/> -->
+                                        <apex:selectOption itemLabel="Individual" itemValue="INDIVIDUAL" />
+                                        <apex:selectOption itemLabel="Organization" itemValue="ORGANIZATION"/>
+                                    </apex:selectRadio>
+                                </div>
+                            </td>
+                        </tr>
+                    </apex:outputPanel>
+                        <tr>
+                            <td class="tdName" style="width: 10%"><label>Name: </label></td>
+                            <td class="tdName clear" style="width: 20%"><apex:inputText value="{!name}" tabindex="1"/></td>
+                            <!--<td class="tdLastName" style="width: 10%"><label>Last Name: </label></td>
+                            <td class="tdLastName clear" style="width: 20%"><apex:inputText value="{!lastName}" tabindex="2"/></td>
+                            <td class="tdFirstName" style="width: 10%"><label>First Name: </label></td>
+                            <td class="tdFirstName clear" style="width: 20%"><apex:inputText value="{!firstName}" tabindex="3"/></td>
+                            -->
+                            <td style="width: 10%"><label>TEST: </label></td>
+                            <td class="clear"><apex:inputText value="{!zip}" tabindex="2"/></td>
+                            <td style="width: 10%"><label>Phone: </label></td>
+                            <td style="width: 20%" class="clear"><apex:inputText value="{!phone}" tabindex="3"/></td>
+                            <td style="width: 10%"><label>Email: </label></td>
+                            <td class="clear"><apex:inputText value="{!email}" tabindex="4"/></td>
+                        </tr>
+                <!--    </table>
+                    <button onclick="hideAndSearch();" type="button" class="search">Search</button>
+                    <button onclick="clearSearch();" type="button" class="search">Clear</button>
+                </div>
+            </div>
+            <div class="accordion" id="advanced" width="100%">
+                <h3>Advanced</h3>
+                <div>
+                    <table>-->
+                        <tr>
+                            <td style="width: 5%"><label>Address 1: </label></td>
+                            <td style="width: 15%" class="clear"><apex:inputText value="{!address1}" tabindex="5"/></td>
+                            <td style="width: 5%"><label>Address 2: </label></td>
+                            <td style="width: 15%" class="clear"><apex:inputText value="{!address2}" tabindex="6"/></td>
+                            <td style="width: 5%"><label>City: </label></td>
+                            <td style="width: 15%" class="clear"><apex:inputText value="{!city}" tabindex="7"/></td>
+                            <td style="width: 5%"><label>State: </label></td>
+                            <td class="clear"><apex:inputText value="{!state}" tabindex="8"/></td>
+                        </tr>
+                        <tr>
+                            <td style="width: 8%"><label>Donor ID: </label></td>
+                            <td style="width: 15%" class="clear"><apex:inputText value="{!donorId}" tabindex="9"/></td>
+                            <td style="width: 8%"><label>Pledge Id: </label></td>
+                            <td style="width: 15%" class="clear"><apex:inputText value="{!pledgeId}" tabindex="10"/></td>
+                            <td style="width: 8%"><label>P2P Id: </label></td>
+                            <td style="width: 15%" class="clear"><apex:inputText value="{!p2pId}" tabindex="11"/></td>
+                            <td>&nbsp;</td><td >&nbsp;</td>
+                        </tr>
+                    </table>
+                    <button onclick="hideAndSearch();" type="button" class="search">Search</button>
+                    <button onclick="clearSearch();" type="button" class="search">Clear</button>
+                </div>
+            </div>
+            <apex:actionFunction action="{!search}" name="submitSearch" rerender="results,messages" status="resStatus" oncomplete="applyUI();"/>
+        </div>
+    </apex:form> 
+    <apex:outputPanel id="results"> 
+        <apex:actionStatus startText="Requesting..." id="resStatus">
+            <apex:facet name="stop">
+                <apex:form id="frm"> 
+
+                    <script>
+
+                    // script to search for and then open a link - enables us to ignore further clicks on a link while we're working on it!
+                    function clickDonor(uuid, consID, name, consType) {
+                        if (donorClicked) {
+                            return;
+                        }
+                        donorClicked = true;
+                        selectDonor(uuid, consID, name, consType);
+                    }
+
+                    </script>
+                    <apex:actionFunction name="selectDonor" action="{!ViewDetail}" reRender="resultPanel"> 
+                            <apex:param value="" name="SelectUUID"/>
+                            <apex:param value="" name="SelectConsId"/>
+                            <apex:param value="" name="SelectName"/>
+                            <apex:param value="" name="SelectConType"/>
+                    </apex:actionFunction> 
+                    <apex:outputPanel rendered="{!resultsFound}">
+                        <div class="accordionDis">
+                            <h3>Results</h3>
+                            <div>
+                                <script>
+                                    isFirstPage = function() { return {!firstPage};};
+                                    isLastPage = function() { return {!lastPage};};
+                                </script>
+                                <span class="info">Page # {!currPage} of {!totalPages}</span>
+                                Sort: <apex:selectList value="{!sortOrder}" size="1">
+                                    <apex:selectOption itemValue="NAME_ASC" itemLabel="Name ASC"/>
+                                    <apex:selectOption itemValue="NAME_DESC" itemLabel="Name DESC"/>
+                                    <apex:selectOption itemValue="CITY_DESC" itemLabel="City ASC"/>
+                                    <apex:selectOption itemValue="CITY_DESC" itemLabel="City DESC"/>
+                                    <apex:selectOption itemValue="STATE_DESC" itemLabel="State ASC"/>
+                                    <apex:selectOption itemValue="STATE_DESC" itemLabel="State DESC"/>
+                                    <apex:selectOption itemValue="ZIP_DESC" itemLabel="Zip ASC"/>
+                                    <apex:selectOption itemValue="ZIP_DESC" itemLabel="Zip DESC"/>
+                                    <apex:actionSupport event="onchange" action="{!changeSort}"/>
+                                </apex:selectList>
+                                <button onclick="nextPageFunc();" type="button" id="nextPageButt">Next Page</button>
+                                <button onclick="prevPageFunc();" type="button" id="prevPageButt">Previous Page</button>
+                                <table width="100%">
+                                    <tr class="ui-widget-header">
+                                        <th>Donor IDs</th>
+                                        <th>Type</th>
+                                        <th>Name</th>
+                                        <th>Address 1</th>
+                                        <th>Address 2</th>
+                                        <th>City</th>
+                                        <th>State</th>
+                                        <th>Zip</th>
+                                        <th>Primary</th>
+                                        <th>Household</th>
+                                    </tr>
+                                    <apex:repeat value="{!sr}" var="con" rendered="{!resultsFound}">
+                                        <tr id="resultPanel">
+                                            <td>
+                                                <table><tr><th>System</th><th>Id</th></tr>
+                                                <apex:repeat value="{!con.SystemXRefs.SystemXRef}" var="sxr" rendered="{!NOT(ISNULL(con.SystemXRefs))}">
+                                                <tr>
+                                                    <td>
+                                                    <apex:commandLink onclick="clickDonor('{!con.UUID}',
+                                                                                    '{!con.ConstituentID}',
+                                                                                    '{!URLEncode(con.Name)}',
+                                                                                    '{!con.ConstituentType}');  return false ;" value="{!sxr.Sys.Name}">
+                                                    </apex:commandLink>
+                                                    </td>
+                                                    <td>
+                                                    <apex:commandLink onclick="clickDonor('{!con.UUID}',
+                                                                                    '{!con.ConstituentID}',
+                                                                                    '{!URLEncode(con.Name)}',
+                                                                                    '{!con.ConstituentType}');  return false ;" value="{!sxr.XRefKey}">
+                                                    </apex:commandLink>
+                                                    </td>
+                                                </tr>
+                                                </apex:repeat>
+                                                </table>
+                                            </td>
+                                            <td>
+                                                <apex:commandLink onclick="clickDonor('{!con.UUID}',
+                                                                                    '{!con.ConstituentID}',
+                                                                                    '{!URLEncode(con.Name)}',
+                                                                                    '{!con.ConstituentType}');  return false ;" value="{!LEFT(con.ConstituentType,1)}">
+                                                </apex:commandLink>
+                                            </td>
+                                            <td>
+                                                <apex:commandLink onclick="clickDonor('{!con.UUID}',
+                                                                                    '{!con.ConstituentID}',
+                                                                                    '{!URLEncode(con.Name)}',
+                                                                                    '{!con.ConstituentType}');  return false ;" value="{!con.Name}">
+                                                </apex:commandLink>
+                                            </td>
+                                            <td>
+                                                <apex:commandLink onclick="clickDonor('{!con.UUID}',
+                                                                                    '{!con.ConstituentID}',
+                                                                                    '{!URLEncode(con.Name)}',
+                                                                                    '{!con.ConstituentType}');  return false ;" value="{!con.Street1}">
+                                                </apex:commandLink>
+                                            </td>
+                                            <td>
+                                                <apex:commandLink onclick="clickDonor('{!con.UUID}',
+                                                                                    '{!con.ConstituentID}',
+                                                                                    '{!URLEncode(con.Name)}',
+                                                                                    '{!con.ConstituentType}');  return false ;" value="{!con.Street2}">
+                                                </apex:commandLink>
+                                            </td>
+                                            <td>
+                                                <apex:commandLink onclick="clickDonor('{!con.UUID}',
+                                                                                    '{!con.ConstituentID}',
+                                                                                    '{!URLEncode(con.Name)}',
+                                                                                    '{!con.ConstituentType}');  return false ;" value="{!con.City}">
+                                                </apex:commandLink>
+                                            </td>
+                                            <td>
+                                                <apex:commandLink onclick="clickDonor('{!con.UUID}',
+                                                                                    '{!con.ConstituentID}',
+                                                                                    '{!URLEncode(con.Name)}',
+                                                                                    '{!con.ConstituentType}');  return false ;" value="{!con.StateCode}">
+                                                </apex:commandLink>
+                                            </td>
+                                            <td>
+                                                <apex:commandLink onclick="clickDonor('{!con.UUID}',
+                                                                                    '{!con.ConstituentID}',
+                                                                                    '{!URLEncode(con.Name)}',
+                                                                                    '{!con.ConstituentType}');  return false ;" value="{!con.ZipCode}">
+                                                </apex:commandLink>
+                                            </td>
+                                            <td><apex:commandLink onclick="clickDonor('{!con.UUID}',
+                                                                                    '{!con.ConstituentID}',
+                                                                                    '{!URLEncode(con.Name)}',
+                                                                                    '{!con.ConstituentType}');  return false ;">
+                                                    <apex:inputCheckbox value="{!con.Preferred}" disabled="true"></apex:inputCheckbox>
+                                                </apex:commandLink>
+                                            </td>
+                                            <td>
+                                                <apex:outputPanel rendered="{!NOT(ISNULL(con.RelatedHousehold))}">
+                                                    <apex:outputPanel rendered="{!AND(ISBLANK(leadChangeCoord), ISBLANK(campAddReferral))}">
+                                                        <apex:commandLink onclick="clickDonor('{!con.UUID}',
+                                                                                    '{!con.ConstituentID}',
+                                                                                    '{!URLEncode(con.Name)}',
+                                                                                    'HOUSEHOLD');  return false ;" value="{!con.RelatedHousehold.Name}">
+                                                        </apex:commandLink>
+                                                    </apex:outputPanel>
+                                                    <apex:outputPanel rendered="{!NOT(AND(ISBLANK(leadChangeCoord), ISBLANK(campAddReferral)))}">
+                                                        {!con.RelatedHousehold.Name}
+                                                    </apex:outputPanel>
+                                                </apex:outputPanel>
+                                            </td>   
+                                        </tr>
+                                    </apex:repeat>
+                                </table>
+                            </div>
+                        </div>
+                    </apex:outputPanel>
+                    <apex:outputPanel rendered="{!!resultsFound}">
+                        No Results
+                    </apex:outputPanel>
+                    <button onclick="newConsFunc();" type="button">New</button>  
+                    <apex:actionFunction action="{!newCons}" name="newConsFunc"/>
+                    <apex:actionFunction action="{!prevPage}" name="prevPageFunc" rerender="resStatus" oncomplete="applyUI();"/>
+                    <apex:actionFunction action="{!nextPage}" name="nextPageFunc" rerender="resStatus" oncomplete="applyUI();"/>
+                </apex:form>
+            </apex:facet>
+        </apex:actionStatus>
+    </apex:outputPanel>
+</apex:page>

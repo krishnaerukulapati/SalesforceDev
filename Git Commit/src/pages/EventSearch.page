@@ -1,0 +1,223 @@
+<apex:page controller="EventSearchController">
+    
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"    />
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    
+    
+    <style>
+        .jqueryButtonStyle{
+            
+        }
+        
+    </style>
+    
+    <script>
+            var $j = $.noConflict();
+            $j(document).ready(function() {
+                $j('.advanced').hide();
+                $j('.jqueryButtonStyle').button()
+                $j('.adSrch').click(function() {
+                    $j('.advanced').toggle();
+                });
+                $j('.pbHeader').click(function() {
+                    $j('.edit-info').toggle();
+                });
+                $j('#edit-info input').keypress(function (e) {
+                  if (e.which == 13) {
+                    hideAndSearch();
+                  }
+                });
+        });
+
+        function hideAndSearch() {
+            $j( "#edit-info" ).accordion( "option", "active", false );
+            submitSearch();
+            return false;
+        }
+
+        function applyUI() {
+            $j( ".accordionDis" ).accordion({ disabled: true, icons: {activeHeader: "ui-icon-person"}, heightStyle: "content"});
+            $j("button").button();
+            $j("button").css("float", "right");
+            $j(".search").button({ icons: { primary: "ui-icon-search"}});
+            $j(".accordionDis tr").hover(function() {
+                    $j(this).addClass("ui-state-hover");
+                },function() {
+                    $j(this).removeClass("ui-state-hover");
+                }
+            );
+            $j( "#advanced" ).accordion( "option", "active", false );
+
+        }
+
+        function clearSearch(selectcompId) {
+            $j(".clear input").val("");
+            if(document.getElementById(selectcompId)){
+               document.getElementById(selectcompId).value= ''; 
+            }
+        }
+
+        
+
+        $j(function() {
+            $j( ".accordion" ).accordion({
+                collapsible: true,
+                heightStyle: "content"
+            });
+            $j( "#radio" ).buttonset();
+            $j(":text").addClass("ui-corner-all");
+            //$j(".tdName").hide();
+            applyUI();
+        });
+        
+        $j(function() {
+            $j( ".accordion" ).accordion({
+                collapsible: true,
+                heightStyle: "content"
+            });
+            $j(".EventDate").attr('onfocus','');
+            
+            
+            $j(".eventStartDate").datepicker({
+                onSelect: function(selected) {
+                    $j(".eventEndDate").datepicker("option","minDate", selected);
+                    var startDate = new Date($j(".eventStartDate").val());
+                    var year = startDate.getFullYear();
+                    var month = startDate.getMonth() + 1;
+                    if (month > 6) {
+                        year++;
+                    }
+                    $j("#FY").html(year);
+                }
+            });
+            $j(".eventEndDate").datepicker({});
+            
+            if($j(".eventEndDate").val() != ''){
+                var endDate = new Date($j(".eventEndDate").val());
+                var month = endDate.getMonth() + 1;
+                var day= endDate.getDate() + 1;
+                if(month < 10) {
+                    month = '0' + month;
+                }
+                if(day < 10){
+                    day= '0'+day;
+                }
+                $j(".eventEndDate").val(month +'/'+day+'/'+endDate.getFullYear());
+            }
+
+            if($j(".eventStartDate").val() != ''){
+                var startDate = new Date($j(".eventStartDate").val());
+                var month = startDate.getMonth() + 1;
+                var day= startDate.getDate() + 1;
+                
+                if(month < 10) {
+                    month = '0'+month;
+                }
+                if(day < 10) {
+                    day= '0'+day;
+                }
+                $j(".eventStartDate").val(month +'/'+day+'/'+startDate.getFullYear());
+                $j(".eventEndDate").datepicker("option","minDate",month +'/'+day+'/'+startDate.getFullYear());
+            }
+        });
+    </script>
+    
+    <apex:pageMessages id="messages"></apex:pageMessages>
+    <apex:form > 
+        <div>
+            <div class="accordion" id="edit-info">
+                <h3>Search</h3>
+                <div>
+                    <table width="100%">
+                        <tr>
+                            <td class="tdName" style="width: 10%"><label>Event Name: </label></td>
+                            <td class="tdName clear" style="width: 20%"><apex:inputText value="{!eventName}" tabindex="1"/></td>
+                            <td style="width: 10%"><label>Event Date Range Start: </label></td>
+                            <td style="width: 20%" class="clear"><apex:inputText styleClass="EventDate eventStartDate" value="{!StartDate}" /></td>
+                        </tr>
+                        <tr>
+                            <td style="width: 10%"><label>Event Type: </label></td>
+                            <td class="clear">
+                                <apex:selectList id="EventType" value="{!selectedEventType}" size="1" styleclass="clear">
+                                    <apex:selectOption itemLabel="-None-" itemValue=""/>
+                                    <apex:selectOptions value="{!EventType}"/>
+                                </apex:selectList>
+                            </td>
+                            
+                            <td style="width: 10%"><label>Event Date Range End: </label></td>
+                            <td style="width: 20%" class="clear"><apex:inputText styleClass="EventDate eventEndDate" value="{!EndDate}"/></td>
+                        </tr>
+                        <tr>
+                            <td style="width: 5%"><label>Event Code: </label></td>
+                            <td style="width: 15%" class="clear"><apex:inputText value="{!eventCode}" tabindex="5"/></td>
+                        </tr>
+                    </table>
+                    <button onclick="hideAndSearch();" type="button" class="search">Search</button>
+                    <button onclick="clearSearch('{!$Component.EventType}');" type="button" class="search" >Clear</button>
+                </div>
+            </div>
+            <apex:actionFunction action="{!search}" name="submitSearch" rerender="results,rpt,messages" status="resStatus" oncomplete="applyUI();"/>
+        </div>
+    </apex:form> 
+    <apex:outputPanel id="results"> 
+        <apex:actionStatus startText="Requesting..." id="resStatus">
+            <apex:facet name="stop">
+                <apex:form > 
+                    <apex:outputPanel >
+                        <div class="accordionDis">
+                            <h3>Results</h3>
+                            <div>
+                                <span class="info">Page # {!currPage} of {!totalPages}</span>
+                                Sort: <apex:selectList value="{!sortOrder}" size="1">
+                                    
+                                    <apex:selectOption itemValue="EventName__c_ASC" itemLabel="Event Name ASC"/>
+                                    <apex:selectOption itemValue="EventName__c_DESC" itemLabel="Event Name DESC"/>
+                                    <apex:selectOption itemValue="EventCode__c_ASC" itemLabel="Event Code ASC"/>
+                                    <apex:selectOption itemValue="EventCode__c_DESC" itemLabel="Event Code DESC"/>
+                                    <apex:selectOption itemValue="StartDate__c_ASC" itemLabel="Start Date ASC"/>
+                                    <apex:selectOption itemValue="StartDate__c_DESC" itemLabel="Start Date DESC"/>
+                                    <apex:actionSupport event="onchange" action="{!changeSort}" rerender="results,rpt,messages" status="resStatus" oncomplete="applyUI();"/>
+                                </apex:selectList>
+                                
+                                <button onclick="nextPageFunc();" type="button" id="nextPageButt" style="display: {!if(hasNext,'inline-block','none')}">Next Page</button>
+                                <button onclick="prevPageFunc();" type="button" id="prevPageButt" style="display: {!if(hasPrevious,'inline-block','none')}">Previous Page</button>
+                                <table width="100%">
+                                    <tr class="ui-widget-header">
+                                        <th>Event IDs</th>
+                                        <th>Event Status</th>
+                                        <th>Event Type</th>
+                                        <th>Event Name</th>
+                                        <th>Event Start Date</th>
+                                        <th>Event Code</th>
+                                    </tr>
+                                    <apex:repeat value="{!searchResults}" var="con" rendered="{!resultsFound}" id="rpt">
+                                        <tr>
+                                            <td><A href="javascript:openSubtabC360('{!URLFOR($Page.EventInfo)}&eventId={!con.EventID__c}', 'Event Information', 'Event Information')">{!con.EventID__c}</A>
+                                                        </td>
+                                            <td>{!con.StatusID__r.Status1__c}</td>
+                                            <td>{!If(con.EventTypeID__c != null ,eventTypeNamesById[con.EventTypeID__c],'')}</td>
+                                            <td>{!con.EventName__c}</td>
+                                            <td><apex:outputfield value="{!con.StartDate__c}"/></td>
+                                            <td>{!con.EventCode__c}</td>
+                                        </tr>
+                                    </apex:repeat>
+                                </table>
+                            </div>
+                        </div>
+                    </apex:outputPanel>
+                    <apex:outputPanel rendered="{!AND(!resultsFound,!pageLoad)}">
+                        No Results
+                    </apex:outputPanel>
+                    <apex:actionFunction action="{!prevPage}" name="prevPageFunc" rerender="resStatus" oncomplete="applyUI();"/>
+                    <apex:actionFunction action="{!nextPage}" name="nextPageFunc" rerender="resStatus" oncomplete="applyUI();"/>
+                    
+                </apex:form>
+            </apex:facet>
+        </apex:actionStatus>
+    </apex:outputPanel>
+    <apex:includeScript value="{!URLFOR($Resource.ECCConsole)}" />
+</apex:page>

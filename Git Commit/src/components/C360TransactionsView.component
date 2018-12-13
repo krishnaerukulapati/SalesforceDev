@@ -1,0 +1,114 @@
+<apex:component controller="C360TransactionDetailController">
+	<apex:attribute name="consId" description="Constituent Id" type="String" required="true" />
+	<apex:attribute name="loadedMethod" description="javascxript method to run after loading" type="String" required="false" />
+	<apex:outputPanel id="transactionOut">
+		<span id="transactionLoad">Loading...</span>
+		<span id="transactionNone" style="display:none;">None</span>
+		<table id="transactionRes" style="display:none;" data-role="table" class="ui-responsive table-stroke">
+		    <thead>
+                <tr>
+                    <th>Gift Type</th>
+                    <th>Gift Date</th>
+                    <th>SourceCode</th>
+                    <th>Event</th>
+					<th>Frequency</th>
+					<th>Payment</th>
+					<th>Total Pledge Amount</th>
+					<th>CC Last 4</th>
+					<th>Transaction Type</th>
+					<th>Soft Credit Type</th>
+					<th>Payment Type</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+		</table>
+	    <script type="text/javascript">
+	        $j = jQuery.noConflict();
+
+	        if ((c360PageLoaders === undefined || c360PageLoaders === null))
+	        	c360PageLoaders =  {};
+
+	        if (c360PageLoaders["{!SUBSTITUTE($Component.transactionOut, ':', '_')}"] === undefined || c360PageLoaders["{!SUBSTITUTE($Component.interactionsOut, ':', '_')}"] === null)
+	        	c360PageLoaders["{!SUBSTITUTE($Component.transactionOut, ':', '_')}"] = new C360PageLoader({ 
+	        		constituentId: "{!consId}", 
+	        		onComplete: {!SUBSTITUTE($Component.transactionOut, ':', '_')}_allDone,
+	        		//onPageComplete:  {!SUBSTITUTE($Component.transactionOut, ':', '_')}_pageDone,
+	        		remoteAction: "{!$RemoteAction.C360TransactionDetailController.getTransactionPage}",
+	        		onError: {!SUBSTITUTE($Component.transactionOut, ':', '_')}_pageErr,
+	        		objectName: "Transactions"});
+
+	        c360PageLoaders["{!SUBSTITUTE($Component.transactionOut, ':', '_')}"].getPages();
+			
+			/*
+	        function {!SUBSTITUTE($Component.transactionOut, ':', '_')}_pageDone(retrieved, totRes, results) {
+	        	alert(retrieved + " out of " + totRes);
+	        }*/
+
+	        function {!SUBSTITUTE($Component.transactionOut, ':', '_')}_pageErr(err) {
+	        	var tbl = $j(document.getElementById("{!$Component.transactionOut}")).children("#transactionRes");
+	        	var load = $j(document.getElementById("{!$Component.transactionOut}")).children("#transactionLoad");
+	        	var none = $j(document.getElementById("{!$Component.transactionOut}")).children("#transactionNone");
+	        	tbl.hide();
+	        	load.hide();
+	        	none.show();
+	        }
+
+	        function {!SUBSTITUTE($Component.transactionOut, ':', '_')}_allDone(retrieved, totRes, results) {
+	        	var tbl = $j(document.getElementById("{!$Component.transactionOut}")).children("#transactionRes");
+	        	var load = $j(document.getElementById("{!$Component.transactionOut}")).children("#transactionLoad");
+	        	var none = $j(document.getElementById("{!$Component.transactionOut}")).children("#transactionNone");
+				var re = /[0-9]{8}\.(M|F|N)/;
+
+	        	if (results.length > 0) {
+		        	for (var i = 0; i < results.length; i++) {
+		        		var res = results[i];
+		        		var transSrc = res.TransactionSource;
+		        		var vSrc = (transSrc !== undefined && transSrc !== null);
+		        		var transPD = res.PaymentDetail;
+		        		var vSrc = (transPD !== undefined && transPD !== null);
+		        		var dt = new Date(res.GiftDate);
+		        		var month = "0" + (dt.getMonth() + 1);
+		        		month = month.substring(month.length - 2, month.length);
+		        		var day = "0" + dt.getDate();
+		        		day = day.substring(day.length - 2, day.length);
+		        		var strDate = dt.getFullYear() + "-" + month + "-" + day;
+		        		var payMeth = res.PaymentDetail != null ? res.PaymentDetail.PaymentMethod : "";
+		        		var sac = res.SpecialActionComments;
+
+						if (re.test(sac)) {
+						    var mavro = "{!mavro}";
+						    payMeth = "<a target='_blank' href='" + mavro.replace("##WEBKEY##", sac) +
+						    "'>[" + payMeth + "]</a>";
+						}
+
+			        	tbl.children("tbody").append(
+				        	"<tr style='vertical-align: text-top;'>" +
+				        	"<td style='border-top: solid 1px black;'>" + (res.GiftType !== undefined ? res.GiftType : "") + "</td>" +
+				            "<td style='border-top: solid 1px black;'>" + (res.GiftDate !== undefined ? strDate : "") + "</td>" +
+				            "<td style='border-top: solid 1px black;'>" + (vSrc ? (transSrc.Code !== undefined ? transSrc.Code : "") : "") + "</td>" +
+				            "<td style='border-top: solid 1px black;'>" + (vSrc ? (transSrc.Event !== undefined ? transSrc.Event : "") : "") + "</td>" +
+				            "<td style='border-top: solid 1px black;'>" + (res.Frequency !== undefined ? res.Frequency : "") + "</td>" +
+				            "<td style='border-top: solid 1px black;'>" + (res.PaymentAmount !== undefined ? res.PaymentAmount : "") + "</td>" +
+				            "<td style='border-top: solid 1px black;'>" + (res.TotalPledgeAmount !== undefined ? res.TotalPledgeAmount : "") + "</td>" +
+				            "<td style='border-top: solid 1px black;'>" + (transPD ? (transPD.CCLast4 !== undefined ? transPD.CCLast4 : "") : "") + "</td>" +
+				            "<td style='border-top: solid 1px black;'>" + (res.TransactionType !== undefined ? res.TransactionType : "") + "</td>" +
+				            "<td style='border-top: solid 1px black;'>" + (res.SoftCreditType !== undefined ? res.SoftCreditType : "") + "</td>" +
+				            "<td style='border-top: solid 1px black;'>" + payMeth + "</td>" + 
+				            "</tr>");
+			        }
+			        tbl.show();
+			        load.hide();
+			        none.hide();
+			        {!loadedMethod}("{!$Component.transactionOut}");
+			    }
+			    else {
+			    	tbl.hide();
+		        	load.hide();
+		        	none.show();
+			    }
+	        }
+
+	    </script>
+    </apex:outputPanel>
+</apex:component>

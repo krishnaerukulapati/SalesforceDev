@@ -1,0 +1,44 @@
+<apex:page standardController="lead" extensions="FOConsAddLeadController" showHeader="false" sidebar="false" standardStylesheets="false">
+	<apex:stylesheet value="{!URLFOR($Resource.SupportJs, 'chosen.css')}" />
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'jquery.mask.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'chosen.jquery.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.Bootstrap, '/bootstrap-3.0.0/dist/js/bootstrap.min.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.Bootstrap, '/bootstrap-3.0.0/dist/css/bootstrap.min.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.alsacFO, 'alsacFO.css')}" />
+
+	<apex:messages styleClass="ui-state-error"></apex:messages>
+	<apex:form >
+	<div class="container-fluid container-indent">
+		<div class="row">
+			<div class="col-md-5 col-sm-10 col-xs-12 form-padding">
+				<div class="col-xs-4">
+					<h4>Select Lead Record Type:</h4>
+            		<hr/>
+            	</div>
+			</div>
+		</div>
+		<div class="row">
+            <div class="col-md-5 col-sm-10 col-xs-12 form-padding">
+                <div class="col-xs-4">
+                    <apex:selectList id="recordType" styleClass="form-control" multiselect="false" value="{!selectedRecordType}" size="1">
+						<apex:selectOptions value="{!RecordTypes}"/>
+					</apex:selectList>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-5 col-sm-10 col-xs-12 form-padding">
+                <div class="col-xs-4">
+                    <apex:commandButton action="{!prepopulateValues}" value="Select" styleClass="btn btn-primary btn-xs btn-block"/>
+                </div>
+            </div>
+        </div>
+	</div>	
+	</apex:form>
+</apex:page>

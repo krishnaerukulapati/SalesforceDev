@@ -1,0 +1,81 @@
+<apex:page controller="C360ConsIntCreateController" showheader="false" sidebar="false" standardStylesheets="false">
+    <apex:stylesheet value="{!URLFOR($Resource.SupportJs, 'chosen.css')}" />
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'jquery.mask.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'chosen.jquery.min.js')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <script>
+    
+        $j = jQuery.noConflict();
+        $j(document).ready(function() {
+            $j(".datepicker").datepicker();
+            $j(".chosen-select").chosen();
+        });
+
+        $j(function() {
+            $j(":text").addClass("ui-corner-all");
+            $j("button").button();
+            $j("button").css("float", "right");
+            $j("td").addClass("alsac-widget");
+        });
+
+
+    </script>
+    <apex:messages styleClass="ui-state-error"></apex:messages>
+    <apex:form >
+        <div class="ui-widget ui-widget-content">
+            <table id="edit-info">
+                <tr>
+                    <td style="width: 15%"><label>Contact Category: </label></td>
+                    <td style="width: 15%">
+                        <apex:inputText value="{!i.ContactCategory}"></apex:inputText>
+                    </td>
+                    <td style="width: 15%"><label>Contact Type: </label></td>
+                    <td style="width: 15%">
+                        <apex:inputText value="{!i.ContactType}"></apex:inputText>
+                    </td>
+                    <td style="width: 15%"><label>Contact Method: </label></td>
+                    <td>
+                        <apex:inputText value="{!i.TransactionSource.Technique}"></apex:inputText>
+                    </td>
+                </tr>
+                <tr>
+                    <td><label>Response Category: </label></td>
+                    <td>
+                        <apex:inputText value="{!i.ResponseCategory}"></apex:inputText>
+                    </td>
+                    <td><label>Response Type: </label></td>
+                    <td>
+                        <apex:inputText value="{!i.ResponseType}"></apex:inputText>
+                    </td>
+                </tr>
+                <tr>
+                    <td><label>Warning</label></td>
+                    <td>
+                        <apex:inputCheckbox value="{!warning}"></apex:inputCheckbox>
+                    </td>
+                    <td><label>Warning Expiration</label></td>
+                    <td colspan="3">
+                        <apex:inputText value="{!i.WarningExpirationDate}" styleClass="datepicker"></apex:inputText>
+                    </td>
+                </tr>
+                <tr>
+                    <td><label>Comments</label></td>
+                    <td colspan="5">
+                        <apex:inputTextarea rows="8" style="width: 90%;" value="{!i.LongComments}" ></apex:inputTextarea>
+                    </td>
+                </tr>
+            </table>
+            <div class="ui-dialog-buttonset">
+                <button type="button" onclick="window.location.assign('{!$Page.C360Interactions}?id={!relId}');">Cancel</button>
+                <button type="button" onclick="saveFunc();">Save</button>
+            </div>
+            <apex:actionFunction action="{!save}" name="saveFunc" />
+        </div>
+    </apex:form>
+	
+</apex:page>

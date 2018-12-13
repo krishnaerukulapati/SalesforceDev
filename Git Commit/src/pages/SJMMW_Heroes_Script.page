@@ -1,0 +1,5 @@
+<apex:page standardController="Lead" tabStyle="Lead">
+<flow:interview name="SJMMW_Heroes_Script" >  
+<apex:param name="LeadId" value="{!Lead.ID}" />
+</flow:interview>
+</apex:page>

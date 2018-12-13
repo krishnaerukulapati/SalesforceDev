@@ -1,0 +1,80 @@
+<apex:page controller="FOCaseHistoryController" showheader="false" sidebar="false" standardStylesheets="false">
+<apex:includeScript value="/support/console/29.0/integration.js"/>
+<apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+<apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+<apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+<apex:stylesheet value="{!URLFOR($Resource.SupportJs, 'grid/css/ui.jqgrid.css')}"/>
+<apex:includeScript value="{!URLFOR($Resource.SupportJs, 'grid/js/i18n/grid.locale-en.js')}"/>
+<apex:includeScript value="{!URLFOR($Resource.SupportJs, 'grid/js/jquery.jqGrid.min.js')}"/>
+<apex:includeScript value="{!URLFOR($Resource.SupportJs, 'jquery.blockUI.js')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+<apex:stylesheet value="{!URLFOR($Resource.alsacFO, 'alsacFO.css')}" />
+    <script>
+        var $j = $.noConflict();
+
+        function applyUI() {
+            $j( ".accordionDis" ).accordion({ disabled: true, icons: {activeHeader: "ui-icon-home"}, heightStyle: "content"});
+            $j("button").button();
+            $j("button").css("float", "right");
+            //$j("button").css("clear", "both");
+            $j("tr").hover(function() {
+                $j(this).addClass("ui-state-hover");
+            },function() {
+                $j(this).removeClass("ui-state-hover");
+            }
+            );
+        }
+
+        $j(function() {
+            applyUI();
+        });
+    </script>
+    <apex:outputPanel rendered="{!!hasCaseHistory}">
+        No History
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!hasCaseHistory}">
+        <apex:form >
+            Page {!currPage} of {!totalPages}
+            <apex:outputPanel rendered="{!currPage > 1}">
+            <button type="button" onclick="prevPage();">Previous Page</button>
+            </apex:outputPanel>
+            <apex:outputPanel rendered="{!currPage < totalPages}">
+            <button type="button" onclick="nextPage();">Next Page</button>
+            </apex:outputPanel>
+            <apex:actionFunction action="{!prevPage}" name="prevPage"/>
+            <apex:actionFunction action="{!nextPage}" name="nextPage"/>
+            <table class="results-table" width="100%">
+                <tr class="ui-widget-header">
+                    <th>Case Number</th>
+                    <th>Constituent Name</th>
+                    <th>Subject</th>
+                    <th>Origin</th>
+                    <th>Open Date</th>
+                    <th>Closed Date</th>
+                </tr>
+                <apex:repeat value="{!caseHist}" var="cas" id="cases">
+                    <tr><td><a href="javascript:openPrimTab('{!cas.Id}');">{!cas.CaseNumber}</a></td>
+                        <td>{!cas.Constituent_Name__c}</td>
+                        <td>{!cas.Subject}</td>
+                        <td>{!cas.Origin}</td>
+                        <td><apex:outputText value="{0, date, MM/dd/yyyy h:mm a}">
+                            <apex:param value="{!cas.CreatedDate}"></apex:param>
+                            </apex:outputText></td>
+                        <td><apex:outputText value="{0, date, MM/dd/yyyy h:mm a}">
+                            <apex:param value="{!cas.ClosedDate}"></apex:param>
+                            </apex:outputText></td></tr>
+                </apex:repeat>
+            </table>
+        </apex:form>
+    </apex:outputPanel>
+    <script type="text/javascript">
+
+        var openPrimTab = function openPrimTab(casId) {
+            sforce.console.generateConsoleUrl(['/' + casId], openConsoleUrl);
+         }
+        var openConsoleUrl = function showConsoleUrl(result) {
+            sforce.console.openConsoleUrl(null, result.consoleUrl, true, null, null, null);
+         }
+    </script>
+</apex:page>

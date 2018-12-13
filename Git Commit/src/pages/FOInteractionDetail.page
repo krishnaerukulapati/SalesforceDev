@@ -1,0 +1,133 @@
+<apex:page docType="html-5.0" controller="FODetailInteractionController" showHeader="true" showheader="false" sidebar="false" standardStylesheets="false">
+    <apex:stylesheet value="{!URLFOR($Resource.SupportJs, 'chosen.css')}" />
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'jquery.mask.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'chosen.jquery.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.Bootstrap, '/bootstrap-3.0.0/dist/js/bootstrap.min.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.Bootstrap, '/bootstrap-3.0.0/dist/css/bootstrap.min.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.alsacFO, 'alsacFO.css')}" />
+    <apex:includeScript value="{!URLFOR($Resource.jqueryuiTimePicker, 'jquerytimepicker.js')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryuiTimePicker, 'jquerytimepicker.css')}" />
+
+
+    <script>
+        $j = jQuery.noConflict();
+        $j(document).ready(function() {
+            $j(".chosen-select").chosen();
+            $j(".datepicker").datepicker({
+                dateFormat: 'yy-mm-dd'
+            });
+        });
+
+        $j(function() {
+            $j(":text").addClass("ui-corner-all");
+            $j("button").button();
+            $j("button").css("float", "right");
+            $j("td").addClass("alsac-widget");
+        });
+        function cancelFunc() {history.go(-2);return false;}
+
+    </script>
+
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    </head>
+
+    <apex:messages styleClass="ui-state-error"></apex:messages>
+    <apex:form >    
+        <div id="edit-info" class="container-fluid container-indent">
+            <div class="row">
+                <div class="col-md-5 col-sm-10 col-xs-12">
+                    <h4>Interactions</h4>
+                    <hr/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-5 col-sm-10 col-xs-12 form-padding">
+                    <div class="col-xs-12 col-sm-4">
+                        <label>Program:</label>
+                        <apex:selectList id="program" styleClass="form-control" multiselect="false" size="1" value="{!fi.Program__c}" disabled="{!IF(action == 'view', true, false)}">
+                            <apex:selectOption itemLabel="{!viewCat}" itemValue=""/>
+                            <apex:selectOptions value="{!programs}"/>
+                            <apex:actionSupport event="onchange" action="{!changePrograms}" rerender="descrList" oncomplete="choosify()"/>
+                        </apex:selectList>
+                    </div>
+                    <div class="col-xs-12 col-sm-4">
+                        <label>Description:</label>
+                        <apex:outputPanel id="descrList"> 
+                            <apex:selectList id="description" styleClass="form-control" multiselect="false" size="1" value="{!fi.Description__c}" disabled="{!IF(action == 'view', true, false)}">
+                                <apex:selectOption itemLabel="{!viewType}" itemValue=""/>
+                                <apex:selectOptions value="{!descriptions}"/>
+                            </apex:selectList>
+                        </apex:outputPanel>
+                    </div>
+                    <div class="col-xs-12 col-sm-4">
+                        <label>Technique:</label>
+                        <apex:selectList id="technique" styleClass="form-control" multiselect="false" size="1" value="{!fi.Technique__c}" disabled="{!IF(action == 'view', true, false)}">
+                            <apex:selectOption itemLabel="{!viewTech}" itemValue=""/>
+                            <apex:selectOptions value="{!techniques}"/>
+                        </apex:selectList>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-5 col-sm-10 col-xs-12 form-padding">
+                    <div class="col-xs-12 col-sm-4">
+                        <label>Contact Date:</label>
+                        <apex:inputText styleClass="datepicker form-control" value="{!i.ContactDate}" html-placeholder="YYYY-MM-DD" disabled="{!IF((action == 'edit' || action == 'view'), true, false)}"/>
+                    </div>  
+                    <div class="col-xs-12 col-sm-8">
+                        <label>Summary:</label>
+                        <apex:inputTextarea styleClass="form-control" style="height: 25px;" value="{!summary}" disabled="{!IF(action == 'view', true, false)}"/>
+                    </div>                                
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-5 col-sm-10 col-xs-12 form-padding">
+                    <div class="col-xs-12">
+                        <label>Comments:</label>
+                        <apex:inputTextarea styleClass="form-control" style="height: 75px;" value="{!comments}" disabled="{!IF(action == 'view', true, false)}"/>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-5 col-sm-10 col-xs-12 form-padding form-submit-padding">
+                    <div class="col-sm-3 col-sm-offset-6">
+                        <apex:commandButton action="{!save}" value="Save" styleClass="btn btn-primary btn-sm btn-block" rendered="{!IF(action != 'view', true, false)}"/>                       
+                    </div>
+                    <div class="col-sm-3">
+                        <apex:commandButton id="cancelVF" action="{!$Page.FOInteractions}?id={!relId}" styleClass="btn btn-default btn-sm btn-block" value="{!IF(action == 'view', 'Back', 'Cancel')}" rendered="{!!isSF1}"/>
+                        <apex:outputPanel id="cancelSF1" rendered="{!isSF1}">
+                            <a href="javascript:sforce.one.navigateToURL('/apex/FOSearchMobile?cid={!relId}')"><button class="btn btn-default btn-sm btn-block" type="button">Cancel</button></a>           
+                        </apex:outputPanel>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </apex:form>
+    <script>
+        function choosify() {
+            $j(".chosen-select").chosen();
+        }
+
+        function testSetTabTitle() {
+            //Set the current tab's title
+            sforce.console.setTabTitle('Interactions');
+        }
+
+        var pageLoad = window.onload;
+            window.onload = function() {
+            if (pageLoad) {
+                pageLoad();
+            }
+            testSetTabTitle();
+        }
+    </script>
+
+</apex:page>

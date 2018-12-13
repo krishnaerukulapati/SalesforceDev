@@ -1,0 +1,143 @@
+<apex:component controller="EdgeForceIntranetMenuMobileController">
+<head>
+    <script>
+        function gotopage(url){
+           window.top.location.href=url;
+        }         
+    </script>
+    <style>
+    .navbar-default .navbar-nav > li > a span {display:none}
+    </style>
+</head>
+<nav class="navbar navbar-default" role="navigation">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    
+    <div class="navbar-header">
+        <div class="visible-xs user-wrapper">
+            <c:EF_User />
+        </div>
+
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#mainMenu">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="mainMenu">
+
+        
+        <!-- Always shown 
+        <ul class="nav navbar-nav pull-right">
+
+            <li class="dropdown pagelayouts">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Demo Pages <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                    <li class="home"><a href="EF_Home">Home</a></li>
+                    <li class="content"><a href="https://c.cs16.visual.force.com/apex/ef_content?id=a0Gf0000001pQN5EAM&category=News&tabName=Our+Company+Home&tagName=ef_home">Content Page</a></li>
+                    <li class="team"><a href="https://c.cs16.visual.force.com/apex/ef_team?&name=Our+Company&tabName=Our+Company">Team Page</a></li>
+                    <li class="divider"></li>
+                    <li><a href="EF_OneColumn">1-column Layout</a></li>
+                    <li><a href="EF_TwoColumn">2-column Layout</a></li>
+                    <li><a href="EF_Home">3-column Layout</a></li>
+                    <li class="divider"></li>
+                    <li><a href="EF_HomeFluid">Fluid Layout</a></li>
+                </ul>
+            </li>
+        </ul> 
+        -->
+        
+        <form class="navbar-form navbar-left visible-xs" role="search">
+            <div class="form-group">
+                <input type="text" class="form-control" placeholder="Search" />
+            </div>
+            <button type="submit" class="btn-bs btn-sm btn-default">Submit</button>
+        </form>
+
+    </div><!-- /.navbar-collapse -->
+</nav>
+
+<script>
+        
+        $(function(){
+            $("#mainMenu").append('{!ulString}');
+        //      checkResponsiveView();
+            $(".navbar").show();
+        });
+        
+        function openDynamicPage(page){
+            if(page.id=='_li'){
+                // var data = $('#_li).find('a').attr('href');
+                //window.open();
+            }
+        }
+    
+        //$(window).resize(function() {
+        //    checkResponsiveView();
+        //});
+    
+        var mobileView_prev = '';
+        var navbarHeight_Prev = '';
+        /*
+        function checkResponsiveView(){
+            var mobileView = $(".navbar-toggle").css('display');
+            var backgroundImageForHeader = "url('{!URLFOR($Resource.IntranetLogo)}')";
+            var mobileViewColor  = "rgba(245,245,245,0.97)";
+            //var navbarHeight = $(".navbar-header").css('height');
+            var transparentColor = "rgba(250,250,250,1)";
+            
+            if(mobileView_prev != mobileView){
+                if(mobileView == "none"){
+                    $(".settingsAnchor").hide(); 
+                    $(".navbar-header").css('background-color', 'transparent'); 
+                    $(".navbar-header").css('background-image', 'none'); 
+                    $(".navbar-brand").show();
+                    $(".navbar-nav li").css('border-bottom-width', '0px');
+                    $(".dropdown-menu").removeClass('dropdown-menu-mobileView');
+                    $(".right-full-view-button").show();
+                }else{
+                    $(".settingsAnchor").show();  
+                    //$(".navbar-header").css('background-image', backgroundImageForHeader); 
+                    //$(".navbar-header").css('background-color', mobileViewColor); 
+                    $(".navbar-brand").hide();
+                    $(".navbar-nav li").css('border-bottom-width', '1px');
+                    $(".navbar-nav li:last-child").css('border-bottom-width', '0px');
+                    //$(".dropdown-menu").addClass('dropdown-menu-mobileView');
+                    $(".right-full-view-button").hide();
+                }
+            }
+            //navbarHeight_Prev = navbarHeight;
+            mobileView_prev = mobileView;
+            
+            //setting the menu max-height
+            
+            var heightOfMenuSection = document.documentElement.clientHeight - $('.navbar-header').height();
+            
+            $('.navbar-collapse').css('max-height', heightOfMenuSection);
+        }
+        */
+        //handling the navigation on iOS 
+        $( document ).on(
+            "click",
+            "navbar a",
+            function( event ){
+             
+                // Stop the default behavior of the browser, which
+                // is to change the URL of the page.
+                event.preventDefault();
+                 
+                // Manually change the location of the page to stay in
+                // "Standalone" mode and change the URL at the same time.
+                var target_href = $( event.target ).attr( "href" );
+                if(target_href != null && target_href != ''){
+                    location.href = target_href;
+                }
+             
+            }
+        );
+        
+    </script>
+
+</apex:component>

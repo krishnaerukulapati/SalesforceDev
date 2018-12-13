@@ -1,0 +1,242 @@
+<apex:page controller="OIMProductSearchController" showheader="false" sidebar="false" standardStylesheets="false">
+	<apex:stylesheet value="{!URLFOR($Resource.SupportJs, 'chosen.css')}" />
+	<apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+	<apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+	<apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+	<apex:stylesheet value="{!URLFOR($Resource.StJudeCSS)}"/>
+
+	<apex:includeScript value="/support/console/29.0/integration.js"/>
+	<apex:includeScript value="{!URLFOR($Resource.jquery182min)}"/>
+	<apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+	<apex:includeScript value="{!URLFOR($Resource.SupportJs, 'chosen.jquery.min.js')}"/>
+	<apex:includeScript value="{!URLFOR($Resource.jqueryValidate)}"/>
+	<script>
+		var $j = $.noConflict();
+
+		function manageQuantityError(show)
+		{
+			if (show)
+			{
+				$j('#sfQty').addClass('input-validation-error');
+				$j('#fveQty').show();
+			}
+			else{ //hide
+            	$j('#sfQty').val('');
+				$j('#sfQty').removeClass('input-validation-error');
+				$j('#fveQty').hide();
+			}
+		}
+
+		function applyUI() {
+			$j( ".accordionDis" ).accordion({ disabled: true, heightStyle: "content"});
+			$j( ".accordion" ).accordion({
+				collapsible: true,
+				heightStyle: "content"
+			});
+			$j(".button").button();
+			$j(".button").css("float", "right");
+			$j(".details tr:not(:first)").hover(function() {
+					$j(this).addClass("ui-state-hover");
+				},function() {
+					$j(this).removeClass("ui-state-hover");
+				}
+			);
+			$j(".search").button({ icons: { primary: "ui-icon-search"}});
+			$j(".chosen-select").chosen();
+
+			$j('#search-info input').keypress(function (e) {
+			  if (e.which == 13) {
+				hideAndSearch();
+			  }
+			});
+
+	        addProd = $j("#addProdMod").dialog({
+	            autoOpen: false,
+	            height: 250,
+	            modal: true,
+	            position: { my: "center top", at: "center top", of: window },
+	            close: function( event, ui ) {
+					manageQuantityError(false);
+	            }
+	        })
+
+			if (typeof yourvar != 'undefined' && isFirstPage !== null) {
+				$j( "#prevPageButt" ).button({ disabled: isFirstPage(), icons: { primary: "ui-icon-circle-arrow-w"}});
+				$j( "#nextPageButt" ).button({ disabled: isLastPage(), icons: { primary: "ui-icon-circle-arrow-e"} });
+			}
+
+
+            $j('#sfQty').rules("add", {
+                required: true,
+                messages: {
+                    required: "Quantity is required."
+                }
+            });F
+
+          	$j("#sfQty").keypress(function (e) {
+			     //if the letter is not digit then don't type anything
+			     if (e.which != 8 && e.which != 0 && (e.which < 48 || e.which > 57)) {
+	               return false;
+			    }
+			});
+		}
+
+		hideAndSearch = function() {
+			$j( "#search-info" ).accordion( "option", "active", false );
+			submitSearch();
+			return false;
+		}
+
+		prodPreSelect = function() {
+		 	document.getElementById("{!$Component.frmProdSelect.qtyId}").value = $j("#sfQty").val();
+			document.getElementById("{!$Component.frmProdSelect.commId}").value = $j("#sfComm").val();
+			if($j("#sfQty").val() != ''){
+				prodSelect();
+			}else{
+				manageQuantityError(true);
+			}
+
+		}
+
+
+
+		addProdDet = function(prodId, sku, descr,each) {
+			document.getElementById("{!$Component.frmProdSelect.prodId}").value = prodId;
+			document.getElementById("{!$Component.frmProdSelect.eachInt}").value = each;
+
+			if (each != null && each > 1)
+			{
+				document.getElementById("spEachNotification").style = 'display:block';
+			}
+			else{
+				document.getElementById("spEachNotification").style = 'display:none';
+			}
+
+            addProd.dialog( "option", "title", "Add " + sku + ' - ' + descr);
+            addProd.dialog( "open" );
+        }
+
+		$j(function() {
+			applyUI();
+		});
+	</script>
+
+	<apex:pageMessages id="messages"></apex:pageMessages>
+	<apex:form id="frm1">
+		<div class="accordion" id="search-info">
+			<h3>Search</h3>
+			<div>
+				<table width="100%">
+					<tr>
+						<td class="tdName" style="width: 10%"><label>Event Type: </label></td>
+						<td>
+							<apex:selectList styleClass="chosen-select" value="{!eventTypeId}" tabindex="0" multiselect="false" size="1">
+								<apex:selectOption itemLabel="" itemValue=""/>
+								<apex:selectOptions value="{!eventTypes}"/>
+							</apex:selectList></td>
+						<td style="width: 10%"><label>SKU: </label></td>
+						<td class="clear"><apex:inputText value="{!sku}" tabindex="1"/></td>
+						<td style="width: 10%"><label>Category: </label></td>
+						<td>
+							<apex:selectList styleClass="chosen-select" value="{!categoryId}" tabindex="2" multiselect="false" size="1">
+								<apex:selectOption itemLabel="" itemValue=""/>
+								<apex:selectOptions value="{!categories}"/>
+							</apex:selectList></td>
+						<td style="width: 10%"><label>Active: </label></td>
+						<td class="clear"><apex:inputCheckbox value="{!active}" tabindex="3"/></td>
+					</tr>
+					<tr>
+						<td valign="top" style="width: 10%"><label>Description: </label></td>
+						<td style="width: 20%" class="clear"><apex:inputTextarea rows="5" value="{!description}" tabindex="4"/></td>
+					</tr>
+				</table>
+				<button onclick="hideAndSearch();" type="button" class="search button">Search</button>
+				<apex:actionFunction action="{!newSearch}" name="submitSearch" rerender="results,messages" status="resStatus" oncomplete="applyUI();"/>
+				<br/><br/><br/>
+			</div>
+		</div>
+	</apex:form>
+	<apex:outputPanel id="results">
+		<apex:actionStatus startText="Requesting..." id="resStatus">
+			<apex:facet name="stop">
+				<apex:form id="frmProdSelect">
+					<apex:inputHidden value="{!productId}" id="prodId" />
+					<apex:inputHidden value="{!each}" id="eachInt" />
+					<apex:inputHidden value="{!quantity}" id="qtyId" />
+					<apex:inputHidden value="{!comments}" id="commId" />
+					<apex:outputPanel rendered="{!resultsFound}">
+						<script>
+							isFirstPage = function() { return {!firstPage};};
+							isLastPage = function() { return {!lastPage};};
+						</script>
+						<div class="accordionDis">
+							<h3>Results</h3>
+							<div>
+								<span class="info">Page # {!currPage} of {!totalPages}</span>
+								<button onclick="nextPageFunc();" type="button" class="button" id="nextPageButt">Next Page</button>
+								<button onclick="prevPageFunc();" type="button" class="button" id="prevPageButt">Previous Page</button>
+								<table width="100%" class="details">
+									<tr class="ui-widget-header">
+										<th></th>
+										<th>Event Types</th>
+										<th>SKU</th>
+										<th>Description</th>
+										<th>Category</th>
+										<th>Units Per Package</th>
+										<th>Active</th>
+										<th>Fulfilled By</th>
+									</tr>
+									<apex:repeat value="{!prods}" var="prod" rendered="{!resultsFound}">
+										<tr>
+											<td>
+												<a href="#" onclick="addProdDet('{!prod.ProductId__c}', '{!prod.SKU__c}', '{!prod.Description__c}', {!prod.Each__c})">Select</a>
+											</td>
+											<td>{!prod.EventTypeName__c}</td>
+											<td>{!prod.SKU__c}</td>
+											<td>{!prod.Description__c}</td>
+											<td>{!prod.Category__c}</td>
+											<td>{!prod.Each__c}</td>
+											<td>{!prod.IsActive__c}</td>
+											<td>{!prod.FulfilledBy__c}</td>
+										</tr>
+									</apex:repeat>
+								</table>
+							</div>
+						</div>
+						<apex:actionFunction action="{!selectProduct}" name="prodSelect"/>
+						
+					</apex:outputPanel>
+					<apex:outputPanel rendered="{!!resultsFound}">
+						No Results
+					</apex:outputPanel>
+					<apex:actionFunction action="{!prevPage}" name="prevPageFunc" rerender="resStatus" oncomplete="applyUI();"/>
+					<apex:actionFunction action="{!nextPage}" name="nextPageFunc" rerender="resStatus" oncomplete="applyUI();"/>
+				</apex:form>
+			</apex:facet>
+		</apex:actionStatus>
+	</apex:outputPanel>
+
+	<div id="addProdMod" title="Add #SKU# - #DESCRIPTION#" style="font-size: 11px;">
+		<table>
+			<tr>
+				<td>
+					Quantity <span style="color:red">*</span>
+				</td>
+				<td>
+					<input type="text" id="sfQty" style='width:100%' name="qtyId" required='required' aria-required="true" aria-describedby="sfQty-error"  value="" data-val="true" data-val-number="The field Quantity must be a number."/><br/>
+					<span class="field-validation-error" data-valmsg-replace="true" data-valmsg-for="qtyId" id="fveQty" style='display:none'><span id="sfQty-error">Quantity is required.</span></span>
+				</td>
+			</tr>
+			<tr>
+				<td>Comments</td>
+				<td><textarea id="sfComm" rows="5" cols="10" style='width:100%'/></td>
+			</tr>
+		</table>
+		<span id="spEachNotification" style="display:none">Enter the total number of participants this product is needed for in the <em>Quantity</em> textbox.</span>
+		<div style='margin-top:10px;'>
+			<button onclick="prodPreSelect();" type="button" class="button">Save</button>
+			<button onclick="addProd.dialog('close');" type="button" class="button">Cancel</button>
+		</div>
+	</div>
+
+</apex:page>

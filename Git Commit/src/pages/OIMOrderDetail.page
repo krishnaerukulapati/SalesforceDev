@@ -1,0 +1,212 @@
+<apex:page controller="OIMOrderDetailController" showheader="false" sidebar="false" standardStylesheets="false">
+    <apex:stylesheet value="{!URLFOR($Resource.SupportJs, 'chosen.css')}" />
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <apex:includeScript value="{!URLFOR($Resource.SupportJs, 'chosen.jquery.min.js')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <script>
+        var $j = $.noConflict();
+
+        function applyUI() {
+            $j(".button").button();
+            $j(".button").css("float", "right");
+            $j(".button").css("clear", "both");
+            $j(".datepicker").each(function () {
+                var dtStr = $j(this).val();
+                if (dtStr !== undefined && dtStr !== null && dtStr != "") {
+                    var dt = $j.datepicker.formatDate( "mm/dd/yy",
+                        $j.datepicker.parseDate("yy-mm-dd", dtStr));
+                    $j(this).val(dt);
+                }
+                $j(this).datepicker({
+                    dateFormat: "mm/dd/yy"
+                });
+            });
+            $j(".details tr:not(:first)").hover(function() {
+                    $j(this).addClass("ui-state-hover");
+                }, function() {
+                    $j(this).removeClass("ui-state-hover");
+                }
+            );
+            $j(".chosen-select").chosen();
+        }
+
+        $j(function() {
+            applyUI();
+        });
+    </script>
+    <apex:form id="od">
+        <apex:pageMessages id="messages"></apex:pageMessages>
+        <apex:outputPanel layout="none" rendered="{!order.StatusDisplay__c == 'Open'}">
+            <div class="form-element">
+                <apex:commandButton styleClass="button" action="{!save}" rendered="{!saveButton}" value="Save"/>
+            </div>
+            <table width="100%">
+                <tr>
+                    <!-- <td width="100"><label><span style="color:red">*</span>Order Date: </label></td>
+                    <td align="left"><apex:inputText styleClass="datepicker form-control" value="{!dateOrdered}"/></td> -->
+                    <td width="100"><label><span style="color:red">*</span>Date To Ship:</label></td>
+                    <td align="left"><apex:inputText styleClass="datepicker form-control" value="{!dateToShip}"/></td>
+                </tr>
+                <tr>
+                    <td><label>Status:</label></td>
+                    <td align="left">
+
+                    <!-- <apex:selectList styleClass="chosen-select form-control" id="statusOpen" value="{!order.Status__c}" multiselect="false" size="1">  -->
+
+                    <apex:selectList styleClass="chosen-select form-control" id="statusOpen" value="{!openStatus}" multiselect="false" size="1"> 
+
+                            <apex:selectOption itemLabel="" itemValue=""/>
+                            <apex:selectOptions value="{!Statuses}"/>
+                        </apex:selectList></td>
+                    <td><label>Ship Method:</label></td>
+                    <td align="left"><apex:selectList styleClass="chosen-select form-control" value="{!fedExGrShipMeth}" multiselect="false" size="1">
+                            <apex:selectOption itemLabel="" itemValue=""/>
+                            <apex:selectOptions value="{!ShipmentMethods}"/>
+                        </apex:selectList></td>
+                </tr>
+                <tr>
+                    <td><label>Priority:</label></td>
+                    <td align="left"><apex:inputField styleClass="form-control" value="{!order.IsPriority__c}"/></td>
+                    <td><label>Date Shipped:</label></td>
+                    <td align="left"><apex:inputText styleClass="datepicker form-control" value="{!dateShipped}"/></td>
+                </tr>
+            </table>
+            <hr/>
+            <apex:outputPanel rendered="{!NOT(ISNULL(orderId))}">
+                <div class="form-element">
+                    Details
+                    <apex:commandLink action="{!addLineItem}" value="Add Line Item" styleClass="button">
+                    <apex:param name="leadId" value="{!leadId}" />
+                    </apex:commandLink>
+
+                </div>
+                <table width="100%" class="details">
+                    <tr class="ui-widget-header">
+                        <th>SKU</th>
+                        <th>Tracking Number</th>
+                        <th>Description</th>
+                        <th>Quantity</th>
+                        <th>Units Per Package</th>
+                        <th>Total Units</th>
+                        <th>Comments</th>
+                        <th>Remove Line Item</th>
+                    </tr>
+
+                    <apex:outputPanel layout="none" rendered="{!NOT(LineItemCount > 0)}">
+                        <tr><td colspan="4">No Details</td></tr>
+                    </apex:outputPanel>
+                    <!-- <apex:actionFunction action="{!removeLineItem}" name="removeLineItemSelect"/> -->
+                    <apex:outputPanel layout="none" rendered="{!LineItemCount > 0}">
+                        <apex:repeat value="{!lineItems}" var="li">
+                            <tr>
+                                <td>{!li.SKU__c}</td>
+                                <td>
+                                    <apex:outputPanel rendered="{!CONTAINS(li.TrackingNumber__c, '1Z')}" >
+                                    <a href="https://wwwapps.ups.com/WebTracking/track?trackNums={!li.TrackingNumber__c}&track.x=Track" target="_blank">{!li.TrackingNumber__c}</a>
+                                    </apex:outputPanel>
+                                    <apex:outputPanel rendered="{!NOT(CONTAINS(li.TrackingNumber__c, '1Z'))}" >
+                                    <a href="https://www.fedex.com/apps/fedextrack/?tracknumbers={!li.TrackingNumber__c}" target="_blank">{!li.TrackingNumber__c}</a>
+                                    </apex:outputPanel>
+                                </td> 
+                                <td>{!li.ProductDescription__c}</td>
+                                <td>{!FLOOR(li.Quantity__c)}</td>
+                                <td>{!li.Each__c}</td>
+                                <td>{!li.TotalUnits__c}</td>
+                                <td>{!li.Comments__c}</td>
+                                <td>
+                                    <!-- <apex:outputPanel layout="none" rendered="{!orderStatus == 'Open'}"> -->
+                                         <apex:commandLink action="{!removeLineItem}" value="Remove">
+                                         <apex:param name="lineItemId" value="{!li.LineItemId__c}" />
+                                         <apex:param name="leadId" value="{!leadId}" />
+                                         </apex:commandLink>
+                                     <!-- </apex:outputPanel> -->
+                                </td>
+
+
+                            </tr>
+                        </apex:repeat>
+                    </apex:outputPanel>
+                </table>
+            </apex:outputPanel>
+        </apex:outputPanel>
+        <apex:outputPanel layout="none" rendered="{!order.StatusDisplay__c != 'Open'}">
+            <table width="100%">
+                <tr>
+                    <td width="100"><label>Order Date:</label></td>
+                    <!-- <td align="left"><apex:outputText value="{0, date, MM/dd/yyyy}">
+                        <apex:param value="{!order.DateOrdered__c}"/>
+                    </apex:outputText></td> -->
+                    <td width="100"><label>Date To Ship:</label></td>
+                    <td align="left"><apex:outputText value="{0, date, MM/dd/yyyy}">
+                        <apex:param value="{!order.DateToShip__c}"/>
+                    </apex:outputText></td>
+                </tr>
+                <tr>
+                    <td><label>Status:</label></td>
+                    <td align="left">{!order.StatusDisplay__c}</td>
+                    <td><label>Ship Method:</label></td>
+                    <td align="left">{!order.ShipmentMethodDisplay__c}</td>
+                </tr>
+                <tr>
+                    <td><label>Priority:</label></td>
+                    <td align="left"><apex:outputfield styleClass="form-control" value="{!order.IsPriority__c}"/></td>
+                    <td><label>Date Shipped:</label></td>
+                    <td align="left"><apex:outputText value="{0, date, MM/dd/yyyy}">
+                        <apex:param value="{!order.DateShipped__c}"/>
+                    </apex:outputText></td>
+                </tr>
+            </table>
+            <hr/>
+            <div class="form-element">
+                Details
+            </div>
+            <table width="100%" class="details">
+                <tr class="ui-widget-header">
+                    <th>SKU</th>
+                    <th>Tracking Number</th>
+                    <th>Description</th>
+                    <th>Quantity</th>
+                    <th>Units Per Package</th>
+                    <th>Total Units</th>
+                    <th>Comments</th>
+                </tr>
+
+                <apex:outputPanel layout="none" rendered="{!NOT(LineItemCount > 0)}">
+                    <tr><td colspan="4">No Details</td></tr>
+                </apex:outputPanel>
+
+                <apex:outputPanel layout="none" rendered="{!LineItemCount > 0}">
+                    <apex:repeat value="{!lineItems}" var="li">
+                        <tr>
+                            <td>{!li.SKU__c}</td>
+                            <td>
+                                <apex:outputPanel rendered="{!CONTAINS(li.TrackingNumber__c, '1Z')}" >
+                                <a href="https://wwwapps.ups.com/WebTracking/track?trackNums={!li.TrackingNumber__c}&track.x=Track" target="_blank">{!li.TrackingNumber__c}</a>
+                                </apex:outputPanel>
+                                <apex:outputPanel rendered="{!NOT(CONTAINS(li.TrackingNumber__c, '1Z'))}" >
+                                <a href="https://www.fedex.com/apps/fedextrack/?tracknumbers={!li.TrackingNumber__c}" target="_blank">{!li.TrackingNumber__c}</a>
+                                </apex:outputPanel>
+                             </td>
+                            <td>{!li.ProductDescription__c}</td>
+                            <td alright="right">
+                                <apex:outputText value="{0, number, 0}">
+                                    <apex:param value="{!FLOOR(li.Quantity__c)}"/>
+                                </apex:outputText>
+                            </td>
+                            <td>{!li.Each__c}</td>
+                            <td>{!li.TotalUnits__c}</td>
+                            <td>{!li.Comments__c}</td>
+                            <!-- <td><a href="#">View Details</a></td>
+                            <td><a href="#">Edit Details</a></td>
+                            <td><a href="#">Remove</a></td> -->
+                        </tr>
+                    </apex:repeat>
+                </apex:outputPanel>
+            </table>
+        </apex:outputPanel>
+    </apex:form>
+</apex:page>

@@ -1,0 +1,49 @@
+<apex:page controller="EventsNavigationController" >
+<table  style="overflow:scroll;height:300px">
+    <tr><td>
+        <a href="{!envSett.ALSACEmail__c}" target="_blank">ALSAC Email</a>
+   </td></tr>
+    <tr><td>
+        <a href="{!envSett.EventsOrg__c}" target="_blank">DGG and Radio</a>
+    </td></tr>
+    <tr><td>
+        <a href="{!envSett.EventDayURL__c}" target="_blank">Event Day</a>
+    </td></tr>
+    <tr><td>
+        <a href="{!envSett.FieldOpsSharepoint__c}" target="_blank">FO Sharepoint</a>
+    </td></tr>
+    <tr><td>
+        <a href="!envSett.FOSalesforceReports__c" target="_blank">FO Salesforce Reporting</a>
+    </td></tr>
+    <tr><td>
+        <a href="{!envSett.FieldOpsReporting__c}" target="_blank">FO Sharepoint Reporting</a>
+    </td></tr>
+    <tr><td>
+    <a href="{!envSett.GuestAppURL__c}" target="_blank">Guest App</a>
+    </td></tr>
+    <tr><td>
+        <a href="{!envSett.EventInventory__c}" target="_blank">Inventory Order Site</a>
+    </td></tr>
+    <tr><td>
+        <a href="{!envSett.ORAURL__c}" target="_blank">ORA - Online Registration</a>
+    </td></tr>
+    <tr><td>
+        <a href="{!envSett.SourceCodes__c}" target="_blank">Source Codes</a>
+    </td></tr>
+    <tr><td>
+    <a href="{!envSett.StaffRegURL__c}" target="_blank">Staff Registration</a>
+    </td></tr>
+    <tr><td>
+        <a href="{!envSett.TaskManagement__c}" target="_blank">Task Management</a>
+    </td></tr>
+    <tr><td>
+        <a href="{!envSett.TeamRaiserEMC__c}" target="_blank">TeamRaiser EMC</a>
+    </td></tr>
+    <tr><td>
+        <a href="{!envSett.TimesheetEntry__c}" target="_blank">Timesheet Entry</a>
+    </td></tr>
+    <tr><td>
+        <a href="{!envSett.WholesaleMerch__c}" target="_blank">Wholesale Merchandise</a>
+    </td></tr> 
+</table>
+</apex:page>

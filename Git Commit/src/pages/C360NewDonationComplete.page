@@ -1,0 +1,11 @@
+<apex:page controller="C360NewDonationController" showheader="false" sidebar="false" standardStylesheets="false" action="{!NewDonationComplete}">
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    Donation Id: {!$CurrentPage.parameters.donationId}<br/>
+    Confirmation Number: {!$CurrentPage.parameters.confNum}<br/>
+    Donation Amount: {!$CurrentPage.parameters.donationAmount}<br/>
+</apex:page>

@@ -1,0 +1,40 @@
+<apex:page showHeader="false" sidebar="false" standardStylesheets="false" cache="false">
+    <apex:includeScript value="/support/console/28.0/integration.js"/>
+    <A HREF="#" onClick="generateConsoleUrl();return false">
+        Opening Constituent Search...  If it does not open, please click here.</A> 
+
+    <script type="text/javascript">
+        var urlHighlights;
+        var title;
+        var label;
+
+        var generateConsoleUrl = function testGenerateConsoleURL() {
+            urlHighlights = "{!URLFOR($Page.C360NoblePop)}&mode=rEsEaRcH";
+            sforce.console.generateConsoleUrl([urlHighlights], openConsoleUrl);
+         }
+
+        var openConsoleUrl = function showConsoleUrl(result) { 
+            sforce.console.openConsoleUrl(null, result.consoleUrl, true, null, null, closeThisTab);            
+         }
+        
+        function closeThisTab(result) {
+            //First find the ID of the current tab to close it
+            sforce.console.getEnclosingPrimaryTabId(closetab);
+        }
+        
+        var closetab = function closetab(result) {
+            //Now that we have the tab ID, we can close it
+            var tabId = result.id;
+            sforce.console.closeTab(tabId);
+        };
+        
+        var prevOnLoad = window.onload;
+        window.onload = function() {
+            if (prevOnLoad) {
+                prevOnLoad();
+            }
+            generateConsoleUrl();
+            //closeThisTab();
+        }
+  </script>
+</apex:page>

@@ -1,0 +1,96 @@
+<apex:page controller="C360DetailPrefController" showheader="false" sidebar="false" standardStylesheets="false">
+    <apex:includeScript value="/support/console/29.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jquery)}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.theme.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, '/jquery-ui/jquery-ui.min.js')}"  />
+    <apex:stylesheet value="{!URLFOR($Resource.alsac, 'alsac.css')}" />
+    <script>
+        var $j = $.noConflict();
+
+        function applyUI() {
+            $j( ".accordionDis" ).accordion({ disabled: true, icons: {activeHeader: "ui-icon-home"}, heightStyle: "content"});
+            $j("button").button();
+            $j("button").css("float", "right");
+            $j("tr").hover(function() {
+                    $j(this).addClass("ui-state-hover");
+                },function() {
+                    $j(this).removeClass("ui-state-hover");
+                }
+            );
+        }
+
+        $j(function() {
+            applyUI();
+        });
+    </script>
+    <apex:outputPanel rendered="{!!isUUIDSet}">
+        No constituent selected.    
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!isUUIDSet}">
+        <apex:form >
+            <div class="form-element">
+                <label>Duplicates: </label>
+                <apex:selectList value="{!consId}" size="1">
+                    <apex:selectOptions value="{!items}"/>
+                    <apex:actionSupport event="onchange" action="{!changeCons}"/>
+                </apex:selectList>
+                <button type="button" onclick="newPrefFunc();">New Preference</button>
+                <apex:inputCheckbox style="float: right" value="{!bShowInactive}" id="showInactive" onclick="changeConsFunc();"/>
+                <apex:outputLabel style="float: right" value="Show Inactive" for="showInactive"/>
+                <apex:actionFunction action="{!NewPreference}" name="newPrefFunc"/>
+                <apex:actionFunction action="{!changeCons}" name="changeConsFunc"/>
+            </div>
+
+            <table width="100%">
+                <tr class="ui-widget-header">
+                    <th></th>
+                    <th>Type</th>
+                    <th>Type Desc</th>
+                    <th>Preference</th>
+                    <th>Preference Desc</th>
+                    <th>Value</th>
+                    <th>Value Desc</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Status</th>
+                </tr>
+                <apex:repeat value="{!prefs}" var="pref" id="email">
+                    <apex:outputPanel layout="none" rendered="{!bShowInactive || (pref.Status == 'Active'&& NOW() >= NULLVALUE(pref.StartDate, NOW()) && NOW() <= NULLVALUE(pref.EndDate, NOW()))}">
+                        <tr>
+                            <td>
+                                <apex:commandLink action="{!EditPreference}" value="Edit">
+                                    <apex:param assignTo="{!contId}" value="{!pref.ConstituentPreferenceID}" name="DetailContId"/>
+                                    <apex:param assignTo="{!consId}" value="{!consId}" name="ConsId"/>
+                                </apex:commandLink>
+                            </td>
+                            <td>{!pref.PreferenceType}</td>
+                            <td>{!pref.PreferenceTypeDesc}</td>
+                            <td>{!pref.Preference}</td>
+                            <td>{!pref.PreferenceDesc}</td>
+                            <td>{!pref.PreferenceValue}</td>
+                            <td>{!pref.PreferenceValueDesc}</td>
+                            <td><apex:outputText value="{0,date,MM'/'dd'/'yyyy}">
+        <apex:param value="{!pref.StartDate}" /> 
+    </apex:outputText></td>
+                            <td><apex:outputText value="{0,date,MM'/'dd'/'yyyy}">
+        <apex:param value="{!pref.EndDate}" /> 
+    </apex:outputText></td>
+                            <td>{!pref.Status}</td>
+                        </tr>
+                    </apex:outputPanel>
+                </apex:repeat>
+            </table>
+        </apex:form>
+    </apex:outputPanel>
+    
+    <script type="text/javascript">
+        var prevOnLoad = window.onload;
+        window.onload = function() {
+            if (prevOnLoad) {
+                prevOnLoad();
+            }
+            sforce.console.fireEvent("ProfileEdited");
+        }
+  </script>
+</apex:page>
